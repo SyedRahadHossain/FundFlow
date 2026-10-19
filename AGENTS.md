@@ -21,7 +21,7 @@ Two independent packages. Each has its own `package.json`, `node_modules`, and e
 | `npm install` | Install dependencies |
 | `npm run dev` | Start with nodemon on `http://localhost:5000` |
 | `npm start` | Production start (`node index.js`) |
-| `npm test` | Run 79 tests (Jest + mongodb-memory-server) |
+| `npm test` | Run 122 tests (Jest + Supertest, mocked models) |
 
 ### Client (run from `client/`)
 
@@ -111,8 +111,8 @@ All prefixed with `/api/`:
 | Domain | Routes |
 |--------|--------|
 | Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/google`, `GET /auth/me` |
-| Campaigns | `GET /campaigns`, `GET /campaigns/top-funded`, `GET /campaigns/mine`, `POST /campaigns`, `PATCH /campaigns/:id`, `DELETE /campaigns/:id`, `PATCH /campaigns/:id/status` (admin) |
-| Contributions | `POST /contributions`, `GET /contributions/mine`, `GET /contributions/campaign/:id`, `PATCH /contributions/:id/approve`, `PATCH /contributions/:id/reject` |
+| Campaigns | `GET /campaigns` (`status=approved` is public; any other status or bare request needs an admin token; non-string `status` → 400), `GET /campaigns/top-funded`, `GET /campaigns/mine`, `POST /campaigns`, `PATCH /campaigns/:id`, `DELETE /campaigns/:id`, `PATCH /campaigns/:id/status` (admin) |
+| Contributions | `POST /contributions` (400 if supporter lacks credits; debits before insert, credits back if insert fails), `GET /contributions/mine`, `GET /contributions/campaign/:id`, `PATCH /contributions/:id/approve`, `PATCH /contributions/:id/reject` |
 | Withdrawals | `POST /withdrawals`, `GET /withdrawals` (admin), `GET /withdrawals/mine`, `PATCH /withdrawals/:id/approve` (admin) |
 | Payments | `GET /payments/mine`, `GET /payments/all` (admin) — credits are granted only by the Stripe webhook |
 | Notifications | `GET /notifications` |
@@ -133,8 +133,8 @@ All prefixed with `/api/`:
 ## Testing
 
 ### Server
-- **Framework**: Jest + Supertest + mongodb-memory-server
-- **Command**: `npm test` (runs 79 tests)
+- **Framework**: Jest + Supertest — no real database; each test file `jest.mock`s the Mongoose models with in-memory stores (`mongodb-memory-server` is an unused devDependency)
+- **Command**: `npm test` (runs 122 tests across 11 suites)
 - **Config**: `package.json` → `"jest": { "testEnvironment": "node" }`
 - Tests isolated in `server/tests/` — each file targets a route group or middleware
 
@@ -186,6 +186,8 @@ All prefixed with `/api/`:
 7. **Notifications** — Bell icon polls `/api/notifications` every 30s; 6 event types insert notifications.
 
 8. **Path Aliases** — Client uses `@/*` → `./*` (see `tsconfig.json`).
+
+9. **Withdrawal double-claim guard** — `POST /withdrawals` subtracts the creator's already-pending withdrawal requests from raised credits before approving a new one, so the same credits cannot be claimed twice. There is no withdrawal reject route — only `PATCH /withdrawals/:id/approve` (admin).
 
 ---
 

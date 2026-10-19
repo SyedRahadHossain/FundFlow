@@ -20,7 +20,7 @@ Client and server ship from a single repository.
 npm install
 cp .env.example .env   # fill in your values
 npm run dev            # http://localhost:5000
-npm test               # run 106 tests
+npm test               # run 122 tests (11 suites)
 ```
 
 ## Environment Variables
@@ -43,7 +43,7 @@ npm test               # run 106 tests
 | POST | `/api/auth/login` | — | Email/password login |
 | POST | `/api/auth/google` | — | Google sign-in (verifies a Firebase ID token) |
 | GET | `/api/auth/me` | Any | Current user profile |
-| GET | `/api/campaigns` | — | List campaigns (filter by status, active) |
+| GET | `/api/campaigns` | Approved public; other statuses Admin | List campaigns (`status` filter) |
 | GET | `/api/campaigns/top-funded` | — | Top 6 by amount raised |
 | GET | `/api/campaigns/mine` | Creator | Creator's own campaigns |
 | POST | `/api/campaigns` | Creator | Create campaign |
@@ -56,7 +56,7 @@ npm test               # run 106 tests
 | GET | `/api/contributions/campaign/:id` | Creator | Pending for their campaign |
 | PATCH | `/api/contributions/:id/approve` | Creator | Approve + notify |
 | PATCH | `/api/contributions/:id/reject` | Creator | Reject + refund |
-| POST | `/api/withdrawals` | Creator | Request withdrawal |
+| POST | `/api/withdrawals` | Creator | Request withdrawal (pending requests reduce available balance) |
 | GET | `/api/withdrawals` | Admin | All pending withdrawals |
 | GET | `/api/withdrawals/mine` | Creator | Own withdrawal history |
 | PATCH | `/api/withdrawals/:id/approve` | Admin | Approve + notify |
