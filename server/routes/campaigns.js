@@ -69,8 +69,30 @@ router.get('/mine', verifyToken, verifyRole('creator'), async (req, res) => {
   }
 });
 
-// GET /api/campaigns — public; ?status=approved&active=true
-router.get('/', async (req, res) => {
+// The status filter must be a plain whitelisted string. Express's extended
+// query parser turns `?status[$ne]=x` into { status: { $ne: 'x' } }, which
+// would otherwise land in find() as a Mongo operator.
+const ALLOWED_CAMPAIGN_STATUS = ['pending', 'approved', 'rejected'];
+
+const validateStatusFilter = (req, res, next) => {
+  const raw = req.query.status;
+  if (raw === undefined) return next();
+  if (typeof raw !== 'string' || !ALLOWED_CAMPAIGN_STATUS.includes(raw)) {
+    return res.status(400).json({ error: 'Invalid status filter' });
+  }
+  return next();
+};
+
+// Unapproved campaigns are moderation data. Listing them — by filtering for
+// them or by omitting the filter and receiving every document — needs an admin.
+// `status=approved` stays public, which is all the public campaign pages ask for.
+const adminOnlyForUnapproved = (req, res, next) => {
+  if (req.query.status === 'approved') return next();
+  return verifyToken(req, res, () => verifyRole('admin')(req, res, next));
+};
+
+// GET /api/campaigns — approved list is public; every other view is admin-only
+router.get('/', validateStatusFilter, adminOnlyForUnapproved, async (req, res) => {
   try {
     const filter = {};
     if (req.query.status) filter.status = req.query.status;

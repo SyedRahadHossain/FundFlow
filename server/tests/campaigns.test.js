@@ -172,6 +172,74 @@ describe('GET /api/campaigns/top-funded', () => {
   });
 });
 
+describe('GET /api/campaigns — status filter', () => {
+  test('approved campaigns stay publicly listed', async () => {
+    const id = newId();
+    mockCampaigns[id] = { _id: id, title: 'Live', status: 'approved', amount_raised: 0 };
+    const res = await request(app).get('/api/campaigns?status=approved');
+    expect(res.status).toBe(200);
+    expect(res.body.some(c => c._id === id)).toBe(true);
+  });
+
+  test('an anonymous status=pending query is rejected', async () => {
+    const id = newId();
+    mockCampaigns[id] = { _id: id, title: 'Unapproved', status: 'pending', creator_email: 'cr@x.com' };
+    const res = await request(app).get('/api/campaigns?status=pending');
+    expect(res.status).toBe(401);
+    expect(Array.isArray(res.body)).toBe(false);
+  });
+
+  test('a supporter cannot query pending campaigns', async () => {
+    const res = await request(app)
+      .get('/api/campaigns?status=pending')
+      .set('Authorization', `Bearer ${supporterToken}`);
+    expect(res.status).toBe(403);
+  });
+
+  test('an admin can query pending campaigns', async () => {
+    const id = newId();
+    mockCampaigns[id] = { _id: id, title: 'Awaiting review', status: 'pending', creator_email: 'cr@x.com' };
+    const res = await request(app)
+      .get('/api/campaigns?status=pending')
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.some(c => c.title === 'Awaiting review')).toBe(true);
+  });
+
+  test('an unknown status value is rejected', async () => {
+    const res = await request(app).get('/api/campaigns?status=not_a_status');
+    expect(res.status).toBe(400);
+  });
+
+  test('an unauthenticated unfiltered query cannot list unapproved campaigns', async () => {
+    // Omitting ?status= built filter = {}, which is the same disclosure by
+    // another route: everything, including campaigns still awaiting approval.
+    const id = newId();
+    mockCampaigns[id] = { _id: id, title: 'Secret', status: 'pending', creator_email: 'cr@x.com' };
+    const res = await request(app).get('/api/campaigns');
+    expect(res.status).toBe(401);
+    expect(Array.isArray(res.body)).toBe(false);
+  });
+
+  test('a repeated status parameter is rejected', async () => {
+    // Express 5 parses `status=approved&status=pending` into an array, which
+    // Mongoose would otherwise read as an $in and answer with both sets.
+    const res = await request(app).get('/api/campaigns?status=approved&status=pending');
+    expect(res.status).toBe(400);
+  });
+
+  test('bracket syntax never becomes a Mongo operator', async () => {
+    // Express 5's simple parser keeps `status[$ne]` as a literal key, so the
+    // filter stays undefined and the request must land on the admin gate
+    // instead of reaching find() as { status: { $ne: 'approved' } }.
+    const id = newId();
+    mockCampaigns[id] = { _id: id, title: 'Secret', status: 'pending', creator_email: 'cr@x.com' };
+    const res = await request(app).get('/api/campaigns?status[$ne]=approved');
+    expect(res.status).toBe(401);
+    expect(Array.isArray(res.body)).toBe(false);
+  });
+});
+
 describe('POST /api/campaigns', () => {
   test('creator can create campaign with status=pending', async () => {
     const res = await request(app)
