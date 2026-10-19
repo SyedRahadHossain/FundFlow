@@ -5,7 +5,8 @@ Source: `Crowdfunding_Platform.docx` (the original assessment brief) cross-check
 
 Status of everything already verified working is in the appendix at the bottom.
 
-Items 1–7 and 10 are complete. Item 9 (deploy) needs your accounts, and item 8 has one
+Items 1–7, 10, and 11 are complete. Item 12 is partly done, with the two impeccable reports
+holding the unfixed findings. Item 14 (deploy) needs your accounts, and item 13 has one
 small remainder: your LinkedIn and Facebook profile URLs.
 
 Severity: **blocker** = grader explicitly checks it · **major** = explicit docx requirement ·
@@ -122,7 +123,80 @@ Not in the docx. Added on request, as a pure token remap with no component edits
       which would drop white button labels to ~2:1; verified in a production build that
       light mode is unaffected
 
-## 8. Submission metadata — partly done, remainder needs your accounts
+## 11. Data-integrity bugs — done
+
+Found by testing the server routes against the credit economy's invariants, not against the
+docx. Each was a case where the code accepted a request it should have refused. Fixed on a
+branch, merged to `main`, pushed.
+
+**Campaign reads leaked unapproved campaigns.** `GET /api/campaigns` took any `status` value
+and returned it to any caller, so `?status=pending` handed an unauthenticated visitor the
+queue of unreviewed campaigns. Now only `status=approved` is public; every other status, and
+a bare `GET`, requires an admin token. Non-string values are rejected with a 400, so the
+route cannot be handed an array from repeated query keys. The two dashboard pages that send
+`status=pending` with a JWT, and the two public pages that send `status=approved`
+unauthenticated, all keep working.
+
+**A contribution could debit credits and record nothing.** `POST /api/contributions` debited
+the supporter's credits and created the contribution document as two separate statements. If
+the insert failed between them the supporter was poorer with no contribution to refund, and
+if the creator rejected it at that instant the refund had nothing to attach to. The debit is
+now conditional on the balance and runs first, with a compensating credit if the insert
+throws. Notification failures no longer surface as a 500 on the contribution.
+
+**A creator could claim the same credits twice.** `POST /api/withdrawals` checked the
+requested amount against `amount_raised` alone and ignored the creator's pending requests, so
+a creator with 400 raised credits could file two 400-credit requests and both passed. This
+matters more than it looks: there is no withdrawal reject route, only
+`PATCH /withdrawals/:id/approve`, so a pending request stays pending until an admin acts —
+those credits were claimable indefinitely. The check now subtracts the sum of the creator's
+pending requests. `amount_raised` itself could never go negative, since the approve loop
+floors at zero, so a duplicate payout was the only harm here.
+
+- [x] Fixed on branch `fix/server-integrity`, merged to `main` with `--ff-only`, branch
+      deleted, pushed. 8 commits
+- [x] Server suite **122/122 across 11 suites**, up from 106/106 across 10 — 16 new tests
+      covering the campaign status gate, the contribution debit guard, and the withdrawal
+      double-claim guard
+- [x] Each fix written test-first: the new test was run against the unfixed code and had to
+      fail before the fix was accepted
+- [x] Client build still **25/25 pages**; lint still 19 problems, the same 4 pre-existing
+      `react-hooks/set-state-in-effect` errors, none new
+- [x] No route shape changed, so the client needs no matching edit
+
+## 12. Frontend critique and audit — partly done
+
+`impeccable` was run against `client/` in two passes. Both write a scored report to
+`.impeccable/`, which is git-ignored as agent tooling.
+
+- [x] **Critique** — 3 runs, latest score **22/40**, 1 P0 and 3 P1. Report at
+      `.impeccable/critique/2026-10-19T01-46-45Z__client.md`
+- [x] **Audit** — never run before this session. Score **13/20**, 2 P1 and 9 P2.
+      Report at `.impeccable/audit/2026-10-19T02-52-57Z__client.md`
+- [x] **P0 fixed** — Approve and Reject on contributions moved credits with a single click.
+      Both now confirm first, naming the supporter, the amount, and the refund consequence
+- [x] **P1 fixed** — a failed load on the contributions screen rendered "No pending
+      contributions", a silent success on the one screen holding other people's money. The
+      loading, empty, and error states now render distinctly
+- [x] **P1 fixed** — four hand-rolled modals replaced with the shared `ui/Modal.jsx`, which
+      already carried the focus trap, escape handler, and `aria-modal` they were each
+      reimplementing by hand
+- [x] **P1 fixed** — icon-only dashboard menu button had no accessible name and a sub-44px
+      hit area
+- [x] **P2 fixed** — the hero's ghost CTA failed 3:1 against the gradient it sits on, and
+      Credits Contributed used the success token, reading as an achievement rather than a
+      balance
+- [x] **P2 fixed** — the testimonials presented six invented people with portraits as real
+      customer quotes. They are now labelled sample content, and the women's portraits were
+      removed on request, falling back to initials
+- [ ] **Not fixed** — the remaining audit findings: `text-neutral-400` body text at 2.54:1
+      across 62 sites, the mobile drawer with no focus trap, the client-only fetch that
+      blanks the public catalog on first paint, the notification panel overflowing narrow
+      phones, and 10 P3 items. Both reports hold the ranked list
+- [ ] **Not fixed** — the admin payout approve is still a single click with no confirmation
+      or undo, the same money-action gap the P0 fix closed on the supporter side
+
+## 13. Submission metadata — partly done, remainder needs your accounts
 
 Docx §What to Submit asks for five items.
 
@@ -138,9 +212,9 @@ Docx §What to Submit asks for five items.
       so those two footer icons resolve to someone else's profile. Replace both in
       `client/lib/links.js` before deploying
 - [ ] Live site URL — `client/README.md` still reads
-      `https://fundflow.vercel.app  ← update after deploy`; fills in once you deploy (item 9)
+      `https://fundflow.vercel.app  ← update after deploy`; fills in once you deploy (item 14)
 
-## 9. Deploy to Vercel — admin, needs your accounts
+## 14. Deploy to Vercel — admin, needs your accounts
 
 Docx §Additional Information: "Make sure you deploy the server side and client side on the
 first day."
@@ -159,11 +233,11 @@ first day."
 Docx §Key Rules: minimum **20 notable commits client-side**, **12 server-side**.
 
 Repository initialised and pushed to `https://github.com/SyedRahadHossain/FundFlow` on branch
-`main`. **36 commits total: 21 touch `client/`, 13 touch `server/`** — both minimums met.
+`main`. **46 commits total: 27 touch `client/`, 18 touch `server/`** — both minimums met.
 
 - [x] `git init`, branch renamed to `main`, remote `origin` added, pushed and verified in
       sync with `origin/main` (125 files in the remote tree)
-- [x] 21 client commits (≥20 required) and 13 server commits (≥12 required), none empty
+- [x] 27 client commits (≥20 required) and 18 server commits (≥12 required), none empty
 - [x] Audited before pushing: no `.env` file and no live secret value (MongoDB URI,
       `JWT_SECRET`, Stripe secret, Firebase API key, imgBB key) appears anywhere in history.
       Only the `.env.example` templates are tracked. AI-tooling artifacts
