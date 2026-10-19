@@ -140,7 +140,7 @@ export default function CreatorHomePage() {
           <div className="w-10 h-10 rounded-xl bg-success-light flex items-center justify-center text-xl mb-3 group-hover:bg-success transition-colors" aria-hidden="true">✅</div>
           <h3 className="font-semibold text-neutral-900 group-hover:text-success transition-colors">Review Contributions</h3>
           <p className="text-sm text-neutral-500 mt-1">Approve or reject pending contributions</p>
-          <p className="text-xs text-info mt-2 flex items-center gap-1">
+          <p className="text-xs text-info-dark mt-2 flex items-center gap-1">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
