@@ -1,0 +1,253 @@
+@import "tailwindcss";
+
+/* Colour tokens must live in @theme so Tailwind v4 generates the matching
+   utilities (bg-primary, text-accent, border-error, …). @theme also emits each
+   value to :root, so var(--color-*) keeps working. */
+@theme {
+  /* Brand — Indigo (matches DESIGN.md) */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-light: #eef2ff;
+  --color-primary-medium: #c7d2fe;
+  --color-primary-dark: #3730a3;
+
+  /* Accent — Teal for secondary actions */
+  --color-accent: #0f766e;
+  --color-accent-hover: #115e59;
+  --color-accent-light: #f0fdfa;
+
+  /* Neutral */
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+
+  /* Semantic */
+  --color-error: #dc2626;
+  --color-error-light: #fef2f2;
+  --color-error-hover: #b91c1c;
+  --color-success: #16a34a;
+  --color-success-light: #f0fdf4;
+  --color-success-dark: #15803d;
+  --color-warning: #eab308;
+  --color-warning-light: #fefce8;
+  --color-warning-dark: #a16207;
+  --color-info: #3b82f6;
+  --color-info-light: #eff6ff;
+  --color-info-dark: #1d4ed8;
+
+  /* Semantic surfaces. bg-white is NOT remapped in dark mode because
+     text-white shares the same token and sits on indigo/teal gradients —
+     flipping --color-white would put dark text on those. Use bg-surface for
+     card/panel backgrounds instead. */
+  --color-surface: #ffffff;
+  --color-canvas: #f9fafb;
+}
+
+:root {
+  /* Surface */
+  --surface-0: #ffffff;
+  --surface-1: #f9fafb;
+  --surface-2: #f3f4f6;
+  --surface-3: #e5e7eb;
+
+  /* Constant chrome — the footer and toast host are dark in both themes, so
+     they must not follow the neutral ramp inversion above. */
+  --color-footer-bg: #111827;
+  --color-footer-fg: #d1d5db;
+  --color-footer-chip: #1f2937;
+  --color-footer-chip-hover: #6366f1;
+  --color-toast-bg: #111827;
+  --color-toast-fg: #ffffff;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+/* ── Dark theme ──────────────────────────────────────────────────
+   Tailwind v4 utilities compile to var(--color-*), so redefining the palette
+   here re-colours every utility in one place with no component changes.
+   The neutral ramp is inverted, the -light/-dark tint pairs move together
+   (badges pair bg-*-light with text-*-dark), and --color-white is untouched
+   so gradients keep their white text.
+
+   This single block must stay last: it shares equal specificity with :root
+   and the @theme output, so source order is what makes the dark values win. */
+.dark {
+  /* Neutral ramp inverted: light greys become dark, dark greys become light */
+  --color-neutral-50:  #0b1220;
+  --color-neutral-100: #111827;
+  --color-neutral-200: #1f2937;
+  --color-neutral-300: #374151;
+  --color-neutral-400: #4b5563;
+  --color-neutral-500: #9ca3af;
+  --color-neutral-600: #d1d5db;
+  --color-neutral-700: #e5e7eb;
+  --color-neutral-800: #f3f4f6;
+  --color-neutral-900: #f9fafb;
+
+  /* Brand — lightened so text-primary stays legible on dark canvas */
+  --color-primary:       #6366f1;
+  --color-primary-hover: #818cf8;
+  --color-primary-light: #1e1b4b;
+  --color-primary-medium:#312e81;
+  --color-primary-dark:  #a5b4fc;
+
+  --color-accent:       #2dd4bf;
+  --color-accent-hover: #5eead4;
+  --color-accent-light: #042f2e;
+
+  --color-error:       #f87171;
+  --color-error-light: #450a0a;
+  --color-error-hover: #fca5a5;
+
+  --color-success:       #4ade80;
+  --color-success-light: #052e16;
+  --color-success-dark:  #86efac;
+
+  --color-warning:       #facc15;
+  --color-warning-light: #422006;
+  --color-warning-dark:  #fde047;
+
+  --color-info:       #60a5fa;
+  --color-info-light: #172554;
+  --color-info-dark:  #93c5fd;
+
+  --color-surface: #111827;
+  --color-canvas:  #0b1220;
+
+  /* Raw surface vars used directly by body/scrollbar rules */
+  --surface-0: #111827;
+  --surface-1: #0b1220;
+  --surface-2: #1f2937;
+  --surface-3: #374151;
+}
+
+/* These semantic tokens are read as text far more often than as a background
+   (36 text-accent vs 2 bg-accent), so above they lighten for legibility on the
+   dark canvas. That inverts the problem for the controls that paint them as a
+   background under white text (Approve / Reject buttons, avatars, count
+   badges): the background is now light and white text would fall to ~2:1.
+   Only in dark mode, and only on elements carrying both classes, so light
+   mode keeps its white-on-colour labels untouched. */
+.dark .text-white:where(.bg-accent, .bg-error, .bg-success, .bg-warning) {
+  color: #0b1220;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  background: var(--surface-0);
+  color: var(--color-neutral-900);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus visible — accessible focus rings */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 100;
+  background: var(--color-primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-lg);
+  font-weight: 500;
+  transition: transform 0.2s ease;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+  .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
+  .animate-slide-down { animation: slide-down 0.2s ease-out forwards; }
+  .animate-scale-in { animation: scale-in 0.2s ease-out forwards; }
+  .animate-spin { animation: spin 1s linear infinite; }
+  
+  .shimmer {
+    background: linear-gradient(90deg, var(--color-neutral-200) 25%, var(--color-neutral-300) 50%, var(--color-neutral-200) 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.4s infinite;
+  }
+  
+  html { scroll-behavior: smooth; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in, .animate-slide-up, .animate-slide-down, .animate-scale-in { animation: none; opacity: 1; transform: none; }
+  .animate-spin, .animate-pulse, .animate-ping, .animate-bounce { animation: none; }
+  .shimmer { background: var(--color-neutral-200); animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* Line clamp utilities */
+.line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--color-neutral-100); }
+::-webkit-scrollbar-thumb { background: var(--color-neutral-300); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-neutral-400); }
+
+/* Selection */
+::selection { background: var(--color-primary-medium); color: var(--color-primary-dark); }
