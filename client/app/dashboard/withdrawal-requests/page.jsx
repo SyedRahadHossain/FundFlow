@@ -16,12 +16,19 @@ export default function WithdrawalRequestsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const approve = async (id) => {
-    setApproving(id);
+  const approve = async (w) => {
+    // The approve route pays out and decrements amount_raised, and there is no
+    // matching reject route, so this cannot be undone from the UI once sent.
+    const confirmMessage =
+      `Approve withdrawal of $${w.withdrawal_amount?.toFixed(2)} ` +
+      `(${w.withdrawal_credit?.toLocaleString()} credits) for "${w.creator_name}"?\n\n` +
+      `This cannot be undone — the payout is marked paid and the creator's raised credits are reduced.`;
+    if (!window.confirm(confirmMessage)) return;
+    setApproving(w._id);
     try {
-      await api.patch(`/api/withdrawals/${id}/approve`);
+      await api.patch(`/api/withdrawals/${w._id}/approve`);
       toast.success('Withdrawal approved — creator notified ✅');
-      setWithdrawals(ws => ws.filter(w => w._id !== id));
+      setWithdrawals(ws => ws.filter(x => x._id !== w._id));
     } catch (err) {
       toast.error(err.response?.data?.error || 'Action failed');
     } finally {
@@ -73,7 +80,7 @@ export default function WithdrawalRequestsPage() {
                       <td className="px-5 py-3.5 text-neutral-400 text-xs">{w.account_number}</td>
                       <td className="px-5 py-3.5 text-neutral-400">{new Date(w.withdraw_date).toLocaleDateString()}</td>
                       <td className="px-5 py-3.5 text-center">
-                        <button onClick={() => approve(w._id)} disabled={approving === w._id}
+                        <button onClick={() => approve(w)} disabled={approving === w._id}
                           className="text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success-light px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium">
                           {approving === w._id ? '…' : '💳 Payment Success'}
                         </button>
@@ -98,7 +105,7 @@ export default function WithdrawalRequestsPage() {
                       <p className="text-xs text-accent">💎 {w.withdrawal_credit?.toLocaleString()}</p>
                     </div>
                   </div>
-                  <button onClick={() => approve(w._id)} disabled={approving === w._id}
+                  <button onClick={() => approve(w)} disabled={approving === w._id}
                     className="w-full mt-2 text-sm bg-success hover:bg-success-dark disabled:opacity-60 text-white font-semibold py-2 rounded-lg transition-colors">
                     {approving === w._id ? 'Processing…' : '💳 Mark Payment Success'}
                   </button>
