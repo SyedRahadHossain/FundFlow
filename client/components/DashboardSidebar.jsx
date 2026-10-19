@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -8,6 +8,9 @@ import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import api from '@/lib/api';
+
+// Element focused before the mobile drawer opened; restored on close.
+let lastFocused = null;
 
 const roleEmoji = {
   supporter: '💳',
@@ -52,6 +55,7 @@ export default function DashboardSidebar({ mobileOpen, onClose, profile }) {
   const pathname = usePathname();
   const router = useRouter();
   const [counts, setCounts] = useState({ pendingContributions: 0, pendingWithdrawals: 0, pendingCampaigns: 0 });
+  const drawerRef = useRef(null);
 
   // The JWT carries only { email, role }; the display name arrives separately
   // via /api/auth/me. Fall back to the email until it does.
@@ -77,6 +81,25 @@ export default function DashboardSidebar({ mobileOpen, onClose, profile }) {
     const interval = setInterval(fetchCounts, 30000); // Poll every 30s like notifications
     return () => clearInterval(interval);
   }, [user]);
+
+  // Mobile drawer: Escape closes it, and focus moves in on open and back on close.
+  // The desktop rail does not mount this effect because mobileOpen stays false there.
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    lastFocused = document.activeElement;
+    drawerRef.current?.focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      lastFocused?.focus();
+    };
+  }, [mobileOpen, onClose]);
 
   const handleLogout = () => {
     logout();
@@ -188,7 +211,22 @@ export default function DashboardSidebar({ mobileOpen, onClose, profile }) {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden animate-fade-in">
           <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
-          <aside className="relative w-64 h-full shadow-xl">
+          <aside
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Dashboard navigation"
+            tabIndex={-1}
+            className="relative w-64 h-full shadow-xl"
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close navigation"
+              className="lg:hidden absolute right-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-xl text-neutral-500 hover:bg-neutral-100"
+            >
+              <span aria-hidden="true">✕</span>
+            </button>
             {content}
           </aside>
         </div>
