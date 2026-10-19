@@ -56,7 +56,7 @@ function PurchaseCreditInner() {
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-neutral-900">Purchase Credits</h2>
         <p className="text-neutral-500 text-sm mt-1">Top up your balance to contribute to campaigns you love</p>
-        <p className="text-xs text-neutral-400 mt-1">Rate: 10 credits = $1</p>
+        <p className="text-xs text-neutral-500 mt-1">Rate: 10 credits = $1</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -73,10 +73,10 @@ function PurchaseCreditInner() {
               </span>
             )}
             <span className="text-4xl mb-3">{pkg.emoji}</span>
-            <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-1">{pkg.label}</p>
+            <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">{pkg.label}</p>
             <p className="text-3xl font-extrabold text-neutral-900 mb-1">
               {pkg.credits.toLocaleString()}
-              <span className="text-base font-medium text-neutral-400 ml-1">credits</span>
+              <span className="text-base font-medium text-neutral-500 ml-1">credits</span>
             </p>
             <p className="text-xl font-bold text-accent mb-5">${pkg.price}</p>
             <button
@@ -94,7 +94,7 @@ function PurchaseCreditInner() {
         ))}
       </div>
 
-      <p className="text-xs text-center text-neutral-400 mt-6">
+      <p className="text-xs text-center text-neutral-500 mt-6">
         Payments processed securely via Stripe. Credits are non-refundable once purchased.
       </p>
     </div>
@@ -103,7 +103,7 @@ function PurchaseCreditInner() {
 
 export default function PurchaseCreditPage() {
   return (
-    <Suspense fallback={<div className="text-neutral-400 text-sm p-4">Loading…</div>}>
+    <Suspense fallback={<div className="text-neutral-500 text-sm p-4">Loading…</div>}>
       <PurchaseCreditInner />
     </Suspense>
   );

@@ -77,7 +77,7 @@ export default function ManageCampaignsPage() {
         {loading ? (
           <div className="p-4 space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-neutral-50 animate-pulse rounded-xl" />)}</div>
         ) : filtered.length === 0 ? (
-          <div className="py-16 text-center text-neutral-400">
+          <div className="py-16 text-center text-neutral-500">
             <span className="text-5xl block mb-3">📋</span>
             <p>No campaigns found.</p>
           </div>
@@ -113,7 +113,7 @@ export default function ManageCampaignsPage() {
                       <td className="px-5 py-3.5 text-neutral-500">{c.creator_name}</td>
                       <td className="px-5 py-3.5 text-neutral-500">{c.category}</td>
                       <td className="px-5 py-3.5 text-right text-accent font-medium">💎 {(c.amount_raised || 0).toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-neutral-400">{c.funding_goal?.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-neutral-500">{c.funding_goal?.toLocaleString()}</td>
                       <td className="px-5 py-3.5"><StatusBadge status={c.status} size="sm" /></td>
                       <td className="px-5 py-3.5 text-right">
                         <button onClick={() => handleDelete(c._id, c.title)} disabled={deleting === c._id}
@@ -138,11 +138,11 @@ export default function ManageCampaignsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-neutral-900 truncate">{c.title}</p>
-                    <p className="text-xs text-neutral-400 mt-0.5">by {c.creator_name} · {c.category}</p>
+                    <p className="text-xs text-neutral-500 mt-0.5">by {c.creator_name} · {c.category}</p>
                     <div className="flex flex-wrap items-center gap-2 mt-1.5">
                       <StatusBadge status={c.status} size="sm" className="text-xs" />
                       <span className="text-xs text-accent">💎 {(c.amount_raised || 0).toLocaleString()} raised</span>
-                      <span className="text-xs text-neutral-400">🎯 {c.funding_goal?.toLocaleString()} goal</span>
+                      <span className="text-xs text-neutral-500">🎯 {c.funding_goal?.toLocaleString()} goal</span>
                     </div>
                   </div>
                   <button onClick={() => handleDelete(c._id, c.title)} disabled={deleting === c._id}

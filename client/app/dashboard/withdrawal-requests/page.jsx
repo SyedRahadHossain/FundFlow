@@ -47,7 +47,7 @@ export default function WithdrawalRequestsPage() {
         {loading ? (
           <div className="p-4 space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-14 bg-neutral-50 animate-pulse rounded-xl" />)}</div>
         ) : withdrawals.length === 0 ? (
-          <div className="py-20 text-center text-neutral-400">
+          <div className="py-20 text-center text-neutral-500">
             <span className="text-5xl block mb-3">💸</span>
             <p>No pending withdrawal requests.</p>
           </div>
@@ -72,13 +72,13 @@ export default function WithdrawalRequestsPage() {
                     <tr key={w._id} className="hover:bg-neutral-50 transition-colors">
                       <td className="px-5 py-3.5">
                         <p className="font-medium text-neutral-800">{w.creator_name}</p>
-                        <p className="text-xs text-neutral-400">{w.creator_email}</p>
+                        <p className="text-xs text-neutral-500">{w.creator_email}</p>
                       </td>
                       <td className="px-5 py-3.5 text-right font-semibold text-accent">💎 {w.withdrawal_credit?.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right font-bold text-neutral-800">${w.withdrawal_amount?.toFixed(2)}</td>
                       <td className="px-5 py-3.5 text-neutral-500">{w.payment_system}</td>
-                      <td className="px-5 py-3.5 text-neutral-400 text-xs">{w.account_number}</td>
-                      <td className="px-5 py-3.5 text-neutral-400">{new Date(w.withdraw_date).toLocaleDateString()}</td>
+                      <td className="px-5 py-3.5 text-neutral-500 text-xs">{w.account_number}</td>
+                      <td className="px-5 py-3.5 text-neutral-500">{new Date(w.withdraw_date).toLocaleDateString()}</td>
                       <td className="px-5 py-3.5 text-center">
                         <button onClick={() => approve(w)} disabled={approving === w._id}
                           className="text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success-light px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium">
@@ -98,7 +98,7 @@ export default function WithdrawalRequestsPage() {
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <p className="font-medium text-neutral-800">{w.creator_name}</p>
-                      <p className="text-xs text-neutral-400">{w.payment_system} · {w.account_number}</p>
+                      <p className="text-xs text-neutral-500">{w.payment_system} · {w.account_number}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-neutral-800">${w.withdrawal_amount?.toFixed(2)}</p>

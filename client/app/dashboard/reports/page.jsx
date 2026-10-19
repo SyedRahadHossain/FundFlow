@@ -59,7 +59,7 @@ export default function ReportsPage() {
         {loading ? (
           <div className="p-4 space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-16 bg-neutral-50 animate-pulse rounded-xl" />)}</div>
         ) : reports.length === 0 ? (
-          <div className="py-20 text-center text-neutral-400">
+          <div className="py-20 text-center text-neutral-500">
             <span className="text-5xl block mb-3">🚩</span>
             <p>No reports — platform looks clean!</p>
           </div>
@@ -71,7 +71,7 @@ export default function ReportsPage() {
                   <span className="text-2xl flex-shrink-0">🚩</span>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-neutral-900">{r.campaign_title}</p>
-                    <p className="text-xs text-neutral-400 mt-0.5">
+                    <p className="text-xs text-neutral-500 mt-0.5">
                       Reported by <span className="font-medium text-neutral-600">{r.reporter_name || r.reporter_email}</span> on {new Date(r.date).toLocaleDateString()}
                     </p>
                     <div className="mt-2 bg-error-light border border-error-light rounded-xl px-4 py-3">

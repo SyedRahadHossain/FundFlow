@@ -26,7 +26,7 @@ export default function CreatorPaymentHistoryPage() {
         </div>
         {withdrawals.length > 0 && (
           <div className="text-right">
-            <p className="text-xs text-neutral-400">Total paid out</p>
+            <p className="text-xs text-neutral-500">Total paid out</p>
             <p className="font-bold text-accent text-lg">${totalPaid.toFixed(2)}</p>
           </div>
         )}
@@ -38,7 +38,7 @@ export default function CreatorPaymentHistoryPage() {
             {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-neutral-50 animate-pulse rounded-xl" />)}
           </div>
         ) : withdrawals.length === 0 ? (
-          <div className="py-20 text-center text-neutral-400">
+          <div className="py-20 text-center text-neutral-500">
             <span className="text-5xl block mb-3">💸</span>
             <p>No withdrawals yet.</p>
             <a href="/dashboard/withdrawals" className="text-sm text-accent hover:underline mt-1 block">Request your first withdrawal →</a>
@@ -63,7 +63,7 @@ export default function CreatorPaymentHistoryPage() {
                     <td className="px-5 py-3.5 text-right font-semibold text-accent">💎 {w.withdrawal_credit.toLocaleString()}</td>
                     <td className="px-5 py-3.5 text-right font-bold text-neutral-800">${w.withdrawal_amount.toFixed(2)}</td>
                     <td className="px-5 py-3.5 text-neutral-500">{w.payment_system}</td>
-                    <td className="px-5 py-3.5 text-neutral-400 text-xs">{w.account_number}</td>
+                    <td className="px-5 py-3.5 text-neutral-500 text-xs">{w.account_number}</td>
                     <td className="px-5 py-3.5">
                       <StatusBadge status={w.status === 'approved' ? 'approved' : 'pending'} size="sm" />
                     </td>

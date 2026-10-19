@@ -124,7 +124,7 @@ export default function DashboardSidebar({ mobileOpen, onClose, profile }) {
               <span className="w-3 h-3 flex items-center justify-center text-lg" aria-hidden="true">{roleEmojiChar}</span>
               <span className="text-xs text-primary font-medium capitalize">{roleLabels[user?.role] || user?.role}</span>
               {profile?.name && (
-                <span className="text-[11px] text-neutral-400 truncate" title={user?.email}>{user?.email}</span>
+                <span className="text-[11px] text-neutral-500 truncate" title={user?.email}>{user?.email}</span>
               )}
             </div>
           </div>

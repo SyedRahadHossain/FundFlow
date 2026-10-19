@@ -26,7 +26,7 @@ export default function PaymentHistoryPage() {
         </div>
         {payments.length > 0 && (
           <div className="text-right">
-            <p className="text-xs text-neutral-400">Total purchased</p>
+            <p className="text-xs text-neutral-500">Total purchased</p>
             <p className="font-bold text-accent text-lg">💎 {total.toLocaleString()} credits</p>
           </div>
         )}
@@ -38,7 +38,7 @@ export default function PaymentHistoryPage() {
             {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-neutral-50 animate-pulse rounded-xl" />)}
           </div>
         ) : payments.length === 0 ? (
-          <div className="py-20 text-center text-neutral-400">
+          <div className="py-20 text-center text-neutral-500">
             <span className="text-5xl block mb-3">💳</span>
             <p>No purchases yet.</p>
             <a href="/dashboard/purchase-credit" className="text-sm text-accent hover:underline mt-1 block">Buy your first credits →</a>

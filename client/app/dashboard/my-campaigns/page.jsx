@@ -108,7 +108,7 @@ export default function MyCampaignsPage() {
       )}
 
       {!loading && campaigns.length === 0 && (
-        <div className="py-20 text-center text-neutral-400">
+        <div className="py-20 text-center text-neutral-500">
           <span className="text-5xl block mb-3">📋</span>
           <p>No campaigns yet.</p>
           <a href="/dashboard/add-campaign" className="text-accent hover:underline text-sm mt-1 block">Create your first campaign →</a>
@@ -146,10 +146,10 @@ export default function MyCampaignsPage() {
                     </td>
                     <td className="px-5 py-3.5 text-neutral-500">{c.category}</td>
                     <td className="px-5 py-3.5 text-right text-accent font-medium">💎 {(c.amount_raised || 0).toLocaleString()}</td>
-                    <td className="px-5 py-3.5 text-right text-neutral-400">{c.funding_goal?.toLocaleString()}</td>
+                    <td className="px-5 py-3.5 text-right text-neutral-500">{c.funding_goal?.toLocaleString()}</td>
                     <td className="px-5 py-3.5 text-right text-neutral-500 whitespace-nowrap">
                       {new Date(c.deadline).toLocaleDateString()}
-                      <span className="block text-xs text-neutral-400">{daysLeft(c.deadline)}d left</span>
+                      <span className="block text-xs text-neutral-500">{daysLeft(c.deadline)}d left</span>
                     </td>
                     <td className="px-5 py-3.5">
                       <span className={`text-xs font-semibold px-2.5 py-1 rounded-full inline-block ${STATUS_STYLE[c.status]}`}>
@@ -200,7 +200,7 @@ export default function MyCampaignsPage() {
                         {c.status}
                       </span>
                     </div>
-                    <p className="text-xs text-neutral-400 mt-1">{c.category} · ⏰ {daysLeft(c.deadline)}d left</p>
+                    <p className="text-xs text-neutral-500 mt-1">{c.category} · ⏰ {daysLeft(c.deadline)}d left</p>
                     <div className="flex items-center gap-4 mt-2 text-xs text-neutral-500">
                       <span>💎 {(c.amount_raised || 0).toLocaleString()} raised</span>
                       <span>🎯 {c.funding_goal?.toLocaleString()} goal</span>

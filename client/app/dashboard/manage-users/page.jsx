@@ -82,7 +82,7 @@ export default function ManageUsersPage() {
         {loading ? (
           <div className="p-4 space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-neutral-50 animate-pulse rounded-xl" />)}</div>
         ) : filtered.length === 0 ? (
-          <div className="py-16 text-center text-neutral-400">
+          <div className="py-16 text-center text-neutral-500">
             <span className="text-5xl block mb-3">👥</span>
             <p>{search ? 'No users match your search.' : 'No users yet.'}</p>
           </div>
@@ -148,7 +148,7 @@ export default function ManageUsersPage() {
                       : <div className="w-10 h-10 rounded-full bg-accent-light flex items-center justify-center text-accent font-bold uppercase">{u.name?.[0]}</div>}
                     <div>
                       <p className="font-medium text-neutral-800">{u.name}</p>
-                      <p className="text-xs text-neutral-400">{u.email}</p>
+                      <p className="text-xs text-neutral-500">{u.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">

@@ -43,7 +43,7 @@ export default function CampaignApprovalsPage() {
         {loading ? (
           <div className="p-4 space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-16 bg-neutral-50 animate-pulse rounded-xl" />)}</div>
         ) : campaigns.length === 0 ? (
-          <div className="py-20 text-center text-neutral-400">
+          <div className="py-20 text-center text-neutral-500">
             <span className="text-5xl block mb-3">✅</span>
             <p>No pending campaigns — all clear!</p>
           </div>
@@ -59,7 +59,7 @@ export default function CampaignApprovalsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-neutral-900 truncate">{c.title}</p>
-                  <p className="text-xs text-neutral-400 mt-0.5">by {c.creator_name} · {c.category} · Goal: 💎{c.funding_goal?.toLocaleString()}</p>
+                  <p className="text-xs text-neutral-500 mt-0.5">by {c.creator_name} · {c.category} · Goal: 💎{c.funding_goal?.toLocaleString()}</p>
                   <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{c.story}</p>
                 </div>
                 <div className="flex flex-col gap-2 flex-shrink-0">
@@ -111,14 +111,14 @@ export default function CampaignApprovalsPage() {
               <img src={preview.campaign_image_url} alt={preview.title} className="block w-[calc(100%_+_2.5rem)] h-48 object-cover -mx-5 -mt-5" />
             )}
             <div className="space-y-3 text-sm">
-              <div><p className="text-xs text-neutral-400 mb-0.5">Title</p><p className="font-semibold text-neutral-900">{preview.title}</p></div>
-              <div><p className="text-xs text-neutral-400 mb-0.5">Creator</p><p>{preview.creator_name} ({preview.creator_email})</p></div>
-              <div><p className="text-xs text-neutral-400 mb-0.5">Category</p><p>{preview.category}</p></div>
-              <div><p className="text-xs text-neutral-400 mb-0.5">Funding Goal</p><p>💎 {preview.funding_goal?.toLocaleString()} credits</p></div>
-              <div><p className="text-xs text-neutral-400 mb-0.5">Min Contribution</p><p>💎 {preview.minimum_contribution?.toLocaleString()} credits</p></div>
-              <div><p className="text-xs text-neutral-400 mb-0.5">Deadline</p><p>{new Date(preview.deadline).toLocaleDateString()}</p></div>
-              <div><p className="text-xs text-neutral-400 mb-0.5">Story</p><p className="text-neutral-600 leading-relaxed">{preview.story}</p></div>
-              <div><p className="text-xs text-neutral-400 mb-0.5">Reward Info</p><p className="text-neutral-600">{preview.reward_info}</p></div>
+              <div><p className="text-xs text-neutral-500 mb-0.5">Title</p><p className="font-semibold text-neutral-900">{preview.title}</p></div>
+              <div><p className="text-xs text-neutral-500 mb-0.5">Creator</p><p>{preview.creator_name} ({preview.creator_email})</p></div>
+              <div><p className="text-xs text-neutral-500 mb-0.5">Category</p><p>{preview.category}</p></div>
+              <div><p className="text-xs text-neutral-500 mb-0.5">Funding Goal</p><p>💎 {preview.funding_goal?.toLocaleString()} credits</p></div>
+              <div><p className="text-xs text-neutral-500 mb-0.5">Min Contribution</p><p>💎 {preview.minimum_contribution?.toLocaleString()} credits</p></div>
+              <div><p className="text-xs text-neutral-500 mb-0.5">Deadline</p><p>{new Date(preview.deadline).toLocaleDateString()}</p></div>
+              <div><p className="text-xs text-neutral-500 mb-0.5">Story</p><p className="text-neutral-600 leading-relaxed">{preview.story}</p></div>
+              <div><p className="text-xs text-neutral-500 mb-0.5">Reward Info</p><p className="text-neutral-600">{preview.reward_info}</p></div>
             </div>
           </>
         )}

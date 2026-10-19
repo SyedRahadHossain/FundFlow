@@ -147,7 +147,7 @@ export default function ContributionsReviewPage() {
                         <td className="px-5 py-3.5 font-medium text-neutral-800">{c.supporter_name}</td>
                         <td className="px-5 py-3.5 text-neutral-500 max-w-[160px] truncate">{c.campaign_title}</td>
                         <td className="px-5 py-3.5 text-right font-semibold text-accent">💎 {c.contribution_amount?.toLocaleString()}</td>
-                        <td className="px-5 py-3.5 text-neutral-400">{new Date(c.date).toLocaleDateString()}</td>
+                        <td className="px-5 py-3.5 text-neutral-500">{new Date(c.date).toLocaleDateString()}</td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center justify-center gap-2">
                             <button onClick={() => setViewModal(c)}
@@ -179,7 +179,7 @@ export default function ContributionsReviewPage() {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className="font-medium text-neutral-800 text-sm">{c.supporter_name}</p>
-                        <p className="text-xs text-neutral-400 mt-0.5">{c.campaign_title}</p>
+                        <p className="text-xs text-neutral-500 mt-0.5">{c.campaign_title}</p>
                       </div>
                       <p className="font-bold text-accent text-sm">💎 {c.contribution_amount?.toLocaleString()}</p>
                     </div>
@@ -207,7 +207,7 @@ export default function ContributionsReviewPage() {
           <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-md">
             <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
               <h3 className="font-bold text-neutral-900">Contribution Details</h3>
-              <button onClick={() => setViewModal(null)} className="text-neutral-400 hover:text-neutral-600 text-xl">×</button>
+              <button onClick={() => setViewModal(null)} className="text-neutral-500 hover:text-neutral-600 text-xl">×</button>
             </div>
             <div className="p-6 space-y-3 text-sm">
               <div className="flex justify-between"><span className="text-neutral-500">Supporter</span><span className="font-medium">{viewModal.supporter_name}</span></div>

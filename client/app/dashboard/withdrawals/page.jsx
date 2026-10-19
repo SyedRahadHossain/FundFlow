@@ -74,14 +74,14 @@ export default function WithdrawalsPage() {
       {/* Balance summary */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-surface rounded-2xl border border-neutral-100 p-5 text-center shadow-sm">
-          <p className="text-xs text-neutral-400 mb-1">Total Raised Credits</p>
+          <p className="text-xs text-neutral-500 mb-1">Total Raised Credits</p>
           <p className="text-2xl font-bold text-accent">{loading ? '…' : totalRaised.toLocaleString()}</p>
-          <p className="text-xs text-neutral-400 mt-1">💎 credits</p>
+          <p className="text-xs text-neutral-500 mt-1">💎 credits</p>
         </div>
         <div className="bg-surface rounded-2xl border border-neutral-100 p-5 text-center shadow-sm">
-          <p className="text-xs text-neutral-400 mb-1">Equivalent Value</p>
+          <p className="text-xs text-neutral-500 mb-1">Equivalent Value</p>
           <p className="text-2xl font-bold text-accent">${loading ? '…' : (totalRaised / 20).toFixed(2)}</p>
-          <p className="text-xs text-neutral-400 mt-1">at 20 credits = $1</p>
+          <p className="text-xs text-neutral-500 mt-1">at 20 credits = $1</p>
         </div>
       </div>
 
@@ -112,7 +112,7 @@ export default function WithdrawalsPage() {
               <div className="w-full border border-neutral-200 bg-neutral-50 rounded-lg px-4 py-2.5 text-sm text-neutral-500 font-semibold">
                 ${credits > 0 ? dollarAmount : '0.00'}
               </div>
-              <p className="text-xs text-neutral-400 mt-1.5">20 credits = $1</p>
+              <p className="text-xs text-neutral-500 mt-1.5">20 credits = $1</p>
             </div>
 
             <Select

@@ -132,7 +132,7 @@ export default function MyContributionsPage() {
                         <td className="px-5 py-3.5 font-medium text-neutral-800">{c.campaign_title}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{c.creator_name}</td>
                         <td className="px-5 py-3.5 text-right font-semibold text-primary">💎 {c.contribution_amount.toLocaleString()}</td>
-                        <td className="px-5 py-3.5 text-neutral-400">{new Date(c.date).toLocaleDateString()}</td>
+                        <td className="px-5 py-3.5 text-neutral-500">{new Date(c.date).toLocaleDateString()}</td>
                         <td className="px-5 py-3.5">
                           <Badge variant={statusConfig.variant} size="sm" dot>
                             {statusConfig.label}
@@ -157,7 +157,7 @@ export default function MyContributionsPage() {
                         {statusConfig.label}
                       </Badge>
                     </div>
-                    <p className="text-xs text-neutral-400">{c.creator_name} · {new Date(c.date).toLocaleDateString()}</p>
+                    <p className="text-xs text-neutral-500">{c.creator_name} · {new Date(c.date).toLocaleDateString()}</p>
                     <p className="text-sm font-bold text-primary mt-1">💎 {c.contribution_amount.toLocaleString()} credits</p>
                   </div>
                 );
@@ -167,7 +167,7 @@ export default function MyContributionsPage() {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-5 py-4 border-t border-neutral-100">
-                <p className="text-xs text-neutral-400">Page {page} of {totalPages}</p>
+                <p className="text-xs text-neutral-500">Page {page} of {totalPages}</p>
                 <div className="flex gap-2">
                   <Button
                     variant="secondary"

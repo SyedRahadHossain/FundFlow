@@ -91,7 +91,7 @@ export default function CreatorHomePage() {
             >
               Create Your First Campaign
             </Link>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-neutral-500">
               Need 200+ credits raised (=$10) to withdraw · 20 credits = $1 withdrawal
             </p>
           </div>

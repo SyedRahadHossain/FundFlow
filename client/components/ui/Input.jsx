@@ -42,7 +42,7 @@ export const Input = forwardRef(
         <div className="relative">
           {leftIcon && (
             <div
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none"
               aria-hidden="true"
             >
               {leftIcon}
@@ -73,7 +73,7 @@ export const Input = forwardRef(
           />
           {rightIcon && (
             <div
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none"
               aria-hidden="true"
             >
               {rightIcon}
@@ -228,7 +228,7 @@ export const Select = forwardRef(
             ))}
           </select>
           <svg
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500"
             viewBox="0 0 20 20"
             fill="currentColor"
             aria-hidden="true"
@@ -304,11 +304,11 @@ export const FileInput = forwardRef(
             {...props}
           />
           <div className="flex flex-col items-center justify-center gap-2 text-center pointer-events-none">
-            <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <svg className="w-8 h-8 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             <span className="text-sm text-neutral-600">Drag & drop or click to upload</span>
-            <span className="text-xs text-neutral-400">PNG, JPG up to 5MB</span>
+            <span className="text-xs text-neutral-500">PNG, JPG up to 5MB</span>
           </div>
         </div>
         {help && <p id={helpId} className="mt-1.5 text-xs text-neutral-500" role={error ? undefined : 'note'}>{help}</p>}
