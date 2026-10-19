@@ -55,8 +55,12 @@ export default function LoginPage() {
       toast.success('Signed in with Google!');
       router.push(redirectTarget());
     } catch (err) {
+      // Surface the underlying cause. A misconfigured Firebase project answers
+      // with a code such as auth/unauthorized-domain or auth/operation-not-allowed,
+      // which is far more actionable than a generic failure message.
       const data = err.response?.data;
-      toast.error(data?.error || (typeof data === 'string' ? data : null) || 'Google sign-in failed');
+      const serverMessage = data?.error || (typeof data === 'string' ? data : null);
+      toast.error(serverMessage || `Google sign-in failed${err.code ? ` (${err.code})` : ''}`);
     } finally {
       setGoogleLoading(false);
     }
