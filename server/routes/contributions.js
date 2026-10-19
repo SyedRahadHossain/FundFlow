@@ -40,8 +40,14 @@ router.post('/', verifyToken, verifyRole('supporter'), validate(contributionSche
       return res.status(400).json({ error: 'Insufficient credits' });
     }
 
-    // Deduct credits
-    await User.findOneAndUpdate({ email: req.user.email }, { $inc: { credits: -contribution_amount } });
+    // Debit atomically and only while the balance still covers it. The check
+    // above is a separate read, so a request racing this one could spend the
+    // same credits twice without this guard.
+    const debited = await User.findOneAndUpdate(
+      { email: req.user.email, credits: { $gte: contribution_amount } },
+      { $inc: { credits: -contribution_amount } }
+    );
+    if (!debited) return res.status(400).json({ error: 'Insufficient credits' });
 
     const contribution = new Contribution({
       campaign_id,
@@ -52,14 +58,26 @@ router.post('/', verifyToken, verifyRole('supporter'), validate(contributionSche
       creator_email: campaign.creator_email,
       creator_name: campaign.creator_name,
     });
-    await contribution.save();
 
-    // Notify creator
+    try {
+      await contribution.save();
+    } catch (err) {
+      // The debit is already committed. Hand the credits back so a failed
+      // write cannot charge for a contribution that does not exist.
+      await User.findOneAndUpdate(
+        { email: req.user.email },
+        { $inc: { credits: contribution_amount } }
+      ).catch(() => {});
+      throw err;
+    }
+
+    // Best effort from here: the contribution exists, so a notification
+    // failure must not answer 500 and invite a second, paid-for retry.
     await new Notification({
       message: `New contribution of ${contribution_amount} credits to "${campaign.title}" from ${supporter.name}`,
       toEmail: campaign.creator_email,
       actionRoute: '/dashboard/contributions-review',
-    }).save();
+    }).save().catch(() => {});
 
     return res.status(201).json(contribution);
   } catch {

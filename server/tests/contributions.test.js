@@ -79,11 +79,15 @@ jest.mock('../models/Contribution', () => {
 // ── Mock User ────────────────────────────────────────────────────
 jest.mock('../models/User', () => ({
   findOne: async ({ email }) => mockUsers[email] || null,
-  findOneAndUpdate: async ({ email }, update) => {
-    if (mockUsers[email] && update.$inc?.credits !== undefined) {
-      mockUsers[email].credits += update.$inc.credits;
-    }
-    return mockUsers[email] || null;
+  findOneAndUpdate: async (filter, update) => {
+    const user = mockUsers[filter.email];
+    if (!user) return null;
+    // Honour the guard Mongoose applies: a `credits: { $gte }` filter refuses
+    // the write when the stored balance no longer satisfies it. Without this
+    // the mock would debit where real Mongo would not.
+    if (filter.credits?.$gte !== undefined && user.credits < filter.credits.$gte) return null;
+    if (update.$inc?.credits !== undefined) user.credits += update.$inc.credits;
+    return user;
   },
 }));
 
@@ -153,6 +157,64 @@ describe('POST /api/contributions', () => {
       .send({ campaign_id: campId, contribution_amount: 200 });
     expect(res.status).toBe(400);
     expect(mockUsers['sup@x.com'].credits).toBe(100); // unchanged
+  });
+
+  test('a stale balance read cannot overdraw the account', async () => {
+    const campId = seedCampaign();
+    const User = require('../models/User');
+    const honestFindOne = User.findOne;
+    // Model the race window: the account is drained between this request's
+    // balance check and its debit, so the check sees a figure that is already
+    // gone. The debit itself must refuse.
+    mockUsers['sup@x.com'].credits = 0;
+    User.findOne = async ({ email }) => ({ ...mockUsers[email], credits: 999 });
+    try {
+      const res = await request(app)
+        .post('/api/contributions')
+        .set('Authorization', `Bearer ${supporterToken}`)
+        .send({ campaign_id: campId, contribution_amount: 50 });
+      expect(res.status).toBe(400);
+    } finally {
+      User.findOne = honestFindOne;
+    }
+    expect(mockUsers['sup@x.com'].credits).toBe(0);
+  });
+
+  test('a failed contribution write gives the credits back', async () => {
+    const campId = seedCampaign();
+    const Contribution = require('../models/Contribution');
+    const honestSave = Contribution.prototype.save;
+    Contribution.prototype.save = async () => { throw new Error('mongo down'); };
+    try {
+      const res = await request(app)
+        .post('/api/contributions')
+        .set('Authorization', `Bearer ${supporterToken}`)
+        .send({ campaign_id: campId, contribution_amount: 40 });
+      expect(res.status).toBe(500);
+      // Debit already happened, so nothing may leave the account unrecorded.
+      expect(mockUsers['sup@x.com'].credits).toBe(100);
+    } finally {
+      Contribution.prototype.save = honestSave;
+    }
+  });
+
+  test('a failed notification write still commits the contribution', async () => {
+    const campId = seedCampaign();
+    const Notification = require('../models/Notification');
+    const honestSave = Notification.prototype.save;
+    Notification.prototype.save = async () => { throw new Error('mongo down'); };
+    try {
+      const res = await request(app)
+        .post('/api/contributions')
+        .set('Authorization', `Bearer ${supporterToken}`)
+        .send({ campaign_id: campId, contribution_amount: 30 });
+      // Returning 500 here invites a retry of a contribution that is already
+      // paid for, so the notification must not decide the response.
+      expect(res.status).toBe(201);
+      expect(mockUsers['sup@x.com'].credits).toBe(70);
+    } finally {
+      Notification.prototype.save = honestSave;
+    }
   });
 
   test('rejects if below minimum contribution', async () => {
