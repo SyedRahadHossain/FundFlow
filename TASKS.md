@@ -210,9 +210,9 @@ Docx §What to Submit asks for five items.
 - [x] `client/lib/links.js` — `CLIENT_REPO_URL` now points at the `client/` subtree and
       `GITHUB_URL` at your profile, so the navbar "Join as Developer" link and the GitHub
       footer icon are correct
-- [ ] **Still unfilled:** `LINKEDIN_URL` and `FACEBOOK_URL` remain the `RAHAD` placeholders,
-      so those two footer icons resolve to someone else's profile. Replace both in
-      `client/lib/links.js` before deploying
+- [x] `client/lib/links.js` — `LINKEDIN_URL` and `FACEBOOK_URL` now point at
+      `https://www.linkedin.com/in/syedrahadhossain` and
+      `https://www.facebook.com/ArchSun.IT/`, so both footer icons resolve to your profiles
 - [ ] Live site URL — `client/README.md` still reads
       `https://fundflow.vercel.app  ← update after deploy`; fills in once you deploy (item 14)
 
