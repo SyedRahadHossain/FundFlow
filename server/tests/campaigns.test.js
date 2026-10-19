@@ -88,23 +88,31 @@ jest.mock('../models/Campaign', () => {
 });
 
 // ── Mock Contribution ────────────────────────────────────────────
-jest.mock('../models/Contribution', () => ({
-  find: async (filter = {}) => {
-    return Object.values(mockContributions).filter(c =>
-      (!filter.campaign_id || c.campaign_id === filter.campaign_id.toString()) &&
-      (!filter.status || c.status === filter.status)
-    );
-  },
-  // Guarded claim used by the shared delete-and-refund service.
-  findOneAndUpdate: async (filter, update) => {
-    const c = Object.values(mockContributions).find(
-      (x) => x._id === filter._id && (!filter.status || x.status === filter.status)
-    );
-    if (!c) return null;
-    Object.assign(c, update.$set || {});
-    return c;
-  },
-}));
+jest.mock('../models/Contribution', () => {
+  // Mirrors Mongoose's filter matching for the operators the service uses:
+  // a status may arrive as a scalar or as `{ $in: [...] }`.
+  const matchesStatus = (status, filter) =>
+    !filter ||
+    (typeof filter === 'string' ? status === filter : filter.$in.includes(status));
+
+  return {
+    find: async (filter = {}) => {
+      return Object.values(mockContributions).filter(c =>
+        (!filter.campaign_id || c.campaign_id === filter.campaign_id.toString()) &&
+        matchesStatus(c.status, filter.status)
+      );
+    },
+    // Guarded claim used by the shared delete-and-refund service.
+    findOneAndUpdate: async (filter, update) => {
+      const c = Object.values(mockContributions).find(
+        (x) => x._id === filter._id && matchesStatus(x.status, filter.status)
+      );
+      if (!c) return null;
+      Object.assign(c, update.$set || {});
+      return c;
+    },
+  };
+});
 
 // ── Mock User ────────────────────────────────────────────────────
 jest.mock('../models/User', () => ({
