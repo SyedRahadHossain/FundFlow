@@ -57,10 +57,11 @@ export default function DashboardLayout({ children }) {
             <div className="flex items-center gap-3">
               {/* Mobile hamburger */}
               <button
-                className="lg:hidden p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100"
+                className="lg:hidden p-1.5 min-w-11 min-h-11 flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100"
                 onClick={() => setMobileOpen(true)}
+                aria-label="Open navigation menu"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
