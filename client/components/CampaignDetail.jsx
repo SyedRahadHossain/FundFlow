@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 
 /**
  * Shared campaign detail body used by the public route (/campaigns/[id]) and
@@ -239,41 +240,42 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
         </div>
       </div>
       {/* Report modal */}
-      {reportOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-md p-6" role="dialog" aria-modal="true" aria-labelledby="report-title">
-            <h3 id="report-title" className="font-bold text-neutral-900 mb-1">Report Campaign</h3>
-            <p className="text-sm text-neutral-500 mb-4">Describe why this campaign seems fraudulent or violates platform rules.</p>
-            <Textarea
-              aria-label="Report reason"
-              value={reportReason}
-              onChange={e => setReportReason(e.target.value)}
-              rows={4}
-              placeholder="Explain the issue…"
-              className="mb-4"
-            />
-            <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                onClick={() => setReportOpen(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleReport}
-                loading={reporting}
-                loadingText="Sending…"
-                disabled={!reportReason.trim()}
-                className="flex-1"
-              >
-                🚩 Submit Report
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        title="Report Campaign"
+        description="Describe why this campaign seems fraudulent or violates platform rules."
+        closeOnOverlayClick={false}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setReportOpen(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReport}
+              loading={reporting}
+              loadingText="Sending…"
+              disabled={!reportReason.trim()}
+              className="flex-1"
+            >
+              🚩 Submit Report
+            </Button>
+          </>
+        }
+      >
+        <Textarea
+          aria-label="Report reason"
+          value={reportReason}
+          onChange={e => setReportReason(e.target.value)}
+          rows={4}
+          placeholder="Explain the issue…"
+        />
+      </Modal>
     </div>
   );
 }

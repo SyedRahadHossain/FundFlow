@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 
 const STATUS_STYLE = {
   pending:  'bg-warning-light text-warning-dark border border-warning/20',
@@ -232,85 +233,81 @@ export default function MyCampaignsPage() {
       )}
 
       {/* Update Modal */}
-      {editing && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-              <h3 className="font-bold text-neutral-900">Update Campaign</h3>
-              <button onClick={() => setEditing(null)} className="text-neutral-400 hover:text-neutral-600 text-xl">×</button>
-            </div>
-            <form onSubmit={handleUpdate} className="p-6 space-y-4">
-              <Input
-                label="Title"
-                value={editForm.title}
-                onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
-                required
-              />
-              <Textarea
-                label="Story"
-                rows={4}
-                value={editForm.story}
-                onChange={e => setEditForm(f => ({ ...f, story: e.target.value }))}
-                required
-              />
-              <Textarea
-                label="Reward Info"
-                rows={3}
-                value={editForm.reward_info}
-                onChange={e => setEditForm(f => ({ ...f, reward_info: e.target.value }))}
-                required
-              />
-              <div className="flex gap-3 pt-2">
-                <Button type="button" variant="secondary" onClick={() => setEditing(null)} className="flex-1">
-                  Cancel
-                </Button>
-                <Button type="submit" loading={saving} loadingText="Saving…" className="flex-1">
-                  Save Changes
-                </Button>
-              </div>
-            </form>
+      <Modal
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        title="Update Campaign"
+        size="lg"
+        closeOnOverlayClick={false}
+      >
+        <form onSubmit={handleUpdate} className="space-y-4">
+          <Input
+            label="Title"
+            value={editForm.title}
+            onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
+            required
+          />
+          <Textarea
+            label="Story"
+            rows={4}
+            value={editForm.story}
+            onChange={e => setEditForm(f => ({ ...f, story: e.target.value }))}
+            required
+          />
+          <Textarea
+            label="Reward Info"
+            rows={3}
+            value={editForm.reward_info}
+            onChange={e => setEditForm(f => ({ ...f, reward_info: e.target.value }))}
+            required
+          />
+          <div className="flex gap-3 pt-2">
+            <Button type="button" variant="secondary" onClick={() => setEditing(null)} className="flex-1">
+              Cancel
+            </Button>
+            <Button type="submit" loading={saving} loadingText="Saving…" className="flex-1">
+              Save Changes
+            </Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
       {/* Post Update Modal */}
-      {posting && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-              <h3 className="font-bold text-neutral-900">Post Campaign Update</h3>
-              <button onClick={() => setPosting(null)} className="text-neutral-400 hover:text-neutral-600 text-xl">×</button>
-            </div>
-            <form onSubmit={handlePostUpdate} className="p-6 space-y-4">
-              <p className="text-xs text-neutral-500 bg-neutral-50 border border-neutral-100 rounded-lg px-3 py-2">
-                This posts to <strong>{posting.title}</strong> and is visible to everyone viewing the campaign.
-              </p>
-              <Input
-                label="Update title"
-                placeholder="Prototype boards arrived"
-                value={postForm.title}
-                onChange={e => setPostForm(f => ({ ...f, title: e.target.value }))}
-                required
-              />
-              <Textarea
-                label="What's new?"
-                rows={5}
-                placeholder="Share progress, a milestone hit, or what the funding enabled…"
-                value={postForm.body}
-                onChange={e => setPostForm(f => ({ ...f, body: e.target.value }))}
-                required
-              />
-              <div className="flex gap-3 pt-2">
-                <Button type="button" variant="secondary" onClick={() => setPosting(null)} className="flex-1">
-                  Cancel
-                </Button>
-                <Button type="submit" loading={postingBusy} loadingText="Posting…" className="flex-1">
-                  Post Update
-                </Button>
-              </div>
-            </form>
+      <Modal
+        open={!!posting}
+        onClose={() => setPosting(null)}
+        title="Post Campaign Update"
+        size="lg"
+        closeOnOverlayClick={false}
+      >
+        <form onSubmit={handlePostUpdate} className="space-y-4">
+          <p className="text-xs text-neutral-500 bg-neutral-50 border border-neutral-100 rounded-lg px-3 py-2">
+            {posting ? <>This posts to <strong>{posting.title}</strong> and is visible to everyone viewing the campaign.</> : null}
+          </p>
+          <Input
+            label="Update title"
+            placeholder="Prototype boards arrived"
+            value={postForm.title}
+            onChange={e => setPostForm(f => ({ ...f, title: e.target.value }))}
+            required
+          />
+          <Textarea
+            label="What's new?"
+            rows={5}
+            placeholder="Share progress, a milestone hit, or what the funding enabled…"
+            value={postForm.body}
+            onChange={e => setPostForm(f => ({ ...f, body: e.target.value }))}
+            required
+          />
+          <div className="flex gap-3 pt-2">
+            <Button type="button" variant="secondary" onClick={() => setPosting(null)} className="flex-1">
+              Cancel
+            </Button>
+            <Button type="submit" loading={postingBusy} loadingText="Posting…" className="flex-1">
+              Post Update
+            </Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

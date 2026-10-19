@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import { Modal } from '@/components/ui/Modal';
 
 export default function CampaignApprovalsPage() {
   const [campaigns, setCampaigns] = useState([]);
@@ -82,17 +83,34 @@ export default function CampaignApprovalsPage() {
       </div>
 
       {/* Preview modal */}
-      {preview && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 sticky top-0 bg-surface">
-              <h3 className="font-bold text-neutral-900">Review Campaign</h3>
-              <button onClick={() => setPreview(null)} className="text-neutral-400 hover:text-neutral-600 text-xl">×</button>
-            </div>
+      <Modal
+        open={!!preview}
+        onClose={() => setPreview(null)}
+        title="Review Campaign"
+        size="lg"
+        closeOnOverlayClick={false}
+        className="max-h-[90vh] overflow-y-auto"
+        footer={
+          preview ? (
+            <>
+              <button onClick={() => act(preview._id, 'approved')} disabled={!!acting}
+                className="flex-1 bg-success hover:bg-success-dark disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
+                ✅ Approve
+              </button>
+              <button onClick={() => act(preview._id, 'rejected')} disabled={!!acting}
+                className="flex-1 bg-error hover:bg-error-hover disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
+                ❌ Reject
+              </button>
+            </>
+          ) : null
+        }
+      >
+        {preview && (
+          <>
             {preview.campaign_image_url && (
-              <img src={preview.campaign_image_url} alt={preview.title} className="w-full h-48 object-cover" />
+              <img src={preview.campaign_image_url} alt={preview.title} className="block w-[calc(100%_+_2.5rem)] h-48 object-cover -mx-5 -mt-5" />
             )}
-            <div className="p-6 space-y-3 text-sm">
+            <div className="space-y-3 text-sm">
               <div><p className="text-xs text-neutral-400 mb-0.5">Title</p><p className="font-semibold text-neutral-900">{preview.title}</p></div>
               <div><p className="text-xs text-neutral-400 mb-0.5">Creator</p><p>{preview.creator_name} ({preview.creator_email})</p></div>
               <div><p className="text-xs text-neutral-400 mb-0.5">Category</p><p>{preview.category}</p></div>
@@ -102,19 +120,9 @@ export default function CampaignApprovalsPage() {
               <div><p className="text-xs text-neutral-400 mb-0.5">Story</p><p className="text-neutral-600 leading-relaxed">{preview.story}</p></div>
               <div><p className="text-xs text-neutral-400 mb-0.5">Reward Info</p><p className="text-neutral-600">{preview.reward_info}</p></div>
             </div>
-            <div className="flex gap-3 px-6 pb-6 sticky bottom-0 bg-surface border-t border-neutral-50 pt-4">
-              <button onClick={() => act(preview._id, 'approved')} disabled={!!acting}
-                className="flex-1 bg-success hover:bg-success-dark disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
-                ✅ Approve
-              </button>
-              <button onClick={() => act(preview._id, 'rejected')} disabled={!!acting}
-                className="flex-1 bg-error hover:bg-error-hover disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
-                ❌ Reject
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </div>
   );
 }
