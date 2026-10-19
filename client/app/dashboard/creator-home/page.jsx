@@ -123,6 +123,7 @@ export default function CreatorHomePage() {
           value={stats.raised.toLocaleString()}
           sub={`Withdrawable: $${withdrawable} (${Math.floor(stats.raised / 20) * 20} credits ÷ 20)`}
           color="accent"
+          tone="credit"
           loading={loading}
           skeleton={loading}
         />

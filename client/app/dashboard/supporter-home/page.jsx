@@ -67,7 +67,7 @@ export default function SupporterHomePage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <StatCard emoji="🤝" label="Total Contributions" value={stats.total} color="primary" loading={loading} skeleton={loading} />
         <StatCard emoji="⏳" label="Pending Approvals" value={stats.pending} color="warning" loading={loading} skeleton={loading} />
-        <StatCard emoji="💎" label="Credits Contributed" value={stats.approvedAmount.toLocaleString()} sub="approved only" color="accent" loading={loading} skeleton={loading} />
+        <StatCard emoji="💎" label="Credits Contributed" value={stats.approvedAmount.toLocaleString()} sub="approved only" color="accent" tone="credit" loading={loading} skeleton={loading} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

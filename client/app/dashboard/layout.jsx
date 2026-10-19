@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }) {
 
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Top bar */}
-          <header className="bg-surface border-b border-neutral-200 px-4 sm:px-6 h-14 flex items-center justify-between flex-shrink-0 shadow-sm">
+          <header className="bg-surface border-b border-neutral-200 px-4 sm:px-6 h-14 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
               {/* Mobile hamburger */}
               <button
@@ -81,22 +81,20 @@ export default function DashboardLayout({ children }) {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* The balance is the credit hue; the rate beside it is ink, not a
+                  second tinted pill, and there is no pulse — a steady warning
+                  does not need to throb to be read. */}
               <span className="hidden sm:flex items-center gap-1.5 text-sm bg-accent-light text-accent-hover px-3 py-1.5 rounded-full font-semibold tabular-nums">
                 <span aria-hidden="true">💎</span> {credits !== null ? credits.toLocaleString() : '—'} credits
               </span>
-              {user.role === 'supporter' && credits !== null && credits > 0 && (
-                <span className="hidden sm:inline-flex items-center gap-1 text-xs bg-accent-light text-accent px-2 py-1 rounded-full font-medium">
-                  10 credits = $1
+              {credits !== null && credits > 0 && (
+                <span className="hidden sm:inline text-xs text-neutral-500">
+                  {user.role === 'creator' ? '20 credits = $1 on withdrawal' : '10 credits = $1'}
                 </span>
               )}
-              {user.role === 'creator' && credits !== null && credits > 0 && (
-                <span className="hidden sm:inline-flex items-center gap-1 text-xs bg-accent-light text-accent px-2 py-1 rounded-full font-medium">
-                  20 credits = $1 withdrawal
-                </span>
-              )}
-              {user.role === 'supporter' && (!credits || credits === 0) && (
-                <span className="hidden sm:inline-flex items-center gap-1 text-xs bg-warning-light text-warning-dark px-2 py-1 rounded-full font-medium animate-pulse">
-                  0 credits — purchase to contribute
+              {user.role === 'supporter' && credits === 0 && (
+                <span className="hidden sm:inline text-xs text-warning-dark font-medium">
+                  No credits — purchase to contribute
                 </span>
               )}
               <NotificationBell />

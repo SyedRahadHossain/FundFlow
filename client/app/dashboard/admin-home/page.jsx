@@ -79,6 +79,7 @@ export default function AdminHomePage() {
           value={stats.totalCredits?.toLocaleString()}
           sub={`Held by users · Platform margin: ~${platformMargin} credits`}
           color="accent"
+          tone="credit"
           loading={loading}
           skeleton={loading}
         />
