@@ -120,7 +120,7 @@ function CTASection() {
               <Button asChild variant="primary" size="lg" className="w-full sm:w-auto">
                 <Link href="/register">Create Your Campaign</Link>
               </Button>
-              <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto">
+              <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto text-surface! hover:bg-white/10!">
                 <Link href="/campaigns">Explore Campaigns</Link>
               </Button>
             </div>
