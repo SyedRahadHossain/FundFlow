@@ -198,7 +198,10 @@ Gates after the fixes:
 - `cd client && npm run lint` -> 19 problems (4 errors, 15 warnings), unchanged from baseline
 - `cd client && npm run build` -> 25/25 static pages
 
-The low-confidence follow-ups below the threshold and the deferred audit items in
+All three low-confidence follow-ups below the threshold have since been fixed test-first — the
+public `GET /api/campaigns/:id`, the dead `FileInput` drop path, and the non-persistent report
+dismiss each failed a new test before its fix (server 152/152 across 16 suites; a new
+`node --test` runner in `client/`, 3/3). The deferred audit items in
 `docs/superpowers/plans/2026-10-19-audit-findings.md` are still open.
 
 ## Notes

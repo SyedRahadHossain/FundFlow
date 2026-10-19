@@ -259,9 +259,13 @@ and reported the six that cleared the bar. Full write-up with links and remediat
 - [x] Written test-first: the three server fixes each have a new suite, run RED before the
       fix. Server suite **141/141 across 15 suites**; client build **25/25 pages**; lint
       unchanged at 19 problems
-- [ ] **Below threshold, still real** — `GET /api/campaigns/:id` is public and returns
-      `pending`/`rejected` campaigns; the `FileInput` drop handler never reads
-      `dataTransfer.files`; report Dismiss is local-only and returns on reload
+- [x] **Below threshold, still real** — fixed test-first, each with a RED run first: the detail
+      route now answers under the same rule as the list (`approved` public, `pending`/`rejected`
+      need an admin); drops reach the hidden input through `client/lib/fileDrop.js`, so
+      `onChange` fires once for a click and a drop; Dismiss calls the new admin-only
+      `DELETE /api/reports/:id`, so a reload cannot resurrect the row. Server **152/152 across
+      16 suites**; client `npm test` **3/3** (new `node --test` runner); lint holds the 4
+      pre-existing errors with no new findings; build **25/25 pages**
 
 ## 16. Landing-page craft pass — done
 

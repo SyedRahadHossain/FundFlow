@@ -2,6 +2,7 @@
 
 import { forwardRef, useId } from 'react';
 import { cn } from '@/lib/utils';
+import { applyDroppedFiles } from '@/lib/fileDrop';
 
 export const Input = forwardRef(
   (
@@ -287,7 +288,17 @@ export const FileInput = forwardRef(
         <div className="border-2 border-dashed rounded-lg p-4 transition-colors relative"
           onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-primary', 'bg-primary-light'); }}
           onDragLeave={(e) => { e.currentTarget.classList.remove('border-primary', 'bg-primary-light'); }}
-          onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-primary', 'bg-primary-light'); }}
+          onDrop={(e) => {
+            // The drop itself is the missing half: clearing the highlight
+            // while keeping the files out of the input meant the uploader
+            // looked accepting and changed nothing.
+            e.preventDefault();
+            e.currentTarget.classList.remove('border-primary', 'bg-primary-light');
+            applyDroppedFiles(
+              e.currentTarget.querySelector('input[type="file"]'),
+              e.dataTransfer
+            );
+          }}
         >
           <input
             ref={ref}

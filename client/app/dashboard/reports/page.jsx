@@ -55,9 +55,17 @@ export default function ReportsPage() {
     }
   };
 
-  const dismiss = (reportId) => {
-    setReports(rs => rs.filter(r => r._id !== reportId));
-    toast.success('Report dismissed');
+  const dismiss = async (reportId) => {
+    setActing(reportId + 'dismiss');
+    try {
+      await api.delete(`/api/reports/${reportId}`);
+      toast.success('Report dismissed');
+      setReports(rs => rs.filter(r => r._id !== reportId));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Action failed');
+    } finally {
+      setActing(null);
+    }
   };
 
   return (
