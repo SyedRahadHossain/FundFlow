@@ -5,6 +5,7 @@ const notificationSchema = new mongoose.Schema({
   toEmail:     { type: String, required: true },
   actionRoute: { type: String, required: true },
   time:        { type: Date, default: Date.now },
+  read:        { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Notification', notificationSchema);
