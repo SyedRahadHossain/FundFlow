@@ -20,7 +20,7 @@ Client and server ship from a single repository.
 npm install
 cp .env.example .env   # fill in your values
 npm run dev            # http://localhost:5000
-npm test               # run 122 tests (11 suites)
+npm test               # run 131 tests (12 suites)
 ```
 
 ## Environment Variables

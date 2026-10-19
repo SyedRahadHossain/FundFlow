@@ -4,6 +4,7 @@ const Joi = require('joi');
 const verifyToken = require('../middleware/verifyToken');
 const verifyRole  = require('../middleware/verifyRole');
 const { findPackage } = require('../lib/creditPackages');
+const { resolveClientUrl } = require('../lib/clientUrl');
 
 const checkoutSchema = Joi.object({
   credits: Joi.number().integer().min(1).required(),
@@ -33,11 +34,17 @@ router.post('/create-checkout-session', verifyToken, verifyRole('supporter'), va
     return res.status(503).json({ error: 'Stripe not configured' });
   }
 
+  // A placeholder CLIENT_URL would bounce paying users to an unowned host and
+  // 404 *after* the charge, so refuse before a session exists.
+  const clientUrl = resolveClientUrl();
+  if (!clientUrl) {
+    console.error('Stripe checkout blocked: CLIENT_URL is missing or still a placeholder from .env.example');
+    return res.status(503).json({ error: 'Client URL not configured' });
+  }
+
   try {
     const Stripe = require('stripe');
     const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-
-    const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -54,8 +61,8 @@ router.post('/create-checkout-session', verifyToken, verifyRole('supporter'), va
         },
       ],
       mode: 'payment',
-      success_url: `${CLIENT_URL}/dashboard/purchase-credit?purchase=success`,
-      cancel_url:  `${CLIENT_URL}/dashboard/purchase-credit?purchase=cancelled`,
+      success_url: `${clientUrl}/dashboard/purchase-credit?purchase=success`,
+      cancel_url:  `${clientUrl}/dashboard/purchase-credit?purchase=cancelled`,
       metadata: {
         supporter_email: req.user.email,
         credits: String(pkg.credits),

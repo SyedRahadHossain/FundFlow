@@ -21,7 +21,7 @@ Two independent packages. Each has its own `package.json`, `node_modules`, and e
 | `npm install` | Install dependencies |
 | `npm run dev` | Start with nodemon on `http://localhost:5000` |
 | `npm start` | Production start (`node index.js`) |
-| `npm test` | Run 122 tests (Jest + Supertest, mocked models) |
+| `npm test` | Run 131 tests (Jest + Supertest, mocked models) |
 
 ### Client (run from `client/`)
 
@@ -118,7 +118,7 @@ All prefixed with `/api/`:
 | Notifications | `GET /notifications` |
 | Reports | `POST /reports`, `GET /reports` (admin) |
 | Users | `GET /users` (admin), `DELETE /users/:id` (admin), `PATCH /users/:id/role` (admin), `GET /users/stats` (admin) |
-| Stripe | `POST /stripe/create-checkout-session`, `POST /stripe/webhook` (signature-verified; the only path that grants credits) |
+| Stripe | `POST /stripe/create-checkout-session` (503 when `CLIENT_URL` is missing or still the `.env.example` placeholder), `POST /stripe/webhook` (signature-verified; the only path that grants credits) |
 
 ### Client Routing (App Router)
 - Public: `/`, `/campaigns`, `/campaigns/[id]`, `/login`, `/register`
@@ -134,7 +134,7 @@ All prefixed with `/api/`:
 
 ### Server
 - **Framework**: Jest + Supertest — no real database; each test file `jest.mock`s the Mongoose models with in-memory stores (`mongodb-memory-server` is an unused devDependency)
-- **Command**: `npm test` (runs 122 tests across 11 suites)
+- **Command**: `npm test` (runs 131 tests across 12 suites)
 - **Config**: `package.json` → `"jest": { "testEnvironment": "node" }`
 - Tests isolated in `server/tests/` — each file targets a route group or middleware
 

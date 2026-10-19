@@ -42,6 +42,23 @@ describe('POST /api/stripe/create-checkout-session', () => {
     expect(res.body.error).toMatch(/unknown credit package/i);
   });
 
+  test('returns 503 when CLIENT_URL is still a placeholder', async () => {
+    const savedUrl = process.env.CLIENT_URL;
+    const savedEnv = process.env.NODE_ENV;
+    process.env.CLIENT_URL = 'https://your-client.vercel.app';
+    process.env.NODE_ENV   = 'production';
+    try {
+      const res = await request(app).post('/api/stripe/create-checkout-session')
+        .set('Authorization', `Bearer ${supporterToken}`)
+        .send({ credits: 100 });
+      expect(res.status).toBe(503);
+      expect(res.body.error).toMatch(/client url/i);
+    } finally {
+      if (savedUrl !== undefined) process.env.CLIENT_URL = savedUrl; else delete process.env.CLIENT_URL;
+      process.env.NODE_ENV = savedEnv;
+    }
+  });
+
   test('returns 503 when Stripe key not configured', async () => {
     const saved = process.env.STRIPE_SECRET_KEY;
     delete process.env.STRIPE_SECRET_KEY;

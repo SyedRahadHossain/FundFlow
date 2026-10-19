@@ -115,7 +115,7 @@ Checkout sessions are created server-side with the price taken from `server/lib/
 
 | Package | Command | Coverage |
 |---------|---------|----------|
-| server | `npm test` | 122 tests across 11 suites (Jest + Supertest, mocked models) |
+| server | `npm test` | 131 tests across 12 suites (Jest + Supertest, mocked models) |
 | client | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript) |
 
 The server suite uses in-memory model mocks and needs no database.
