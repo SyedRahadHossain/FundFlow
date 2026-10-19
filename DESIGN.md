@@ -169,7 +169,7 @@ components:
 
 FundFlow's visual identity is built on the metaphor of a trustworthy financial ledger — precise, transparent, and quietly confident. The design system prioritizes clarity over decoration, using an indigo primary that conveys institutional trust without corporate coldness, paired with a teal accent that signals growth and creator success. Every visual decision reinforces the platform's core promise: credits are reversible, contributions are gated by approval, and the asymmetric economy (10c=$1 in, 20c=$1 out) is surfaced, not hidden.
 
-The system is **Operate-mode first** — dashboards, forms, and data-dense screens dominate. Brand expression lives in precise details: the 3px focus ring, the 8px radius on inputs, the consistent 150ms transitions, the emoji-as-icon language that keeps financial UI human. There is no marketing gloss on the product surfaces; the hero slider on the landing page is the only Persuade-mode surface, and it uses the same token vocabulary.
+The system is **Operate-mode first** — dashboards, forms, and data-dense screens dominate. Brand expression lives in precise details: the 3px focus ring, the 8px radius on inputs, the consistent 150ms transitions, the emoji-as-icon language that keeps financial UI human. There is no marketing gloss on the product surfaces; the landing page is the only Persuade-mode surface — the hero field, the ledger path, and the impact band — and it uses the same token vocabulary.
 
 **Key Characteristics:**
 - Asymmetric trust: every value transfer has a visible reversal path
@@ -177,7 +177,7 @@ The system is **Operate-mode first** — dashboards, forms, and data-dense scree
 - Indigo primary + teal accent = institutional trust + creator growth
 - Emoji as semantic icons (💎 credits, 🚀 campaigns, 🛡️ admin, ✅ approvals)
 - CSS variables as source of truth; Tailwind classes as implementation
-- Dark mode via `prefers-color-scheme` (no manual toggle yet)
+- Dark mode via `prefers-color-scheme` plus a manual toggle persisted to `localStorage['fundflow-theme']`
 - 3px focus rings on primary, 150–200ms transitions throughout
 - Minimum 44px touch targets, `prefers-reduced-motion` respected
 
@@ -226,12 +226,20 @@ The palette is organized around a single primary (indigo) with a teal accent for
 - **Surface 2** (#f3f4f6): Secondary card backgrounds, input backgrounds.
 - **Surface 3** (#e5e7eb): Dividers, borders, disabled surfaces.
 
+### Persuade Fields
+- **Hero Field A / B / C** (`--field-hero-a|b|c`): the three constant indigo→teal gradients behind the hero slides.
+- **Impact Field** (`--field-impact`): the constant indigo→teal gradient behind the Platform Impact band.
+- **Field Muted** (`--color-field-muted`, #dbe3ff): secondary copy on a persuade field.
+- **Field Credit** (`--color-field-credit`, #7ff0dd): the credit figure on a persuade field, for large numerals only, where 3:1 is the bar.
+
 ### Named Rules
 **The One Voice Rule.** The primary indigo appears on ≤15% of any dashboard screen. Its rarity is the trust signal — it marks the one action that matters.
 
 **The Credit Color Rule.** Credit balances and credit amounts always use the primary indigo (#4f46e5) or teal accent (#0f766e), never semantic green. Green is reserved for *approval status*, not *currency value*.
 
 **The Reversal Visibility Rule.** Every destructive or reversible action (reject contribution, delete campaign, refund) uses the error red with its light background — the visual weight matches the financial consequence.
+
+**The Constant Field Rule.** A persuade field is theme-independent. The neutral ramp inverting under a dark brand gradient would put white copy on light ground, so the hero, the impact band, and the footer hold their own colors in both themes and one contrast pair is verified instead of two. Copy on a field uses `field-muted` or `field-credit`, never the neutral ramp.
 
 ### Color Roles
 
@@ -398,11 +406,17 @@ Four roles, one job each. A hue that marks nothing is decoration; a hue that mar
 - **Inline Loading:** Spinner ring with `aria-busy="true"`.
 
 ### Hero Slider (Landing Page)
-- **Full-viewport section** (`min-h-[500px]`), gradient background per slide (indigo→purple→pink, emerald→teal→cyan, amber→orange→red).
-- **Decorative Blobs:** Three absolute blurred circles (white/10, white/5, white/5) with pulse animation.
-- **Content:** Badge (white/10 backdrop-blur), H1 (text-4xl→6xl extrabold), subtitle (lg→xl white/90), dual CTAs (primary white/indigo-700 + ghost white/white-border), trust indicators (3 icon+text rows).
-- **Controls:** Prev/Next (48px round white/10), indicator tabs (selected=indigo-600 pill, unselected=white/70 dot), keyboard arrows, pause on hover.
-- **Accessibility:** `role="region" aria-label="Hero carousel"`, tabs with `role="tablist"`/`tab`/`tabpanel`, `aria-selected`, `aria-controls`.
+- **Field:** three constant indigo→teal gradients (`--field-hero-a|b|c`) stacked and cross-faded over 700ms, so the field never flashes the wrong hue mid-transition; one hairline `bg-white/15` rule marks the composition's baseline.
+- **Content:** H1 (`text-4xl`→`text-6xl` extrabold, `tracking-tight`, `text-balance`), subtitle in `text-field-muted` capped at 52ch, dual CTAs (primary + ghost at `text-white`), and three trust items as a list with `text-field-muted` icons. No eyebrow badge, no decorative blurred blobs — the ledger below is the page's one authored moment.
+- **Controls:** prev button (48px, `bg-white/10` → `hover:bg-white/25`), slide indicators (44px hit area, active `w-8 bg-white` pill, inactive `bg-white/40` dot), play/pause toggle, arrow-key support, pause on hover and focus, 7s auto-advance that never starts under reduced motion.
+- **Motion:** the copy block remounts per slide, so its `animate-slide-up` ladder is the carousel's one rehearsed sequence rather than a scroll effect; reduced motion drops the ladder and keeps the copy.
+- **Accessibility:** `role="region" aria-label="Hero carousel"`, controls carry `aria-label` / `aria-pressed` / `aria-current`, indicators name their slide.
+
+### How It Works (Ledger Path)
+- **Concept:** the credit economy drawn as the route the money takes — one rail, three nodes (create → collect → withdraw), and the rail filling in the direction the credit travels. The credit figures are teal (`text-accent`), the dollar figures are ink.
+- **Three states, in override order:** *rest* is the completed route and is the markup's default, so a browser with no animation and a page with no JS both show the mechanism whole; *played* (`data-run`, set when the section enters view) fills the rail on `--ease-out-quint`; *scrolled* (wide viewport with `animation-timeline: view()`) binds the fill to the scroll position and pins the stage in a 200vh `ledger-scroll` wrapper, with the travel ladder mapped to the pinned middle third.
+- **Motion budget:** layered, never doubled — the rail fills vertically on narrow viewports and horizontally on wide ones, and the scroll branch is gated behind `@supports` so a step can never fill twice.
+- **Reduced motion:** keeps the completed route and drops the travel.
 
 ### Campaign Card
 - **Aspect Ratios:** `default` h-44, `compact` h-32, `featured` h-56.
@@ -420,6 +434,7 @@ Four roles, one job each. A hue that marks nothing is decoration; a hue that mar
 - **Do** display credit amounts in teal (`accent`) everywhere, never semantic green (green = approval status only) and never indigo (indigo = the action).
 - **Do** render dollar amounts in the neutral ink ramp with `tabular-nums` — money is ink, teal is a credit.
 - **Do** compose interaction states: a tinted control rests on the `-light` surface and deepens to its own hue on hover.
+- **Do** keep a persuade field (hero, impact band) constant across themes and tint its copy with `field-muted` / `field-credit`.
 - **Do** theme the native surfaces (`color-scheme`, `caret-color`, `accent-color`, autofill, selection, scrollbars) from `globals.css`.
 - **Do** use `tabular-nums` on all credit amounts, percentages, and tabular numbers.
 - **Do** use the 8px base spacing unit — all padding, margin, gaps are multiples of 4px with 8px rhythm.
@@ -448,4 +463,6 @@ Four roles, one job each. A hue that marks nothing is decoration; a hue that mar
 - **Don't** skip the portal render for modals/drawers — they must escape layout stacking contexts.
 - **Don't** use `animate-spin` without `prefers-reduced-motion: no-preference` guard.
 - **Don't** add marketing-style gradients or shadows to dashboard surfaces — Operate mode stays flat and scannable.
+- **Don't** put neutral-ramp grays or plain `text-white` on a persuade field's secondary copy — the field owns its own muted and credit tints.
+- **Don't** animate the same element twice — pick one reveal per element, scroll-bound or time-bound, as the ledger path does.
 - **Don't** invent new component patterns — extend existing ones (Card, Button, Badge, Input) via props.

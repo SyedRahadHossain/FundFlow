@@ -58,7 +58,7 @@ The meaningfully different mechanism a neighboring product could not truthfully 
 - **Admin seed credentials:** `admin@fundflow.com` / `Admin@123456`
 - **Server test suite:** 63 passing tests covering auth, campaigns, contributions, withdrawals, payments, notifications, reports, users, Stripe, middleware, models.
 - **Design tokens:** Documented in `client/DESIGN.md` and implemented as CSS variables in `client/app/globals.css`.
-- **Component library:** `client/components/ui/` (Button, Input, Modal, Card, Avatar, ProgressBar, Badge, EmptyState) + dashboard/layout components (Navbar, DashboardSidebar, NotificationBell, HeroSlider, StatCard, CampaignCard, TopFundedCampaigns, Testimonials, Footer, ConfirmDialog, ErrorBoundary).
+- **Component library:** `client/components/ui/` (Button, Input, Modal, Card, Avatar, ProgressBar, Badge, EmptyState) + dashboard/layout components (Navbar, DashboardSidebar, NotificationBell, HeroSlider, HowItWorks, StatCard, CampaignCard, TopFundedCampaigns, Testimonials, Footer, ConfirmDialog, ErrorBoundary).
 - **Route map:** Public (`/`, `/campaigns`, `/campaigns/[id]`, `/login`, `/register`) + Protected dashboards under `/dashboard/` (role-specific home, campaign management, contributions, withdrawals, payments, users, reports, admin approvals).
 
 **Absences future work must not fabricate:** testimonials, customer logos, case studies, press mentions, benchmark metrics, pricing tiers beyond the credit conversion rates, licensing terms, deployment guarantees.

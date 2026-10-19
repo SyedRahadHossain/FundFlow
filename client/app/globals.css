@@ -61,6 +61,16 @@
      card/panel backgrounds instead. */
   --color-surface: #ffffff;
   --color-canvas: #f9fafb;
+
+  /* Secondary copy on a Persuade field, tinted from the field's own hue. On a
+     dark indigo→teal gradient, a neutral gray reads as unlit; this stays part
+     of the field. Constant in both themes, because the fields are. */
+  --color-field-muted: #dbe3ff;
+
+  /* The credit figure on a persuade field. Teal at the lightness a dark
+     indigo→teal gradient needs; sized for large numerals only, where 3:1 is
+     the bar. Small credit text stays on light surfaces, where accent passes. */
+  --color-field-credit: #7ff0dd;
 }
 
 :root {
@@ -84,6 +94,16 @@
   --color-toast-bg: #111827;
   --color-toast-fg: #ffffff;
 
+  /* Persuade fields. The hero and the impact band are dark in both themes for
+     the same reason the footer is: they are brand surfaces, not product
+     chrome, and the neutral ramp flipping underneath them would put white copy
+     on a light gradient. Keeping them constant leaves one contrast pair to
+     verify instead of two. Built from the palette's own dark ends. */
+  --field-hero-a: linear-gradient(135deg, #3730a3 0%, #4f46e5 48%, #0f766e 100%);
+  --field-hero-b: linear-gradient(135deg, #0f766e 0%, #4338ca 52%, #4f46e5 100%);
+  --field-hero-c: linear-gradient(135deg, #312e81 0%, #3730a3 42%, #115e59 100%);
+  --field-impact: linear-gradient(120deg, #3730a3 0%, #0f766e 100%);
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -96,6 +116,10 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
+
+  /* Authored deceleration for arrivals. One curve, named, so the ledger
+     path, the counters and every reveal land the same way. */
+  --ease-out-quint: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Dark theme ──────────────────────────────────────────────────
@@ -189,6 +213,12 @@ body {
   accent-color: var(--color-primary);
 }
 
+/* Anchored jumps land below the sticky navbar instead of under it. */
+html { scroll-padding-top: 5.5rem; }
+
+/* Links carry the ledger's own underline weight where no utility overrides it. */
+a { text-underline-offset: 3px; }
+
 /* Autofill paints a UA-owned wash that ignores every token. Repaint the field
    in the surface colour and keep the text token so autofilled values are not
    the one thing on the page that leaves the system. */
@@ -274,6 +304,204 @@ input:-webkit-autofill:focus {
   .animate-spin, .animate-pulse, .animate-ping, .animate-bounce { animation: none; }
   .shimmer { background: var(--color-neutral-200); animation: none; }
   html { scroll-behavior: auto; }
+}
+
+/* ── The ledger path ─────────────────────────────────────────────
+   How the money moves, drawn as the route it takes: a supporter buys in
+   at 10 credits = $1, the creator approves, the creator cashes out at
+   20 credits = $1. One rail, three nodes; the rail fills in the
+   direction the credit travels.
+
+   Three states, in this order of override:
+     1. rest      — the completed route. This is the markup's default, so a
+                    browser with no animation and a page with no JS both
+                    show the mechanism whole.
+     2. played    — `data-run` (set when the section enters view) fills the
+                    rail on a time curve.
+     3. scrolled  — on a wide viewport with view-timeline support the fill
+                    is bound to the scroll position instead, and the stage
+                    pins while the credit completes its journey.
+
+   The rail is teal because a credit is teal everywhere; the dollar figures
+   stay ink. Reduced motion keeps the completed route and drops the travel. */
+.ledger-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.75rem 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* The rail from this node to the next, split in two: `::after` is the track
+   and `::before` is the fill that travels it. The track stays visible while
+   the credit is still in transit, so the route reads even at scroll positions
+   where the fill has not arrived yet. */
+.ledger-step::before,
+.ledger-step::after {
+  content: '';
+  position: absolute;
+  left: 1.3125rem;
+  top: 2.75rem;
+  bottom: -1.25rem;
+  width: 2px;
+}
+
+.ledger-step::after {
+  background: var(--color-neutral-200);
+}
+
+/* Complete at rest, so no-JS and no-animation browsers see the whole route. */
+.ledger-step::before {
+  z-index: 1;
+  background: var(--color-accent);
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.ledger-step:last-child::before,
+.ledger-step:last-child::after { display: none; }
+
+.ledger-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  border: 2px solid var(--color-accent);
+  background: var(--color-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+}
+
+@keyframes ledger-fill-y {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+@keyframes ledger-fill-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes ledger-node-lit {
+  from {
+    background: var(--color-surface);
+    border-color: var(--color-neutral-200);
+    color: var(--color-neutral-500);
+  }
+  to {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #ffffff;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Two up-and-over movements per node: the rail runs across, not down. */
+  .ledger-step {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .ledger-node { justify-self: start; }
+  .ledger-step::before,
+  .ledger-step::after {
+    left: 3.5rem;
+    right: -1.25rem;
+    top: 1.3125rem;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+  }
+  .ledger-step::before {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Played once, on reveal. The two delay vars are the travel order, set per
+     step in the markup. Both branches below are gated so they can never match
+     the scroll branch further down — a step fills once, never twice. */
+  @media (max-width: 1023.98px) {
+    .ledger[data-run] .ledger-step::before {
+      animation: ledger-fill-y 500ms var(--ease-out-quint) both;
+      animation-delay: var(--ledger-rail-at, 0ms);
+    }
+    .ledger[data-run] .ledger-node {
+      animation: ledger-node-lit 400ms var(--ease-out-quint) both;
+      animation-delay: var(--ledger-node-at, 0ms);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    /* Wide, but no view timeline to bind the fill to the scroll position. */
+    @supports not (animation-timeline: view()) {
+      .ledger[data-run] .ledger-step::before {
+        animation: ledger-fill-x 500ms var(--ease-out-quint) both;
+        animation-delay: var(--ledger-rail-at, 0ms);
+      }
+      .ledger[data-run] .ledger-node {
+        animation: ledger-node-lit 400ms var(--ease-out-quint) both;
+        animation-delay: var(--ledger-node-at, 0ms);
+      }
+    }
+  }
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /* The stage pins for the length of the wrapper, so the route completes
+       while the reader is still looking at it. The wrapper is 200vh over a
+       100vh stage, so its cover range is 300vh long and the pinned phase is
+       the middle third: cover 33.3% to cover 66.7%. The ladder below runs
+       34% to 62%, so the travel starts just after the pin engages and lands
+       before it releases — approach and release stay quiet. */
+    .ledger-scroll {
+      height: 200vh;
+      view-timeline-name: --ledger;
+      view-timeline-axis: block;
+    }
+    .ledger-stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+
+    .ledger .ledger-step::before {
+      animation: ledger-fill-x linear both;
+      animation-timeline: --ledger;
+      animation-duration: auto;
+      animation-delay: 0ms;
+      animation-range: cover 36% cover 47%;
+    }
+    .ledger .ledger-step:nth-child(2)::before {
+      animation-range: cover 49% cover 60%;
+    }
+    .ledger .ledger-step .ledger-node {
+      animation: ledger-node-lit linear both;
+      animation-timeline: --ledger;
+      animation-duration: auto;
+      animation-delay: 0ms;
+      animation-range: cover 34% cover 36%;
+    }
+    .ledger .ledger-step:nth-child(2) .ledger-node { animation-range: cover 47% cover 49%; }
+    .ledger .ledger-step:nth-child(3) .ledger-node { animation-range: cover 60% cover 62%; }
+  }
+}
+
+/* Reduced motion keeps the route and drops the travel. */
+@media (prefers-reduced-motion: reduce) {
+  .ledger[data-run] .ledger-step::before,
+  .ledger[data-run] .ledger-node {
+    animation: none;
+  }
 }
 
 /* Line clamp utilities */

@@ -43,12 +43,12 @@ export default function TopFundedCampaigns() {
 
   if (loading) {
     return (
-      <section className="py-16 bg-surface" aria-label="Top funded campaigns loading">
+      <section className="py-20 bg-surface" aria-label="Top funded campaigns loading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-10">
+          <div className="flex items-end justify-between gap-6 mb-10">
             <div>
-              <h2 className="text-3xl font-bold text-neutral-900">Top Funded Campaigns</h2>
-              <p className="text-neutral-500 mt-1">The campaigns our community believes in most</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900">Top Funded Campaigns</h2>
+              <p className="text-neutral-500 mt-2 max-w-[52ch]">The campaigns our community believes in most — ranked by credits raised, updated live.</p>
             </div>
           </div>
           <SkeletonList items={6} />
@@ -59,7 +59,7 @@ export default function TopFundedCampaigns() {
 
   if (error) {
     return (
-      <section className="py-16 bg-surface" aria-label="Top funded campaigns error">
+      <section className="py-20 bg-surface" aria-label="Top funded campaigns error">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Card variant="outline" className="max-w-md mx-auto">
             <div className="p-6 text-center">
@@ -81,14 +81,14 @@ export default function TopFundedCampaigns() {
   }
 
   return (
-    <section className="py-16 bg-surface" aria-label="Top funded campaigns">
+    <section className="py-20 bg-surface" aria-label="Top funded campaigns">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-10">
+        <div className="flex items-end justify-between gap-6 mb-10">
           <div>
-            <h2 className="text-3xl font-bold text-neutral-900">Top Funded Campaigns</h2>
-            <p className="text-neutral-500 mt-1">The campaigns our community believes in most</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 text-balance">Top Funded Campaigns</h2>
+            <p className="text-neutral-500 mt-2 max-w-[52ch]">The campaigns our community believes in most — ranked by credits raised, updated live.</p>
           </div>
-          <Link href="/campaigns" className="text-sm text-primary hover:underline font-medium hidden sm:block">
+          <Link href="/campaigns" className="text-sm text-primary hover:underline font-medium hidden sm:block whitespace-nowrap">
             View all campaigns
           </Link>
         </div>

@@ -7,7 +7,8 @@ Status of everything already verified working is in the appendix at the bottom.
 
 Items 1–7, 10, and 11 are complete. Item 12 is partly done, with the two impeccable reports
 holding the unfixed findings. Items 13 and 14 are complete: both apps are deployed and the
-live URLs are recorded in `client/README.md`, `server/README.md`, and `PRODUCT.md`.
+live URLs are recorded in `client/README.md`, `server/README.md`, and `PRODUCT.md`. Item 15 is
+complete and item 16 records the landing-page craft pass.
 
 Severity: **blocker** = grader explicitly checks it · **major** = explicit docx requirement ·
 **minor** = explicit docx wording that current UI softens · **admin** = needs your accounts.
@@ -261,6 +262,33 @@ and reported the six that cleared the bar. Full write-up with links and remediat
 - [ ] **Below threshold, still real** — `GET /api/campaigns/:id` is public and returns
       `pending`/`rejected` campaigns; the `FileInput` drop handler never reads
       `dataTransfer.files`; report Dismiss is local-only and returns on reload
+
+## 16. Landing-page craft pass — done
+
+A design pass over the public landing page. The three sections that read as generic marketing
+(hero, how-it-works, impact) now carry the system's own vocabulary, and `DESIGN.md` was brought
+back in line with what ships.
+
+- [x] **Hero** — per-slide constant indigo→teal fields (`--field-hero-a|b|c`) cross-faded so the
+      field never flashes mid-transition; the decorative blobs and the eyebrow badge are gone,
+      because the ledger below is the page's one authored moment
+- [x] **How It Works** — rebuilt as the ledger path (`client/components/HowItWorks.jsx`): one
+      rail, three nodes, the rail filling in the direction the credit travels. Rest is the
+      completed route, so a browser with no JS and a page with no animation both show the whole
+      mechanism; `data-run` plays it once on reveal, and a wide viewport with
+      `animation-timeline: view()` pins the stage and binds the fill to the scroll position
+- [x] **Platform Impact** — keeps its own dark field in both themes, the figures count up once
+      when the band is read, and the credit figure carries the credit hue while the rest stay
+      white ink
+- [x] **Money stays ink, credits stay teal** — `StatCard` gained a `tone="credit"` prop, so only
+      the credit tiles tint (admin total credits, creator raised, supporter credits
+      contributed); dollar figures and the rate beside the balance chip stay neutral
+- [x] **Reduced motion** drops every one of these animations and keeps the settled values
+- [x] **`DESIGN.md` synced** — a Persuade Fields token group, the Constant Field Rule, the
+      rewritten Hero Slider section, and a new How It Works (Ledger Path) section
+- [x] Verified: client build **25/25 pages**, lint unchanged at **19 problems** (the same 4
+      pre-existing `react-hooks/set-state-in-effect` errors), server suite **141/141 across 15
+      suites**
 
 ## 10. Git history — done
 
