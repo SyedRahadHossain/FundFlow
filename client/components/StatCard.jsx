@@ -24,11 +24,11 @@ export default function StatCard({ emoji, label, value, sub, color = 'primary', 
   }
 
   const displayValue = loading ? (
-    <span className="text-2xl font-bold text-neutral-900 animate-pulse" aria-busy="true" aria-label="Loading">
+    <span className="text-2xl font-bold text-neutral-900 tabular-nums animate-pulse" aria-busy="true" aria-label="Loading">
       {'\u2026'}
     </span>
   ) : (
-    <span className="text-2xl font-bold text-neutral-900" aria-live="polite">
+    <span className="text-2xl font-bold text-neutral-900 tabular-nums" aria-live="polite">
       {value ?? '\u2014'}
     </span>
   );

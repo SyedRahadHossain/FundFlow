@@ -27,7 +27,7 @@ export default function CreatorPaymentHistoryPage() {
         {withdrawals.length > 0 && (
           <div className="text-right">
             <p className="text-xs text-neutral-500">Total paid out</p>
-            <p className="font-bold text-accent text-lg">${totalPaid.toFixed(2)}</p>
+            <p className="font-bold text-neutral-900 text-lg tabular-nums">${totalPaid.toFixed(2)}</p>
           </div>
         )}
       </div>
@@ -60,8 +60,8 @@ export default function CreatorPaymentHistoryPage() {
                 {withdrawals.map(w => (
                   <tr key={w._id} className="hover:bg-neutral-50 transition-colors">
                     <td className="px-5 py-3.5 text-neutral-500">{new Date(w.withdraw_date).toLocaleDateString()}</td>
-                    <td className="px-5 py-3.5 text-right font-semibold text-accent">💎 {w.withdrawal_credit.toLocaleString()}</td>
-                    <td className="px-5 py-3.5 text-right font-bold text-neutral-800">${w.withdrawal_amount.toFixed(2)}</td>
+                    <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">💎 {w.withdrawal_credit.toLocaleString()}</td>
+                    <td className="px-5 py-3.5 text-right font-bold text-neutral-800 tabular-nums">${w.withdrawal_amount.toFixed(2)}</td>
                     <td className="px-5 py-3.5 text-neutral-500">{w.payment_system}</td>
                     <td className="px-5 py-3.5 text-neutral-500 text-xs">{w.account_number}</td>
                     <td className="px-5 py-3.5">

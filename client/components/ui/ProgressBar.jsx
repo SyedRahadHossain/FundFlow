@@ -42,7 +42,7 @@ export const ProgressBar = forwardRef(
         {label && (
           <div className="flex justify-between text-xs font-medium text-neutral-600 mb-1.5">
             <span>{label}</span>
-            {showValue && <span>{Math.round(percentage)}%</span>}
+            {showValue && <span className="tabular-nums">{Math.round(percentage)}%</span>}
           </div>
         )}
         <div

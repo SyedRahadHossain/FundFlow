@@ -77,7 +77,7 @@ export default function DashboardLayout({ children }) {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="hidden sm:flex items-center gap-1.5 text-sm bg-primary-light text-primary-dark px-3 py-1.5 rounded-full font-semibold">
+              <span className="hidden sm:flex items-center gap-1.5 text-sm bg-accent-light text-accent-hover px-3 py-1.5 rounded-full font-semibold tabular-nums">
                 <span aria-hidden="true">💎</span> {credits !== null ? credits.toLocaleString() : '—'} credits
               </span>
               {user.role === 'supporter' && credits !== null && credits > 0 && (

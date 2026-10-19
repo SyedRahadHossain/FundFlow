@@ -74,11 +74,11 @@ function PurchaseCreditInner() {
             )}
             <span className="text-4xl mb-3">{pkg.emoji}</span>
             <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">{pkg.label}</p>
-            <p className="text-3xl font-extrabold text-neutral-900 mb-1">
+            <p className="text-3xl font-extrabold text-accent tabular-nums mb-1">
               {pkg.credits.toLocaleString()}
               <span className="text-base font-medium text-neutral-500 ml-1">credits</span>
             </p>
-            <p className="text-xl font-bold text-accent mb-5">${pkg.price}</p>
+            <p className="text-xl font-bold text-neutral-900 tabular-nums mb-5">${pkg.price}</p>
             <button
               onClick={() => handleBuy(pkg)}
               disabled={loading === pkg.credits}

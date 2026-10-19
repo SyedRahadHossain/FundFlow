@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* ── Colour roles ────────────────────────────────────────────────
+   Four roles, one job each. Colour that marks nothing earns nothing.
+
+     1. Action  — primary indigo. The one thing to press on a screen.
+     2. Credit  — accent teal. Every credit count and balance, everywhere.
+     3. Money   — ink (neutral-900 / neutral-700) with tabular-nums.
+                  Dollars are ledger ink; teal is a credit, never a price.
+     4. State   — success / warning / error / info. Approval and review
+                  state only; green never means money.
+
+   Interaction states are composed from the same tokens (a tint at rest,
+   the hue itself on hover), so no control paints the same value twice. */
+
 /* Colour tokens must live in @theme so Tailwind v4 generates the matching
    utilities (bg-primary, text-accent, border-error, …). @theme also emits each
    value to :root, so var(--color-*) keeps working. */
@@ -51,6 +64,11 @@
 }
 
 :root {
+  /* Light is the resting theme. color-scheme drives the native widgets the
+     design does not draw — scrollbars, select popups, date pickers, the
+     autofill wash — so they follow the palette instead of the OS. */
+  color-scheme: light;
+
   /* Surface */
   --surface-0: #ffffff;
   --surface-1: #f9fafb;
@@ -90,6 +108,10 @@
    This single block must stay last: it shares equal specificity with :root
    and the @theme output, so source order is what makes the dark values win. */
 .dark {
+  /* Dark mode is composed, not inverted: native widgets and scrollbars must
+     follow the same switch, or dark pages ship light select popups and rails. */
+  color-scheme: dark;
+
   /* Neutral ramp inverted: light greys become dark, dark greys become light */
   --color-neutral-50:  #0b1220;
   --color-neutral-100: #111827;
@@ -160,6 +182,22 @@ body {
   color: var(--color-neutral-900);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* The browser surfaces the design does not draw: the text caret and the
+     native check/radio/progress fill both come from the palette, not the OS
+     default blue. */
+  caret-color: var(--color-primary);
+  accent-color: var(--color-primary);
+}
+
+/* Autofill paints a UA-owned wash that ignores every token. Repaint the field
+   in the surface colour and keep the text token so autofilled values are not
+   the one thing on the page that leaves the system. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-neutral-900);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  caret-color: var(--color-primary);
 }
 
 /* Focus visible — accessible focus rings */

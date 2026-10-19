@@ -58,8 +58,8 @@ export default function PaymentHistoryPage() {
                 {payments.map(p => (
                   <tr key={p._id} className="hover:bg-neutral-50 transition-colors">
                     <td className="px-5 py-3.5 text-neutral-500">{new Date(p.date).toLocaleString()}</td>
-                    <td className="px-5 py-3.5 text-right font-semibold text-accent">+💎 {p.credits.toLocaleString()}</td>
-                    <td className="px-5 py-3.5 text-right font-medium text-neutral-700">${p.amount}</td>
+                    <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">+💎 {p.credits.toLocaleString()}</td>
+                    <td className="px-5 py-3.5 text-right font-medium text-neutral-700 tabular-nums">${p.amount}</td>
                     <td className="px-5 py-3.5">
                       <StatusBadge status="completed" size="sm" />
                     </td>

@@ -131,7 +131,7 @@ export default function MyContributionsPage() {
                       <tr key={c._id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-5 py-3.5 font-medium text-neutral-800">{c.campaign_title}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{c.creator_name}</td>
-                        <td className="px-5 py-3.5 text-right font-semibold text-primary">💎 {c.contribution_amount.toLocaleString()}</td>
+                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">💎 {c.contribution_amount.toLocaleString()}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{new Date(c.date).toLocaleDateString()}</td>
                         <td className="px-5 py-3.5">
                           <Badge variant={statusConfig.variant} size="sm" dot>
@@ -158,7 +158,7 @@ export default function MyContributionsPage() {
                       </Badge>
                     </div>
                     <p className="text-xs text-neutral-500">{c.creator_name} · {new Date(c.date).toLocaleDateString()}</p>
-                    <p className="text-sm font-bold text-primary mt-1">💎 {c.contribution_amount.toLocaleString()} credits</p>
+                    <p className="text-sm font-bold text-accent tabular-nums mt-1">💎 {c.contribution_amount.toLocaleString()} credits</p>
                   </div>
                 );
               })}

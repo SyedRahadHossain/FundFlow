@@ -233,6 +233,25 @@ The palette is organized around a single primary (indigo) with a teal accent for
 
 **The Reversal Visibility Rule.** Every destructive or reversible action (reject contribution, delete campaign, refund) uses the error red with its light background — the visual weight matches the financial consequence.
 
+### Color Roles
+
+Four roles, one job each. A hue that marks nothing is decoration; a hue that marks two things is noise.
+
+| Role | Token | Owns |
+|---|---|---|
+| Action | `primary` (indigo) | The one control per screen that matters: primary buttons, active nav, links, focus. |
+| Credit | `accent` (teal) | Every credit count and balance, wherever it appears — tables, tiles, chips, the navbar balance. |
+| Money | `neutral-900` / `neutral-700` (ink) | USD figures. A dollar amount is ledger ink; teal marks a credit, never a price. |
+| State | `success` / `warning` / `error` / `info` | Approval, review, and failure state only. |
+
+**The Credit Role Rule.** Credits are teal everywhere, including the navbar and dashboard balance chips — the hue is the role, not a per-screen choice. Credit figures are never indigo (indigo is the action) and never green.
+
+**The Money Is Ink Rule.** Dollar amounts render in the neutral ink ramp with `tabular-nums`, never in the credit teal. On a card that shows both, the credit count carries the hue and the price stays ink, so the two numbers read as different kinds of value.
+
+**The Composed State Rule.** No control paints the same color at rest and on hover. Tinted controls rest on the `-light` surface and deepen to the hue itself (`hover:bg-success/20`, `hover:bg-error/20`, `hover:bg-warning/25`), so interaction is legible in both themes without introducing a new token.
+
+**The Native Surface Rule.** `color-scheme`, `caret-color`, `accent-color`, autofill, text selection, scrollbars, and focus rings are set from the palette in `globals.css`. The browser chrome is part of the design.
+
 ## Typography
 
 **Display Font:** System stack (`-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif`)
@@ -398,7 +417,10 @@ The palette is organized around a single primary (indigo) with a teal accent for
 - **Do** show 3px primary focus rings on every interactive element via `:focus-visible`.
 - **Do** use emoji as semantic icons with `aria-hidden="true"` — 💎 credits, 🚀 campaigns, ✅ approvals, 🛡️ admin, 🔍 explore, 💰 withdrawals, 📋 campaigns, 👥 users, 🚩 reports.
 - **Do** keep primary indigo to ≤15% of dashboard screen area — it marks the one action that matters.
-- **Do** display credit amounts in indigo or teal, never semantic green (green = approval status only).
+- **Do** display credit amounts in teal (`accent`) everywhere, never semantic green (green = approval status only) and never indigo (indigo = the action).
+- **Do** render dollar amounts in the neutral ink ramp with `tabular-nums` — money is ink, teal is a credit.
+- **Do** compose interaction states: a tinted control rests on the `-light` surface and deepens to its own hue on hover.
+- **Do** theme the native surfaces (`color-scheme`, `caret-color`, `accent-color`, autofill, selection, scrollbars) from `globals.css`.
 - **Do** use `tabular-nums` on all credit amounts, percentages, and tabular numbers.
 - **Do** use the 8px base spacing unit — all padding, margin, gaps are multiples of 4px with 8px rhythm.
 - **Do** respect `prefers-reduced-motion` — disable all animations, `scroll-behavior: auto`.
@@ -413,6 +435,8 @@ The palette is organized around a single primary (indigo) with a teal accent for
 - **Don't** add custom radii outside the 5-token ladder — no `rounded-[arbitrary]`.
 - **Don't** rely on browser default focus outlines — always the 3px primary ring.
 - **Don't** use semantic green for credit/currency values — green means "approved", not "money".
+- **Don't** paint a control with the same token at rest and on hover — a hover that changes nothing is a missing state.
+- **Don't** put a dollar amount in the credit teal, or a credit count in the money ink — the roles are not interchangeable.
 - **Don't** use custom web fonts — system stack only.
 - **Don't** add resting shadows to page backgrounds, navbars, or static cards.
 - **Don't** use 2px borders anywhere except file input drag area and focus rings (3px).

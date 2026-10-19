@@ -74,14 +74,14 @@ export default function WithdrawalRequestsPage() {
                         <p className="font-medium text-neutral-800">{w.creator_name}</p>
                         <p className="text-xs text-neutral-500">{w.creator_email}</p>
                       </td>
-                      <td className="px-5 py-3.5 text-right font-semibold text-accent">💎 {w.withdrawal_credit?.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right font-bold text-neutral-800">${w.withdrawal_amount?.toFixed(2)}</td>
+                      <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">💎 {w.withdrawal_credit?.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right font-bold text-neutral-800 tabular-nums">${w.withdrawal_amount?.toFixed(2)}</td>
                       <td className="px-5 py-3.5 text-neutral-500">{w.payment_system}</td>
                       <td className="px-5 py-3.5 text-neutral-500 text-xs">{w.account_number}</td>
                       <td className="px-5 py-3.5 text-neutral-500">{new Date(w.withdraw_date).toLocaleDateString()}</td>
                       <td className="px-5 py-3.5 text-center">
                         <button onClick={() => approve(w)} disabled={approving === w._id}
-                          className="text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success-light px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium">
+                          className="text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium">
                           {approving === w._id ? '…' : '💳 Payment Success'}
                         </button>
                       </td>
@@ -101,8 +101,8 @@ export default function WithdrawalRequestsPage() {
                       <p className="text-xs text-neutral-500">{w.payment_system} · {w.account_number}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-neutral-800">${w.withdrawal_amount?.toFixed(2)}</p>
-                      <p className="text-xs text-accent">💎 {w.withdrawal_credit?.toLocaleString()}</p>
+                      <p className="font-bold text-neutral-800 tabular-nums">${w.withdrawal_amount?.toFixed(2)}</p>
+                      <p className="text-xs text-accent tabular-nums">💎 {w.withdrawal_credit?.toLocaleString()}</p>
                     </div>
                   </div>
                   <button onClick={() => approve(w)} disabled={approving === w._id}

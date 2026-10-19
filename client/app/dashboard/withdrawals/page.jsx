@@ -75,12 +75,12 @@ export default function WithdrawalsPage() {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-surface rounded-2xl border border-neutral-100 p-5 text-center shadow-sm">
           <p className="text-xs text-neutral-500 mb-1">Total Raised Credits</p>
-          <p className="text-2xl font-bold text-accent">{loading ? '…' : totalRaised.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-accent tabular-nums">{loading ? '…' : totalRaised.toLocaleString()}</p>
           <p className="text-xs text-neutral-500 mt-1">💎 credits</p>
         </div>
         <div className="bg-surface rounded-2xl border border-neutral-100 p-5 text-center shadow-sm">
           <p className="text-xs text-neutral-500 mb-1">Equivalent Value</p>
-          <p className="text-2xl font-bold text-accent">${loading ? '…' : (totalRaised / 20).toFixed(2)}</p>
+          <p className="text-2xl font-bold text-neutral-900 tabular-nums">${loading ? '…' : (totalRaised / 20).toFixed(2)}</p>
           <p className="text-xs text-neutral-500 mt-1">at 20 credits = $1</p>
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function WithdrawalsPage() {
             {/* Auto-calculated dollar amount */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">Withdrawal Amount (auto-calculated)</label>
-              <div className="w-full border border-neutral-200 bg-neutral-50 rounded-lg px-4 py-2.5 text-sm text-neutral-500 font-semibold">
+              <div className="w-full border border-neutral-200 bg-neutral-50 rounded-lg px-4 py-2.5 text-sm text-neutral-900 font-semibold tabular-nums">
                 ${credits > 0 ? dollarAmount : '0.00'}
               </div>
               <p className="text-xs text-neutral-500 mt-1.5">20 credits = $1</p>

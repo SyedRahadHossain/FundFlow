@@ -146,22 +146,22 @@ export default function ContributionsReviewPage() {
                       <tr key={c._id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-5 py-3.5 font-medium text-neutral-800">{c.supporter_name}</td>
                         <td className="px-5 py-3.5 text-neutral-500 max-w-[160px] truncate">{c.campaign_title}</td>
-                        <td className="px-5 py-3.5 text-right font-semibold text-accent">💎 {c.contribution_amount?.toLocaleString()}</td>
+                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">💎 {c.contribution_amount?.toLocaleString()}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{new Date(c.date).toLocaleDateString()}</td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center justify-center gap-2">
                             <button onClick={() => setViewModal(c)}
-                              className="text-xs border border-neutral-200 text-neutral-600 hover:bg-neutral-50 px-2.5 py-1.5 rounded-lg transition-colors">
+                              className="text-xs border border-neutral-200 text-neutral-600 hover:bg-neutral-200 px-2.5 py-1.5 rounded-lg transition-colors">
                               👁 View
                             </button>
                             <button onClick={() => act(c, 'approve')} disabled={!!acting}
                               aria-label={`Approve contribution from ${c.supporter_name}`}
-                              className="min-h-11 text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success-light px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                              className="min-h-11 text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success/20 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
                               ✅ Approve
                             </button>
                             <button onClick={() => act(c, 'reject')} disabled={!!acting}
                               aria-label={`Reject contribution from ${c.supporter_name}`}
-                              className="min-h-11 text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error-light px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                              className="min-h-11 text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error/20 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
                               ❌ Reject
                             </button>
                           </div>
@@ -181,17 +181,17 @@ export default function ContributionsReviewPage() {
                         <p className="font-medium text-neutral-800 text-sm">{c.supporter_name}</p>
                         <p className="text-xs text-neutral-500 mt-0.5">{c.campaign_title}</p>
                       </div>
-                      <p className="font-bold text-accent text-sm">💎 {c.contribution_amount?.toLocaleString()}</p>
+                      <p className="font-bold text-accent text-sm tabular-nums">💎 {c.contribution_amount?.toLocaleString()}</p>
                     </div>
                     <div className="flex gap-2 mt-3">
                       <button onClick={() => setViewModal(c)}
                         className="flex-1 text-xs border border-neutral-200 text-neutral-600 py-1.5 rounded-lg">👁 View</button>
                       <button onClick={() => act(c, 'approve')} disabled={!!acting}
                         aria-label={`Approve contribution from ${c.supporter_name}`}
-                        className="min-h-11 flex-1 text-xs bg-success-light border border-success/20 text-success-dark py-1.5 rounded-lg disabled:opacity-50">✅ Approve</button>
+                        className="min-h-11 flex-1 text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success/20 py-1.5 rounded-lg disabled:opacity-50">✅ Approve</button>
                       <button onClick={() => act(c, 'reject')} disabled={!!acting}
                         aria-label={`Reject contribution from ${c.supporter_name}`}
-                        className="min-h-11 flex-1 text-xs bg-error-light border border-error/20 text-error-hover py-1.5 rounded-lg disabled:opacity-50">❌ Reject</button>
+                        className="min-h-11 flex-1 text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error/20 py-1.5 rounded-lg disabled:opacity-50">❌ Reject</button>
                     </div>
                   </div>
                 ))}

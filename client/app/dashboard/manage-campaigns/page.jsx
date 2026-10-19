@@ -112,12 +112,12 @@ export default function ManageCampaignsPage() {
                       </td>
                       <td className="px-5 py-3.5 text-neutral-500">{c.creator_name}</td>
                       <td className="px-5 py-3.5 text-neutral-500">{c.category}</td>
-                      <td className="px-5 py-3.5 text-right text-accent font-medium">💎 {(c.amount_raised || 0).toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-neutral-500">{c.funding_goal?.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-accent font-medium tabular-nums">💎 {(c.amount_raised || 0).toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-neutral-500 tabular-nums">{c.funding_goal?.toLocaleString()}</td>
                       <td className="px-5 py-3.5"><StatusBadge status={c.status} size="sm" /></td>
                       <td className="px-5 py-3.5 text-right">
                         <button onClick={() => handleDelete(c._id, c.title)} disabled={deleting === c._id}
-                          className="text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error-light px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium">
+                          className="text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium">
                           {deleting === c._id ? '…' : '🗑️ Delete'}
                         </button>
                       </td>
@@ -141,12 +141,12 @@ export default function ManageCampaignsPage() {
                     <p className="text-xs text-neutral-500 mt-0.5">by {c.creator_name} · {c.category}</p>
                     <div className="flex flex-wrap items-center gap-2 mt-1.5">
                       <StatusBadge status={c.status} size="sm" className="text-xs" />
-                      <span className="text-xs text-accent">💎 {(c.amount_raised || 0).toLocaleString()} raised</span>
+                      <span className="text-xs text-accent tabular-nums">💎 {(c.amount_raised || 0).toLocaleString()} raised</span>
                       <span className="text-xs text-neutral-500">🎯 {c.funding_goal?.toLocaleString()} goal</span>
                     </div>
                   </div>
                   <button onClick={() => handleDelete(c._id, c.title)} disabled={deleting === c._id}
-                    className="flex-shrink-0 text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error-light px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium">
+                    className="flex-shrink-0 text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium">
                     {deleting === c._id ? '…' : '🗑️ Delete'}
                   </button>
                 </div>

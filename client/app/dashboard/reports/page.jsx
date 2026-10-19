@@ -84,21 +84,21 @@ export default function ReportsPage() {
                   <button
                     onClick={() => suspend(r._id, r.campaign_id)}
                     disabled={!!acting}
-                    className="text-xs bg-warning-light border border-warning/20 text-warning-dark hover:bg-warning-light px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium"
+                    className="text-xs bg-warning-light border border-warning/20 text-warning-dark hover:bg-warning/25 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium"
                   >
                     ⚠️ Suspend Campaign
                   </button>
                   <button
                     onClick={() => deleteCampaign(r._id, r.campaign_id, r.campaign_title)}
                     disabled={!!acting}
-                    className="text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error-light px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium"
+                    className="text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium"
                   >
                     🗑️ Delete Campaign
                   </button>
                   <button
                     onClick={() => dismiss(r._id)}
                     disabled={!!acting}
-                    className="text-xs bg-neutral-50 border border-neutral-200 text-neutral-600 hover:bg-neutral-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium"
+                    className="text-xs bg-neutral-50 border border-neutral-200 text-neutral-600 hover:bg-neutral-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium"
                   >
                     ✓ Dismiss Report
                   </button>

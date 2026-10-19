@@ -112,7 +112,7 @@ export default function ManageUsersPage() {
                         </div>
                       </td>
                       <td className="px-5 py-3.5 text-neutral-500 text-xs">{u.email}</td>
-                      <td className="px-5 py-3.5 text-right text-accent font-semibold">💎 {(u.credits || 0).toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-accent font-semibold tabular-nums">💎 {(u.credits || 0).toLocaleString()}</td>
                       <td className="px-5 py-3.5">
                         <select
                           value={u.role}
@@ -127,7 +127,7 @@ export default function ManageUsersPage() {
                         <button
                           onClick={() => handleRemove(u._id, u.email)}
                           disabled={removing === u._id || u.email === me?.email}
-                          className="text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error-light px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 font-medium"
+                          className="text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 font-medium"
                         >
                           {removing === u._id ? '…' : '🗑️ Remove'}
                         </button>

@@ -84,12 +84,12 @@ export default function Navbar() {
                 <Link href="/dashboard" className="text-sm text-neutral-600 hover:text-primary font-medium transition-colors">
                   Dashboard
                 </Link>
-                <span className="flex items-center gap-2 text-sm bg-primary-light text-primary-dark px-3 py-1.5 rounded-full font-semibold">
+                <span className="flex items-center gap-2 text-sm bg-accent-light text-accent-hover px-3 py-1.5 rounded-full font-semibold tabular-nums">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a1 1 0 100-2 1 1 0 000 2z" />
                   </svg>
                   <span aria-label="Credits balance">{user.credits ?? 0} credits</span>
-                  <span className="text-xs text-primary" title="10 credits = $1 USD buy-in · 20 credits = $1 USD payout">(10 credits = $1)</span>
+                  <span className="text-xs text-accent" title="10 credits = $1 USD buy-in · 20 credits = $1 USD payout">(10 credits = $1)</span>
                 </span>
                 <div className="relative" ref={userMenuRef}>
                   <button
