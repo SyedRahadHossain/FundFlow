@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import api from '@/lib/api';
 import { Input, Select } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import CampaignCard from '@/components/CampaignCard';
 
 export default function PublicCampaignsPage() {
@@ -12,15 +13,26 @@ export default function PublicCampaignsPage() {
   const [search, setSearch]       = useState('');
   const [category, setCategory]   = useState('All');
   const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState(false);
+
+  // Reloading is driven by a token so the loader can stay inside the effect:
+  // the effect calls setState only after an await, never synchronously.
+  const [reloadToken, setReloadToken] = useState(0);
 
   const categories = ['All','Technology','Art & Design','Community','Health','Music','Education','Environment','Gaming','Other'];
 
   useEffect(() => {
     api.get('/api/campaigns?status=approved&active=true')
-      .then(res => setCampaigns(res.data || []))
-      .catch(() => {})
+      .then(res => { setCampaigns(res.data || []); setError(false); })
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+  }, [reloadToken]);
+
+  const retry = () => {
+    setError(false);
+    setLoading(true);
+    setReloadToken(t => t + 1);
+  };
 
   const filtered = campaigns.filter(c => {
     const matchCat = category === 'All' || c.category === category;
@@ -35,6 +47,14 @@ export default function PublicCampaignsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <h1 className="text-3xl font-bold text-neutral-900 mb-2">Explore Campaigns</h1>
           <p className="text-neutral-500 mb-6">Discover projects that need your support</p>
+
+          {/* Load failure — same alert/retry affordance as the other dashboard homes */}
+          {error && (
+            <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
+              <span>We couldn’t load campaigns.</span>
+              <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-3 mb-8">
             <Input
@@ -60,14 +80,14 @@ export default function PublicCampaignsPage() {
             </div>
           )}
 
-          {!loading && filtered.length === 0 && (
+          {!loading && !error && filtered.length === 0 && (
             <div className="py-20 text-center text-neutral-500">
               <span className="text-5xl block mb-3">🔍</span>
               <p>No campaigns found.</p>
             </div>
           )}
 
-          {!loading && filtered.length > 0 && (
+          {!loading && !error && filtered.length > 0 && (
             <>
               <h2 className="sr-only">Campaign results</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

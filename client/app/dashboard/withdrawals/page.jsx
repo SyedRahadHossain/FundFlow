@@ -16,6 +16,11 @@ export default function WithdrawalsPage() {
   const [form, setForm]               = useState({ withdrawal_credit: '', payment_system: 'Stripe', account_number: '' });
   const [submitting, setSubmitting]   = useState(false);
   const [errors, setErrors]           = useState({});
+  const [error, setError]             = useState(false);
+
+  // Reloading is driven by a token so the loader can stay inside the effect:
+  // the effect calls setState only after an await, never synchronously.
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     api.get('/api/campaigns/mine')
@@ -23,10 +28,17 @@ export default function WithdrawalsPage() {
         const camps = res.data || [];
         setCampaigns(camps);
         setTotalRaised(camps.filter(c => c.status === 'approved').reduce((s, c) => s + (c.amount_raised || 0), 0));
+        setError(false);
       })
-      .catch(() => {})
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+  }, [reloadToken]);
+
+  const retry = () => {
+    setError(false);
+    setLoading(true);
+    setReloadToken(t => t + 1);
+  };
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: '' })); };
 
@@ -71,21 +83,31 @@ export default function WithdrawalsPage() {
         <p className="text-neutral-500 text-sm mt-1">Withdraw your earned credits as cash</p>
       </div>
 
-      {/* Balance summary */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-surface rounded-2xl border border-neutral-100 p-5 text-center shadow-sm">
-          <p className="text-xs text-neutral-500 mb-1">Total Raised Credits</p>
-          <p className="text-2xl font-bold text-accent tabular-nums">{loading ? '…' : totalRaised.toLocaleString()}</p>
-          <p className="text-xs text-neutral-500 mt-1">💎 credits</p>
+      {/* Load failure — same alert/retry affordance as the other dashboard homes */}
+      {error && (
+        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
+          <span>We couldn’t load your withdrawal data.</span>
+          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
         </div>
-        <div className="bg-surface rounded-2xl border border-neutral-100 p-5 text-center shadow-sm">
-          <p className="text-xs text-neutral-500 mb-1">Equivalent Value</p>
-          <p className="text-2xl font-bold text-neutral-900 tabular-nums">${loading ? '…' : (totalRaised / 20).toFixed(2)}</p>
-          <p className="text-xs text-neutral-500 mt-1">at 20 credits = $1</p>
-        </div>
-      </div>
+      )}
 
-      {!loading && !canWithdraw ? (
+      {/* Balance summary */}
+      {!error && (
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-surface rounded-2xl border border-neutral-100 p-5 text-center shadow-sm">
+            <p className="text-xs text-neutral-500 mb-1">Total Raised Credits</p>
+            <p className="text-2xl font-bold text-accent tabular-nums">{loading ? '…' : totalRaised.toLocaleString()}</p>
+            <p className="text-xs text-neutral-500 mt-1">💎 credits</p>
+          </div>
+          <div className="bg-surface rounded-2xl border border-neutral-100 p-5 text-center shadow-sm">
+            <p className="text-xs text-neutral-500 mb-1">Equivalent Value</p>
+            <p className="text-2xl font-bold text-neutral-900 tabular-nums">${loading ? '…' : (totalRaised / 20).toFixed(2)}</p>
+            <p className="text-xs text-neutral-500 mt-1">at 20 credits = $1</p>
+          </div>
+        </div>
+      )}
+
+      {!error && (!loading && !canWithdraw ? (
         <div className="bg-warning-light border border-warning/20 rounded-2xl p-6 text-center">
           <span className="text-4xl block mb-3">💰</span>
           <p className="font-semibold text-warning-dark">Insufficient Credits</p>
@@ -135,7 +157,7 @@ export default function WithdrawalsPage() {
             </Button>
           </form>
         </div>
-      )}
+      ))}
     </div>
   );
 }

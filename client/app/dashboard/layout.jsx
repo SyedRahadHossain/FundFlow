@@ -29,7 +29,11 @@ export default function DashboardLayout({ children }) {
           setCredits(res.data.credits ?? 0);
           setProfile(res.data);
         })
-        .catch(() => {});
+        .catch((err) => {
+          // Badge counts/profile silently fall back to the "—" placeholder, but
+          // the failure must never be swallowed without a trace.
+          console.error('Failed to load dashboard profile (credits and display name).', err);
+        });
     }
   }, [user]);
 

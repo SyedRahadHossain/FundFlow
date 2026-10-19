@@ -23,15 +23,26 @@ export default function MyCampaignsPage() {
   const [posting, setPosting]     = useState(null); // campaign getting a new update
   const [postForm, setPostForm]   = useState({ title: '', body: '' });
   const [postingBusy, setPostingBusy] = useState(false);
+  const [error, setError]             = useState(false);
+
+  // Reloading is driven by a token so the loader can stay inside the effect:
+  // the effect calls setState only after an await, never synchronously.
+  const [reloadToken, setReloadToken] = useState(0);
 
   const load = () => {
     api.get('/api/campaigns/mine')
-      .then(res => setCampaigns(res.data || []))
-      .catch(() => {})
+      .then(res => { setCampaigns(res.data || []); setError(false); })
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [reloadToken]);
+
+  const retry = () => {
+    setError(false);
+    setLoading(true);
+    setReloadToken(t => t + 1);
+  };
 
   const openEdit = (c) => {
     setEditing(c);
@@ -93,7 +104,9 @@ export default function MyCampaignsPage() {
       <div className="mb-6 flex items-end justify-between">
         <div>
           <h2 className="text-2xl font-bold text-neutral-900">My Campaigns</h2>
-          <p className="text-neutral-500 text-sm mt-1">{campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''}</p>
+          {!error && (
+            <p className="text-neutral-500 text-sm mt-1">{campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''}</p>
+          )}
         </div>
         <a href="/dashboard/add-campaign"
           className="bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
@@ -101,13 +114,21 @@ export default function MyCampaignsPage() {
         </a>
       </div>
 
+      {/* Load failure — same alert/retry affordance as the other dashboard homes */}
+      {error && (
+        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
+          <span>We couldn’t load your campaigns.</span>
+          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
+        </div>
+      )}
+
       {loading && (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-neutral-100 rounded-2xl animate-pulse" />)}
         </div>
       )}
 
-      {!loading && campaigns.length === 0 && (
+      {!loading && !error && campaigns.length === 0 && (
         <div className="py-20 text-center text-neutral-500">
           <span className="text-5xl block mb-3">📋</span>
           <p>No campaigns yet.</p>
@@ -115,7 +136,7 @@ export default function MyCampaignsPage() {
         </div>
       )}
 
-      {!loading && campaigns.length > 0 && (
+      {!loading && !error && campaigns.length > 0 && (
         <div className="bg-surface rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
           {/* Table — desktop. Sorted by deadline descending server-side. */}
           <div className="hidden sm:block overflow-x-auto">
