@@ -1,0 +1,20 @@
+node_modules
+.env
+.superpowers
+.env
+.env.local
+.next/
+node_modules/
+*.log
+.DS_Store
+
+# AI-agent tooling and session artifacts — not part of the project
+.playwright-mcp/
+critique/
+.impeccable/
+.windsurf/
+.cursor/
+.cline/
+.clinerules/
+.opencode/
+.github/copilot-instructions.md

@@ -1,0 +1,36 @@
+{
+  "plugins": [
+    {
+      "name": "cavecrew",
+      "enabled": true
+    },
+    {
+      "name": "migration",
+      "enabled": true
+    },
+    {
+      "name": "safe-refactor",
+      "enabled": true
+    },
+    {
+      "name": "surgical-patch",
+      "enabled": true
+    },
+    {
+      "name": "investigate-first",
+      "enabled": true
+    },
+    {
+      "name": "lean-build",
+      "enabled": true
+    },
+    {
+      "name": "verify-and-stop",
+      "enabled": true
+    }
+  ],
+  "instructions": [
+    "AGENTS.md"
+  ],
+  "mcp": {}
+}
