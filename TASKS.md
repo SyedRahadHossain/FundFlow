@@ -228,10 +228,15 @@ first day."
       `GET /api/campaigns?status=approved` and 401 on the admin-only `GET /api/payments/all`
 - [x] Deploy `client/` — live at https://fundflow-client-wine.vercel.app; its shipped bundle
       targets https://fundflow-server-seven.vercel.app, so `NEXT_PUBLIC_API_URL` is set
-- [ ] Register the Stripe webhook URL on the deployed server — credits are granted **only**
-      by the signature-verified `POST /api/stripe/webhook`; this still needs your Stripe
-      dashboard and `STRIPE_WEBHOOK_SECRET`
-- [ ] Point `CLIENT_URL` at the deployed client origin, or Stripe redirects and CORS fail
+- [x] `CLIENT_URL` — the server replies to a preflight from the deployed client origin with
+      `access-control-allow-origin: https://fundflow-client-wine.vercel.app`, so it is set
+- [x] `MONGODB_URI` — `POST /api/auth/login` returns 401 "Invalid credentials" rather than a
+      connection error, so the deployed server reaches Atlas
+- [x] `FIREBASE_SERVICE_ACCOUNT` — `POST /api/auth/google` answers 401 "Invalid Google
+      credential" rather than the 503 the route returns when the Admin SDK is unconfigured
+- [ ] Register the Stripe webhook URL and set `STRIPE_WEBHOOK_SECRET` — **still failing**:
+      `POST /api/stripe/webhook` answers 503 "Stripe webhook not configured", so no purchase
+      grants credits on the deployed server yet.
 
 ## 15. Full-project code review — done
 
