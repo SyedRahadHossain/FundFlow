@@ -175,6 +175,10 @@ floors at zero, so a duplicate payout was the only harm here.
       Report at `.impeccable/audit/2026-10-19T02-52-57Z__client.md`
 - [x] **P0 fixed** — Approve and Reject on contributions moved credits with a single click.
       Both now confirm first, naming the supporter, the amount, and the refund consequence
+- [x] **P0 fixed** — the admin payout Approve released real money with one click and
+      decremented `amount_raised`, with no reject route to reverse it. Both the desktop
+      table and the mobile card now confirm first, naming the creator, the dollar and credit
+      amounts, and that the payout cannot be undone
 - [x] **P1 fixed** — a failed load on the contributions screen rendered "No pending
       contributions", a silent success on the one screen holding other people's money. The
       loading, empty, and error states now render distinctly
@@ -193,8 +197,6 @@ floors at zero, so a duplicate payout was the only harm here.
       across 62 sites, the mobile drawer with no focus trap, the client-only fetch that
       blanks the public catalog on first paint, the notification panel overflowing narrow
       phones, and 10 P3 items. Both reports hold the ranked list
-- [ ] **Not fixed** — the admin payout approve is still a single click with no confirmation
-      or undo, the same money-action gap the P0 fix closed on the supporter side
 
 ## 13. Submission metadata — partly done, remainder needs your accounts
 
