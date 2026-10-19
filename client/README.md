@@ -11,6 +11,14 @@ A full-stack crowdfunding platform where Creators raise money by collecting cred
 
 > https://fundflow.vercel.app  ← update after deploy
 
+## Source Code
+
+Client and server ship from a single repository.
+
+- **Repository:** https://github.com/SyedRahadHossain/FundFlow
+- **Client source:** https://github.com/SyedRahadHossain/FundFlow/tree/main/client
+- **Server source:** https://github.com/SyedRahadHossain/FundFlow/tree/main/server
+
 ## Features
 
 - **3-role system** — Supporter, Creator and Admin each get a dedicated dashboard with role-gated routes and server-side JWT verification

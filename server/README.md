@@ -6,13 +6,21 @@ Express + MongoDB REST API for the FundFlow crowdfunding platform.
 
 > Update after deploying to Vercel.
 
+## Source Code
+
+Client and server ship from a single repository.
+
+- **Repository:** https://github.com/SyedRahadHossain/FundFlow
+- **Server source (this directory):** https://github.com/SyedRahadHossain/FundFlow/tree/main/server
+- **Client source:** https://github.com/SyedRahadHossain/FundFlow/tree/main/client
+
 ## Setup
 
 ```bash
 npm install
 cp .env.example .env   # fill in your values
 npm run dev            # http://localhost:5000
-npm test               # run 98 tests
+npm test               # run 106 tests
 ```
 
 ## Environment Variables
