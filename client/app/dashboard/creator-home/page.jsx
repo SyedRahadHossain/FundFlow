@@ -38,18 +38,18 @@ export default function CreatorHomePage() {
   useEffect(() => {
     async function load() {
       try {
-        const [campaignsRes, contributionsRes] = await Promise.all([
+        const [campaignsRes, countsRes] = await Promise.all([
           api.get('/api/campaigns/mine'),
-          api.get('/api/contributions/campaign/mine?status=pending').catch(() => ({ data: { contributions: [] } })),
+          api.get('/api/dashboard/counts'),
         ]);
         const campaigns = campaignsRes.data || [];
-        const pendingContributions = contributionsRes.data.contributions || [];
+        const pendingContributions = countsRes.data.pendingContributions || 0;
         const now = new Date();
         setStats({
           total:  campaigns.length,
           active: campaigns.filter(c => c.status === 'approved' && new Date(c.deadline) > now).length,
           raised: campaigns.reduce((s, c) => s + (c.amount_raised || 0), 0),
-          pendingContributions: pendingContributions.length,
+          pendingContributions,
         });
         await refreshUser();
         setError(null);

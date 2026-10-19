@@ -21,16 +21,18 @@ export default function AdminHomePage() {
   useEffect(() => {
     async function load() {
       try {
-        const [usersRes, paymentsRes, campaignsRes, withdrawalsRes] = await Promise.all([
+        const [usersRes, paymentsRes, countsRes] = await Promise.all([
           api.get('/api/users/stats').catch(() => null),
           api.get('/api/payments/all').catch(() => null),
-          api.get('/api/campaigns?status=pending').catch(() => null),
-          api.get('/api/withdrawals?status=pending').catch(() => null),
+          api.get('/api/dashboard/counts').catch(() => null),
         ]);
         if (usersRes) setStats(s => ({ ...s, ...usersRes.data }));
         if (paymentsRes) setStats(s => ({ ...s, payments: paymentsRes.data.total || 0, totalVolume: paymentsRes.data.totalVolume || 0 }));
-        if (campaignsRes) setStats(s => ({ ...s, pendingCampaigns: campaignsRes.data.total || 0 }));
-        if (withdrawalsRes) setStats(s => ({ ...s, pendingWithdrawals: withdrawalsRes.data.total || 0 }));
+        if (countsRes) setStats(s => ({
+          ...s,
+          pendingCampaigns: countsRes.data.pendingCampaigns || 0,
+          pendingWithdrawals: countsRes.data.pendingWithdrawals || 0,
+        }));
         setError(null);
       } catch (err) {
         setError(err);
