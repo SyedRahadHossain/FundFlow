@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
+import { ConfirmDialog } from '@/components/ui/Modal';
 import { CLIENT_REPO_URL } from '@/lib/links';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -193,12 +193,11 @@ export default function Navbar() {
       </div>
 
       {/* Logout confirmation modal */}
-      <Modal
+      <ConfirmDialog
         open={showLogoutConfirm}
         onClose={() => setShowLogoutConfirm(false)}
         title="Sign out?"
         description="Are you sure you want to sign out?"
-        size="sm"
         confirmText="Sign out"
         cancelText="Cancel"
         variant="destructive"
