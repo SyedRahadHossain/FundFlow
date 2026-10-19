@@ -104,12 +104,21 @@ router.get('/', validateStatusFilter, adminOnlyForUnapproved, async (req, res) =
   }
 });
 
-// GET /api/campaigns/:id
+// GET /api/campaigns/:id — approved is public; anything else needs an admin
+// The detail route answers under the same rule as the list, because it is the
+// same disclosure: an unapproved campaign is moderation data. The load happens
+// here, once, so the route cannot serve a document it never classified.
+async function sendCampaign(req, res, campaign) {
+  if (campaign.status === 'approved') return res.json(campaign);
+  return verifyToken(req, res, () =>
+    verifyRole('admin')(req, res, () => res.json(campaign)));
+}
+
 router.get('/:id', async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id);
     if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
-    return res.json(campaign);
+    return await sendCampaign(req, res, campaign);
   } catch {
     return res.status(500).json({ error: 'Server error' });
   }

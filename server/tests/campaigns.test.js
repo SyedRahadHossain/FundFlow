@@ -248,6 +248,61 @@ describe('GET /api/campaigns — status filter', () => {
   });
 });
 
+describe('GET /api/campaigns/:id — status gate', () => {
+  const seed = (status) => {
+    const id = newId();
+    mockCampaigns[id] = {
+      _id: id, title: 'Detailed', status, creator_email: 'cr@x.com',
+      story: 'A story only the reviewer should see',
+    };
+    return id;
+  };
+
+  test('an approved campaign stays publicly readable', async () => {
+    const id = seed('approved');
+    const res = await request(app).get(`/api/campaigns/${id}`);
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe('Detailed');
+  });
+
+  test('an anonymous request for a pending campaign is rejected', async () => {
+    const id = seed('pending');
+    const res = await request(app).get(`/api/campaigns/${id}`);
+    expect(res.status).toBe(401);
+    expect(res.body.story).toBeUndefined();
+  });
+
+  test('a rejected campaign is not publicly readable either', async () => {
+    const id = seed('rejected');
+    const res = await request(app).get(`/api/campaigns/${id}`);
+    expect(res.status).toBe(401);
+    expect(res.body.story).toBeUndefined();
+  });
+
+  test('a supporter cannot read an unapproved campaign', async () => {
+    const id = seed('pending');
+    const res = await request(app)
+      .get(`/api/campaigns/${id}`)
+      .set('Authorization', `Bearer ${supporterToken}`);
+    expect(res.status).toBe(403);
+    expect(res.body.story).toBeUndefined();
+  });
+
+  test('an admin can read an unapproved campaign', async () => {
+    const id = seed('pending');
+    const res = await request(app)
+      .get(`/api/campaigns/${id}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.story).toBe('A story only the reviewer should see');
+  });
+
+  test('an unknown id still answers 404', async () => {
+    const res = await request(app).get(`/api/campaigns/${newId()}`);
+    expect(res.status).toBe(404);
+  });
+});
+
 describe('POST /api/campaigns', () => {
   test('creator can create campaign with status=pending', async () => {
     const res = await request(app)

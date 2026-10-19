@@ -70,4 +70,18 @@ router.delete('/:campaign_id/campaign', verifyToken, verifyRole('admin'), async 
   }
 });
 
+// DELETE /api/reports/:id — dismiss a report the admin will not act on
+// The dismissal lives on the server, so a reload cannot resurrect the row: the
+// client's filter was never a decision, only a view of one. It is moderation
+// data, so only an admin may remove it from the queue.
+router.delete('/:id', verifyToken, verifyRole('admin'), async (req, res) => {
+  try {
+    const report = await Report.findOneAndDelete({ _id: req.params.id });
+    if (!report) return res.status(404).json({ error: 'Report not found' });
+    return res.json({ message: 'Report dismissed' });
+  } catch {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;
