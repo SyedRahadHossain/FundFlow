@@ -38,9 +38,7 @@ jest.mock('../models/User', () => {
 // ── Mock firebase-admin verification ─────────────────────────────
 const mockVerifyIdToken = jest.fn();
 jest.mock('../lib/firebaseAdmin', () => ({
-  getFirebaseAdmin: () => ({
-    auth: () => ({ verifyIdToken: mockVerifyIdToken }),
-  }),
+  getFirebaseAuth: () => ({ verifyIdToken: mockVerifyIdToken }),
 }));
 
 // ── Load app AFTER mocks ─────────────────────────────────────────

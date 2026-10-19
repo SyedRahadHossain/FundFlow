@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const User = require('../models/User');
-const { getFirebaseAdmin } = require('../lib/firebaseAdmin');
+const { getFirebaseAuth } = require('../lib/firebaseAdmin');
 
 const SALT_ROUNDS = 10;
 
@@ -91,14 +91,14 @@ router.post('/login', validate(loginSchema), async (req, res) => {
 // The only accepted credential is a Firebase ID token, verified server-side.
 // Identity fields are read from the verified claims, never from the body.
 router.post('/google', validate(googleSchema), async (req, res) => {
-  const firebaseAdmin = getFirebaseAdmin();
-  if (!firebaseAdmin) {
+  const firebaseAuth = getFirebaseAuth();
+  if (!firebaseAuth) {
     return res.status(503).json({ error: 'Google sign-in is not configured' });
   }
 
   let decoded;
   try {
-    decoded = await firebaseAdmin.auth().verifyIdToken(req.validated.idToken);
+    decoded = await firebaseAuth.verifyIdToken(req.validated.idToken);
   } catch {
     return res.status(401).json({ error: 'Invalid Google credential' });
   }
