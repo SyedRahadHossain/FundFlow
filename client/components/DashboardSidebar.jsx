@@ -115,13 +115,13 @@ export default function DashboardSidebar({ mobileOpen, onClose, profile }) {
   };
 
   const content = (
-    <div className="flex flex-col h-full bg-surface border-r border-neutral-100">
+    <div className="flex flex-col h-full bg-surface border-r border-neutral-200">
       {/* Brand — links home, per the logged-in navbar spec (Logo → home) */}
       <Link
         href="/"
         onClick={onClose}
         aria-label="FundFlow home"
-        className="flex items-center gap-3 px-5 py-5 border-b border-neutral-100 group"
+        className="flex items-center gap-3 px-5 py-5 border-b border-neutral-200 group"
       >
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center transition-colors group-hover:bg-primary-hover">
           <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -132,7 +132,7 @@ export default function DashboardSidebar({ mobileOpen, onClose, profile }) {
       </Link>
 
       {/* User chip */}
-      <div className="px-4 py-4 border-b border-neutral-100">
+      <div className="px-4 py-4 border-b border-neutral-200">
         <div className="flex items-center gap-3 bg-primary-light rounded-xl px-3 py-2">
           <Avatar
             src={profile?.photo_url}
@@ -147,7 +147,7 @@ export default function DashboardSidebar({ mobileOpen, onClose, profile }) {
               <span className="w-3 h-3 flex items-center justify-center text-lg" aria-hidden="true">{roleEmojiChar}</span>
               <span className="text-xs text-primary font-medium capitalize">{roleLabels[user?.role] || user?.role}</span>
               {profile?.name && (
-                <span className="text-[11px] text-neutral-500 truncate" title={user?.email}>{user?.email}</span>
+                <span className="text-xs text-neutral-500 truncate" title={user?.email}>{user?.email}</span>
               )}
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function DashboardSidebar({ mobileOpen, onClose, profile }) {
       </nav>
 
       {/* Logout */}
-      <div className="px-3 py-4 border-t border-neutral-100">
+      <div className="px-3 py-4 border-t border-neutral-200">
         <button
           onClick={handleLogout}
           className={cn(

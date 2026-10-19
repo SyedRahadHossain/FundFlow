@@ -68,7 +68,7 @@ export default function LoginPage() {
 
   return (
     <main id="main-content" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent-light to-primary-light px-4">
-      <div className="bg-surface rounded-2xl shadow-lg p-8 w-full max-w-md">
+      <div className="bg-surface rounded-2xl border border-neutral-200 shadow-sm p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-neutral-900 mb-1">Welcome back</h1>
         <p className="text-sm text-neutral-500 mb-6">Sign in to your FundFlow account</p>
 
@@ -131,7 +131,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-neutral-500 mt-4">
           No account?{' '}
-          <Link href="/register" className="text-accent hover:underline font-medium">Create one</Link>
+          <Link href="/register" className="text-primary hover:text-primary-hover hover:underline font-medium">Create one</Link>
         </p>
       </div>
     </main>

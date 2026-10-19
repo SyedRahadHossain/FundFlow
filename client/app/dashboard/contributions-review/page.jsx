@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Modal, ConfirmDialog } from '@/components/ui/Modal';
 import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function ContributionsReviewPage() {
@@ -15,6 +16,7 @@ export default function ContributionsReviewPage() {
   const [loading, setLoading]             = useState(true);
   const [acting, setActing]               = useState(null);
   const [error, setError]                 = useState(null);
+  const [confirming, setConfirming]       = useState(null); // { contribution, action }
 
   // Reloading is driven by a token so the loader can stay inside the effect:
   // the effect calls setState only after an await, never synchronously.
@@ -63,10 +65,6 @@ export default function ContributionsReviewPage() {
     : contributions.filter(c => c.campaign_id === selectedCampaign);
 
   const act = async (c, action) => {
-    const confirmMessage = action === 'approve'
-      ? `Approve contribution of ${c.contribution_amount?.toLocaleString()} credits from "${c.supporter_name}"?`
-      : `Reject contribution from "${c.supporter_name}"? Their credits will be refunded.`;
-    if (!window.confirm(confirmMessage)) return;
     setActing(c._id + action);
     try {
       await api.patch(`/api/contributions/${c._id}/${action}`);
@@ -77,8 +75,50 @@ export default function ContributionsReviewPage() {
       toast.error(err.response?.data?.error || 'Action failed');
     } finally {
       setActing(null);
+      setConfirming(null);
     }
   };
+
+  const confirmApprove = (c) => setConfirming({
+    contribution: c,
+    action: 'approve',
+    title: 'Approve contribution?',
+    description: `Approve contribution of ${c.contribution_amount?.toLocaleString()} credits from "${c.supporter_name}"?`,
+  });
+
+  const confirmReject = (c) => setConfirming({
+    contribution: c,
+    action: 'reject',
+    title: 'Reject contribution?',
+    description: `Reject contribution from "${c.supporter_name}"? Their credits will be refunded.`,
+  });
+
+  const ViewActions = ({ c, fullWidth }) => (
+    <div className={fullWidth ? 'flex gap-3' : 'flex items-center justify-center gap-2'}>
+      <Button
+        size="sm"
+        variant="ghost"
+        leftIcon="✅"
+        onClick={() => confirmApprove(c)}
+        disabled={!!acting}
+        aria-label={`Approve contribution from ${c.supporter_name}`}
+        className={`min-h-11 bg-success-light border border-success/20 text-success-dark hover:bg-success/20 ${fullWidth ? 'flex-1' : ''}`}
+      >
+        Approve
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        leftIcon="❌"
+        onClick={() => confirmReject(c)}
+        disabled={!!acting}
+        aria-label={`Reject contribution from ${c.supporter_name}`}
+        className={`min-h-11 bg-error-light border border-error/20 text-error-hover hover:bg-error/20 ${fullWidth ? 'flex-1' : ''}`}
+      >
+        Reject
+      </Button>
+    </div>
+  );
 
   return (
     <div>
@@ -114,7 +154,7 @@ export default function ContributionsReviewPage() {
       )}
 
       {!error && (
-        <div className="bg-surface rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
+        <div className="bg-surface rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
           {loading ? (
             <div className="p-4 space-y-3">
               {[...Array(4)].map((_, i) => <div key={i} className="h-14 bg-neutral-50 animate-pulse rounded-xl" />)}
@@ -141,29 +181,25 @@ export default function ContributionsReviewPage() {
                       <th className="px-5 py-3 text-center">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-50">
+                  <tbody className="divide-y divide-neutral-200">
                     {filtered.map(c => (
                       <tr key={c._id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-5 py-3.5 font-medium text-neutral-800">{c.supporter_name}</td>
                         <td className="px-5 py-3.5 text-neutral-500 max-w-[160px] truncate">{c.campaign_title}</td>
-                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">💎 {c.contribution_amount?.toLocaleString()}</td>
+                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums"><span aria-hidden="true">💎 </span>{c.contribution_amount?.toLocaleString()}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{new Date(c.date).toLocaleDateString()}</td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center justify-center gap-2">
-                            <button onClick={() => setViewModal(c)}
-                              className="text-xs border border-neutral-200 text-neutral-600 hover:bg-neutral-200 px-2.5 py-1.5 rounded-lg transition-colors">
-                              👁 View
-                            </button>
-                            <button onClick={() => act(c, 'approve')} disabled={!!acting}
-                              aria-label={`Approve contribution from ${c.supporter_name}`}
-                              className="min-h-11 text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success/20 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
-                              ✅ Approve
-                            </button>
-                            <button onClick={() => act(c, 'reject')} disabled={!!acting}
-                              aria-label={`Reject contribution from ${c.supporter_name}`}
-                              className="min-h-11 text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error/20 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50">
-                              ❌ Reject
-                            </button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              leftIcon="👁"
+                              onClick={() => setViewModal(c)}
+                              className="border border-neutral-200 text-neutral-600 hover:bg-neutral-200"
+                            >
+                              View
+                            </Button>
+                            <ViewActions c={c} />
                           </div>
                         </td>
                       </tr>
@@ -173,7 +209,7 @@ export default function ContributionsReviewPage() {
               </div>
 
               {/* Mobile cards */}
-              <div className="sm:hidden divide-y divide-neutral-50">
+              <div className="sm:hidden divide-y divide-neutral-200">
                 {filtered.map(c => (
                   <div key={c._id} className="px-4 py-4">
                     <div className="flex justify-between items-start mb-2">
@@ -181,17 +217,19 @@ export default function ContributionsReviewPage() {
                         <p className="font-medium text-neutral-800 text-sm">{c.supporter_name}</p>
                         <p className="text-xs text-neutral-500 mt-0.5">{c.campaign_title}</p>
                       </div>
-                      <p className="font-bold text-accent text-sm tabular-nums">💎 {c.contribution_amount?.toLocaleString()}</p>
+                      <p className="font-bold text-accent text-sm tabular-nums"><span aria-hidden="true">💎 </span>{c.contribution_amount?.toLocaleString()}</p>
                     </div>
                     <div className="flex gap-2 mt-3">
-                      <button onClick={() => setViewModal(c)}
-                        className="flex-1 text-xs border border-neutral-200 text-neutral-600 py-1.5 rounded-lg">👁 View</button>
-                      <button onClick={() => act(c, 'approve')} disabled={!!acting}
-                        aria-label={`Approve contribution from ${c.supporter_name}`}
-                        className="min-h-11 flex-1 text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success/20 py-1.5 rounded-lg disabled:opacity-50">✅ Approve</button>
-                      <button onClick={() => act(c, 'reject')} disabled={!!acting}
-                        aria-label={`Reject contribution from ${c.supporter_name}`}
-                        className="min-h-11 flex-1 text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error/20 py-1.5 rounded-lg disabled:opacity-50">❌ Reject</button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        leftIcon="👁"
+                        onClick={() => setViewModal(c)}
+                        className="flex-1 min-h-11 border border-neutral-200 text-neutral-600 hover:bg-neutral-200"
+                      >
+                        View
+                      </Button>
+                      <ViewActions c={c} fullWidth />
                     </div>
                   </div>
                 ))}
@@ -202,35 +240,60 @@ export default function ContributionsReviewPage() {
       )}
 
       {/* View modal */}
-      {viewModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-              <h3 className="font-bold text-neutral-900">Contribution Details</h3>
-              <button onClick={() => setViewModal(null)} className="text-neutral-500 hover:text-neutral-600 text-xl">×</button>
-            </div>
-            <div className="p-6 space-y-3 text-sm">
-              <div className="flex justify-between"><span className="text-neutral-500">Supporter</span><span className="font-medium">{viewModal.supporter_name}</span></div>
-              <div className="flex justify-between"><span className="text-neutral-500">Email</span><span className="font-medium text-xs">{viewModal.supporter_email}</span></div>
-              <div className="flex justify-between"><span className="text-neutral-500">Campaign</span><span className="font-medium">{viewModal.campaign_title}</span></div>
-              <div className="flex justify-between"><span className="text-neutral-500">Amount</span><span className="font-bold text-accent">💎 {viewModal.contribution_amount?.toLocaleString()} credits</span></div>
-              <div className="flex justify-between"><span className="text-neutral-500">Date</span><span>{new Date(viewModal.date).toLocaleString()}</span></div>
-            </div>
-            <div className="flex gap-3 px-6 pb-6">
-              <button onClick={() => act(viewModal, 'approve')} disabled={!!acting}
+      <Modal
+        open={!!viewModal}
+        onClose={() => setViewModal(null)}
+        title="Contribution Details"
+        size="md"
+        footer={
+          viewModal ? (
+            <div className="flex gap-3 w-full">
+              <Button
+                variant="primary"
+                leftIcon="✅"
+                onClick={() => confirmApprove(viewModal)}
+                disabled={!!acting}
                 aria-label={`Approve contribution from ${viewModal.supporter_name}`}
-                className="min-h-11 flex-1 bg-success hover:bg-success-dark disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
-                ✅ Approve
-              </button>
-              <button onClick={() => act(viewModal, 'reject')} disabled={!!acting}
+                className="flex-1 min-h-11 bg-success hover:bg-success-dark"
+              >
+                Approve
+              </Button>
+              <Button
+                variant="destructive"
+                leftIcon="❌"
+                onClick={() => confirmReject(viewModal)}
+                disabled={!!acting}
                 aria-label={`Reject contribution from ${viewModal.supporter_name}`}
-                className="min-h-11 flex-1 bg-error hover:bg-error-hover disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
-                ❌ Reject
-              </button>
+                className="flex-1 min-h-11"
+              >
+                Reject
+              </Button>
             </div>
+          ) : null
+        }
+      >
+        {viewModal && (
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between"><span className="text-neutral-500">Supporter</span><span className="font-medium">{viewModal.supporter_name}</span></div>
+            <div className="flex justify-between"><span className="text-neutral-500">Email</span><span className="font-medium text-xs">{viewModal.supporter_email}</span></div>
+            <div className="flex justify-between"><span className="text-neutral-500">Campaign</span><span className="font-medium">{viewModal.campaign_title}</span></div>
+            <div className="flex justify-between"><span className="text-neutral-500">Amount</span><span className="font-bold text-accent tabular-nums"><span aria-hidden="true">💎 </span>{viewModal.contribution_amount?.toLocaleString()} credits</span></div>
+            <div className="flex justify-between"><span className="text-neutral-500">Date</span><span>{new Date(viewModal.date).toLocaleString()}</span></div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
+
+      <ConfirmDialog
+        open={!!confirming}
+        onClose={() => setConfirming(null)}
+        onConfirm={() => act(confirming.contribution, confirming.action)}
+        title={confirming?.title || 'Confirm'}
+        description={confirming?.description}
+        confirmText={confirming?.action === 'approve' ? 'Approve' : 'Reject'}
+        cancelText="Cancel"
+        variant={confirming?.action === 'approve' ? 'primary' : 'destructive'}
+        loading={!!acting}
+      />
     </div>
   );
 }

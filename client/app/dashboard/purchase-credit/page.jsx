@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/Button';
 
 const PACKAGES = [
   { credits: 100,  price: 10,  emoji: '💎',     label: 'Starter', popular: false },
@@ -59,12 +60,12 @@ function PurchaseCreditInner() {
         <p className="text-xs text-neutral-500 mt-1">Rate: 10 credits = $1</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {PACKAGES.map(pkg => (
           <div
             key={pkg.credits}
-            className={`relative bg-surface rounded-2xl border-2 p-6 flex flex-col items-center text-center transition-shadow hover:shadow-lg ${
-              pkg.popular ? 'border-accent shadow-md' : 'border-neutral-100'
+            className={`relative bg-surface rounded-2xl border p-6 flex flex-col items-center text-center transition-shadow hover:shadow-md ${
+              pkg.popular ? 'border-accent shadow-sm' : 'border-neutral-200'
             }`}
           >
             {pkg.popular && (
@@ -72,24 +73,27 @@ function PurchaseCreditInner() {
                 Most Popular
               </span>
             )}
-            <span className="text-4xl mb-3">{pkg.emoji}</span>
+            <span className="text-4xl mb-3" aria-hidden="true">{pkg.emoji}</span>
             <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">{pkg.label}</p>
             <p className="text-3xl font-extrabold text-accent tabular-nums mb-1">
               {pkg.credits.toLocaleString()}
               <span className="text-base font-medium text-neutral-500 ml-1">credits</span>
             </p>
             <p className="text-xl font-bold text-neutral-900 tabular-nums mb-5">${pkg.price}</p>
-            <button
+            <Button
               onClick={() => handleBuy(pkg)}
               disabled={loading === pkg.credits}
-              className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-colors disabled:opacity-60 ${
+              loading={loading === pkg.credits}
+              loadingText="Redirecting…"
+              width="full"
+              className={
                 pkg.popular
-                  ? 'bg-primary hover:bg-primary-hover text-white'
+                  ? ''
                   : 'bg-primary-light text-primary-dark hover:bg-primary-medium'
-              }`}
+              }
             >
-              {loading === pkg.credits ? 'Redirecting…' : `Buy ${pkg.credits} credits`}
-            </button>
+              Buy {pkg.credits} credits
+            </Button>
           </div>
         ))}
       </div>

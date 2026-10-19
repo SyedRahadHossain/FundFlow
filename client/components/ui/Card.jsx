@@ -17,9 +17,9 @@ export const Card = forwardRef(
       <div
         ref={ref}
         className={cn(
-          // DESIGN.md: cards are the Medium radius step (rounded-xl), resting
-          // shadow-sm, hover shadow-lg.
-          'bg-surface rounded-xl border border-neutral-100 shadow-sm',
+          // DESIGN.md: cards are the Large radius step (rounded-2xl, 24px),
+          // resting shadow-sm, hover shadow-lg, 1px neutral-200 border.
+          'bg-surface rounded-2xl border border-neutral-200 shadow-sm',
           'transition-shadow duration-200',
           hover && 'hover:shadow-lg',
           paddings[padding],
@@ -95,7 +95,7 @@ export const CardFooter = forwardRef(
   ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('mt-4 pt-4 border-t border-neutral-100 flex items-center gap-2', className)}
+      className={cn('mt-4 pt-4 border-t border-neutral-200 flex items-center gap-2', className)}
       {...props}
     >
       {children}
@@ -124,10 +124,10 @@ export const InteractiveCard = forwardRef(
         href={href}
         onClick={onClick}
         className={cn(
-          'bg-surface rounded-2xl border border-neutral-100 shadow-sm',
+          'bg-surface rounded-2xl border border-neutral-200 shadow-sm',
           'transition-all duration-200',
           'hover:shadow-lg hover:border-primary-medium hover:-translate-y-0.5',
-          'focus:outline-none focus:ring-3 focus:ring-primary',
+          'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2',
           isLink ? 'cursor-pointer' : '',
           paddings[padding],
           className

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function PaymentHistoryPage() {
   const [payments, setPayments] = useState([]);
@@ -47,7 +48,7 @@ export default function PaymentHistoryPage() {
         {!error && payments.length > 0 && (
           <div className="text-right">
             <p className="text-xs text-neutral-500">Total purchased</p>
-            <p className="font-bold text-accent text-lg">💎 {total.toLocaleString()} credits</p>
+            <p className="font-bold text-accent text-lg tabular-nums"><span aria-hidden="true">💎 </span>{total.toLocaleString()} credits</p>
           </div>
         )}
       </div>
@@ -60,17 +61,13 @@ export default function PaymentHistoryPage() {
       )}
 
       {!error && (
-        <div className="bg-surface rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
+        <div className="bg-surface rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
           {loading ? (
             <div className="p-4 space-y-3">
               {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-neutral-50 animate-pulse rounded-xl" />)}
             </div>
           ) : payments.length === 0 ? (
-            <div className="py-20 text-center text-neutral-500">
-              <span className="text-5xl block mb-3">💳</span>
-              <p>No purchases yet.</p>
-              <a href="/dashboard/purchase-credit" className="text-sm text-accent hover:underline mt-1 block">Buy your first credits →</a>
-            </div>
+            <EmptyState variant="payments" role="supporter" />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -82,11 +79,11 @@ export default function PaymentHistoryPage() {
                     <th className="px-5 py-3 text-left">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-50">
+                <tbody className="divide-y divide-neutral-200">
                   {payments.map(p => (
                     <tr key={p._id} className="hover:bg-neutral-50 transition-colors">
                       <td className="px-5 py-3.5 text-neutral-500">{new Date(p.date).toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">+💎 {p.credits.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">+<span aria-hidden="true">💎 </span>{p.credits.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right font-medium text-neutral-700 tabular-nums">${p.amount}</td>
                       <td className="px-5 py-3.5">
                         <StatusBadge status="completed" size="sm" />

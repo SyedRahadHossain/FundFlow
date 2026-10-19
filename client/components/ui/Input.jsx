@@ -57,10 +57,10 @@ export const Input = forwardRef(
             aria-describedby={describedBy}
             aria-required={required}
             className={cn(
-              'w-full rounded-lg border bg-surface text-sm',
+              'w-full rounded-xl border bg-surface text-sm',
               'transition-colors duration-150',
               'placeholder:text-neutral-500',
-              'focus:outline-none focus:ring-3 focus:ring-primary',
+              'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2',
               'disabled:bg-neutral-50 disabled:cursor-not-allowed',
               error
                 ? 'border-error focus-visible:ring-error'
@@ -144,10 +144,10 @@ export const Textarea = forwardRef(
           aria-describedby={describedBy}
           aria-required={required}
           className={cn(
-            'w-full rounded-lg border bg-surface text-sm px-4 py-2.5 resize-y min-h-[80px]',
+            'w-full rounded-xl border bg-surface text-sm px-4 py-2.5 resize-y min-h-[80px]',
             'transition-colors duration-150',
             'placeholder:text-neutral-500',
-            'focus:outline-none focus:ring-3 focus:ring-primary',
+            'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2',
             'disabled:bg-neutral-50 disabled:cursor-not-allowed',
             error
               ? 'border-error focus-visible:ring-error'
@@ -211,9 +211,9 @@ export const Select = forwardRef(
             aria-describedby={describedBy}
             aria-required={required}
             className={cn(
-              'w-full rounded-lg border bg-surface text-sm pl-4 pr-10 py-2.5 appearance-none',
+              'w-full rounded-xl border bg-surface text-sm pl-4 pr-10 py-2.5 appearance-none',
               'transition-colors duration-150',
-              'focus:outline-none focus:ring-3 focus:ring-primary',
+              'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2',
               'disabled:bg-neutral-50 disabled:cursor-not-allowed',
               error
                 ? 'border-error focus-visible:ring-error'
@@ -285,7 +285,7 @@ export const FileInput = forwardRef(
             {required && <span className="text-error" aria-hidden="true">*</span>}
           </label>
         )}
-        <div className="border-2 border-dashed rounded-lg p-4 transition-colors relative"
+        <div className="border-2 border-dashed rounded-xl p-4 transition-colors relative"
           onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-primary', 'bg-primary-light'); }}
           onDragLeave={(e) => { e.currentTarget.classList.remove('border-primary', 'bg-primary-light'); }}
           onDrop={(e) => {

@@ -6,12 +6,15 @@ import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/Modal';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Avatar } from '@/components/ui/Avatar';
 
 const ROLES = ['supporter', 'creator', 'admin'];
 const ROLE_STYLE = {
-  supporter: 'bg-info-light text-info-dark',
-  creator:   'bg-accent-light text-accent',
-  admin:     'bg-error-light text-error-hover',
+  supporter: 'bg-info-light text-info-dark hover:bg-info/20',
+  creator:   'bg-accent-light text-accent hover:bg-accent/20',
+  admin:     'bg-error-light text-error-hover hover:bg-error/20',
 };
 
 export default function ManageUsersPage() {
@@ -20,6 +23,7 @@ export default function ManageUsersPage() {
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState('');
   const [removing, setRemoving] = useState(null);
+  const [confirming, setConfirming] = useState(null); // { id, email } pending removal
   const [updating, setUpdating] = useState(null);
   const [error, setError]       = useState(false);
 
@@ -48,8 +52,7 @@ export default function ManageUsersPage() {
     setReloadToken(t => t + 1);
   };
 
-  const handleRemove = async (id, email) => {
-    if (!window.confirm(`Remove user ${email}? This cannot be undone.`)) return;
+  const handleRemove = async (id) => {
     setRemoving(id);
     try {
       await api.delete(`/api/users/${id}`);
@@ -59,6 +62,7 @@ export default function ManageUsersPage() {
       toast.error(err.response?.data?.error || 'Remove failed');
     } finally {
       setRemoving(null);
+      setConfirming(null);
     }
   };
 
@@ -108,14 +112,15 @@ export default function ManageUsersPage() {
       )}
 
       {!error && (
-        <div className="bg-surface rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
+        <div className="bg-surface rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
           {loading ? (
             <div className="p-4 space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-neutral-50 animate-pulse rounded-xl" />)}</div>
           ) : filtered.length === 0 ? (
-            <div className="py-16 text-center text-neutral-500">
-              <span className="text-5xl block mb-3">👥</span>
-              <p>{search ? 'No users match your search.' : 'No users yet.'}</p>
-            </div>
+            <EmptyState
+              variant="users"
+              role="admin"
+              subtitle={search ? 'No users match your search.' : 'Registered users will appear here.'}
+            />
           ) : (
             <>
               {/* Desktop table */}
@@ -130,37 +135,41 @@ export default function ManageUsersPage() {
                       <th className="px-5 py-3 text-center">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-50">
+                  <tbody className="divide-y divide-neutral-200">
                     {filtered.map(u => (
                       <tr key={u._id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
-                            {u.photo
-                              ? <img src={u.photo} alt={u.name} className="w-8 h-8 rounded-full object-cover" />
-                              : <div className="w-8 h-8 rounded-full bg-accent-light flex items-center justify-center text-accent font-bold text-sm uppercase">{u.name?.[0]}</div>}
+                            <Avatar src={u.photo} name={u.name} size="sm" />
                             <span className="font-medium text-neutral-800">{u.name}</span>
                           </div>
                         </td>
                         <td className="px-5 py-3.5 text-neutral-500 text-xs">{u.email}</td>
-                        <td className="px-5 py-3.5 text-right text-accent font-semibold tabular-nums">💎 {(u.credits || 0).toLocaleString()}</td>
+                        <td className="px-5 py-3.5 text-right text-accent font-semibold tabular-nums">
+                          <span aria-hidden="true">💎 </span>{(u.credits || 0).toLocaleString()}
+                        </td>
                         <td className="px-5 py-3.5">
                           <select
                             value={u.role}
                             onChange={e => handleRoleChange(u._id, e.target.value)}
                             disabled={updating === u._id || u.email === me?.email}
-                            className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border-0 focus:outline-none focus:ring-3 focus:ring-primary disabled:opacity-50 ${ROLE_STYLE[u.role]}`}
+                            aria-label={`Role for ${u.name}`}
+                            className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border-0 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 transition-colors ${ROLE_STYLE[u.role]}`}
                           >
                             {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                           </select>
                         </td>
                         <td className="px-5 py-3.5 text-center">
-                          <button
-                            onClick={() => handleRemove(u._id, u.email)}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            leftIcon="🗑️"
+                            onClick={() => setConfirming({ id: u._id, email: u.email })}
                             disabled={removing === u._id || u.email === me?.email}
-                            className="text-xs bg-error-light border border-error/20 text-error-hover hover:bg-error/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 font-medium"
+                            className="bg-error-light border border-error/20 text-error-hover hover:bg-error/20"
                           >
-                            {removing === u._id ? '…' : '🗑️ Remove'}
-                          </button>
+                            {removing === u._id ? 'Removing…' : 'Remove'}
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -169,13 +178,11 @@ export default function ManageUsersPage() {
               </div>
 
               {/* Mobile cards */}
-              <div className="md:hidden divide-y divide-neutral-50">
+              <div className="md:hidden divide-y divide-neutral-200">
                 {filtered.map(u => (
                   <div key={u._id} className="px-4 py-4">
                     <div className="flex items-center gap-3 mb-3">
-                      {u.photo
-                        ? <img src={u.photo} alt={u.name} className="w-10 h-10 rounded-full object-cover" />
-                        : <div className="w-10 h-10 rounded-full bg-accent-light flex items-center justify-center text-accent font-bold uppercase">{u.name?.[0]}</div>}
+                      <Avatar src={u.photo} name={u.name} size="md" />
                       <div>
                         <p className="font-medium text-neutral-800">{u.name}</p>
                         <p className="text-xs text-neutral-500">{u.email}</p>
@@ -184,14 +191,20 @@ export default function ManageUsersPage() {
                     <div className="flex items-center justify-between">
                       <select value={u.role} onChange={e => handleRoleChange(u._id, e.target.value)}
                         disabled={updating === u._id || u.email === me?.email}
-                        className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg disabled:opacity-50 ${ROLE_STYLE[u.role]}`}>
+                        aria-label={`Role for ${u.name}`}
+                        className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border-0 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 transition-colors ${ROLE_STYLE[u.role]}">
                         {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
-                      <button onClick={() => handleRemove(u._id, u.email)}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        leftIcon="🗑️"
+                        onClick={() => setConfirming({ id: u._id, email: u.email })}
                         disabled={removing === u._id || u.email === me?.email}
-                        className="text-xs bg-error-light border border-error/20 text-error-hover px-3 py-1.5 rounded-lg disabled:opacity-40">
-                        🗑️ Remove
-                      </button>
+                        className="bg-error-light border border-error/20 text-error-hover hover:bg-error/20"
+                      >
+                        {removing === u._id ? 'Removing…' : 'Remove'}
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -200,6 +213,17 @@ export default function ManageUsersPage() {
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirming}
+        onClose={() => setConfirming(null)}
+        onConfirm={() => handleRemove(confirming.id, confirming.email)}
+        title="Remove user?"
+        description={`This permanently removes ${confirming?.email}'s account and all their data. This cannot be undone.`}
+        confirmText="Remove user"
+        cancelText="Cancel"
+        loading={removing === confirming?.id}
+      />
     </div>
   );
 }

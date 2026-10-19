@@ -112,7 +112,7 @@ export function Modal({
         )}
       >
         {(title || showCloseButton) && (
-          <div className="flex items-start justify-between p-5 border-b border-neutral-100">
+          <div className="flex items-start justify-between p-5 border-b border-neutral-200">
             <div>
               {title && (
                 <h2 id={titleId} className="text-lg font-semibold text-neutral-900">
@@ -140,7 +140,7 @@ export function Modal({
         )}
         <div className="p-5">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-3 p-5 border-t border-neutral-100 bg-neutral-50 rounded-b-2xl">
+          <div className="flex items-center justify-end gap-3 p-5 border-t border-neutral-200 bg-neutral-50 rounded-b-2xl">
             {footer}
           </div>
         )}

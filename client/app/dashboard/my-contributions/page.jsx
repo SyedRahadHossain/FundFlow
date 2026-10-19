@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/Button';
 import api from '@/lib/api';
 
 const STATUS_CONFIG = {
-  pending: { variant: 'warning', label: 'Pending', icon: '⏳' },
-  approved: { variant: 'success', label: 'Approved', icon: '✅' },
-  rejected: { variant: 'error', label: 'Rejected', icon: '❌' },
-  refunded: { variant: 'info', label: 'Refunded', icon: '↩️' },
+  pending: { variant: 'warning', label: 'Pending' },
+  approved: { variant: 'success', label: 'Approved' },
+  rejected: { variant: 'error', label: 'Rejected' },
+  refunded: { variant: 'info', label: 'Refunded' },
 };
 
 // "Approved" is a required standalone view in the assessment brief, so it gets
@@ -124,14 +124,14 @@ export default function MyContributionsPage() {
                     <th className="px-5 py-3 text-left">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100">
+                <tbody className="divide-y divide-neutral-200">
                   {contributions.map(c => {
                     const statusConfig = STATUS_CONFIG[c.status] || STATUS_CONFIG.pending;
                     return (
                       <tr key={c._id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-5 py-3.5 font-medium text-neutral-800">{c.campaign_title}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{c.creator_name}</td>
-                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">💎 {c.contribution_amount.toLocaleString()}</td>
+                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums"><span aria-hidden="true">💎 </span>{c.contribution_amount.toLocaleString()}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{new Date(c.date).toLocaleDateString()}</td>
                         <td className="px-5 py-3.5">
                           <Badge variant={statusConfig.variant} size="sm" dot>
@@ -146,7 +146,7 @@ export default function MyContributionsPage() {
             </div>
 
             {/* Cards — mobile */}
-            <div className="sm:hidden divide-y divide-neutral-100">
+            <div className="sm:hidden divide-y divide-neutral-200">
               {contributions.map(c => {
                 const statusConfig = STATUS_CONFIG[c.status] || STATUS_CONFIG.pending;
                 return (
@@ -158,7 +158,7 @@ export default function MyContributionsPage() {
                       </Badge>
                     </div>
                     <p className="text-xs text-neutral-500">{c.creator_name} · {new Date(c.date).toLocaleDateString()}</p>
-                    <p className="text-sm font-bold text-accent tabular-nums mt-1">💎 {c.contribution_amount.toLocaleString()} credits</p>
+                    <p className="text-sm font-bold text-accent tabular-nums mt-1"><span aria-hidden="true">💎 </span>{c.contribution_amount.toLocaleString()} credits</p>
                   </div>
                 );
               })}
@@ -166,7 +166,7 @@ export default function MyContributionsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-5 py-4 border-t border-neutral-100">
+              <div className="flex items-center justify-between px-5 py-4 border-t border-neutral-200">
                 <p className="text-xs text-neutral-500">Page {page} of {totalPages}</p>
                 <div className="flex gap-2">
                   <Button

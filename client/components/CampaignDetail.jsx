@@ -9,6 +9,8 @@ import api from '@/lib/api';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { CategoryBadge } from '@/components/ui/Badge';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 
 /**
  * Shared campaign detail body used by the public route (/campaigns/[id]) and
@@ -110,11 +112,11 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
   return (
     <div className="max-w-3xl mx-auto">
       {mode === 'dashboard' ? (
-        <button onClick={() => router.back()} className="text-sm text-accent hover:underline mb-5 flex items-center gap-1">
+        <button onClick={() => router.back()} className="text-sm text-primary hover:text-primary-hover hover:underline mb-5 flex items-center gap-1">
           ← Back to campaigns
         </button>
       ) : (
-        <Link href="/campaigns" className="text-sm text-accent hover:underline mb-5 flex items-center gap-1">
+        <Link href="/campaigns" className="text-sm text-primary hover:text-primary-hover hover:underline mb-5 flex items-center gap-1">
           ← All campaigns
         </Link>
       )}
@@ -131,43 +133,50 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
         {/* Main content */}
         <div className="lg:col-span-2 space-y-5">
           <div>
-            <span className="text-xs bg-accent-light text-accent-hover font-semibold px-3 py-1 rounded-full">{campaign.category}</span>
+            <CategoryBadge category={campaign.category} />
             <h1 className="text-2xl font-bold text-neutral-900 mt-3">{campaign.title}</h1>
             <p className="text-sm text-neutral-500 mt-1">by {campaign.creator_name}</p>
           </div>
 
           {/* Progress */}
-          <div className="bg-surface rounded-2xl border border-neutral-100 p-5">
-            <div className="flex justify-between text-sm font-semibold text-neutral-700 mb-2">
-              <span>💎 {(campaign.amount_raised || 0).toLocaleString()} credits raised</span>
-              <span>{pct}%</span>
+          <div className="bg-surface rounded-2xl border border-neutral-200 p-5">
+            <div className="flex justify-between text-sm font-semibold mb-2">
+              <span className="text-accent tabular-nums">
+                <span aria-hidden="true">💎 </span>{(campaign.amount_raised || 0).toLocaleString()} credits raised
+              </span>
+              <span className="text-neutral-700 tabular-nums">{pct}%</span>
             </div>
-            <div className="w-full bg-neutral-100 rounded-full h-2 mb-3">
-              <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
-            </div>
+            <ProgressBar
+              value={pct}
+              size="lg"
+              variant="primary"
+              showValue={false}
+              aria-label={`${pct}% funded`}
+              className="mb-3"
+            />
             <div className="flex justify-between text-xs text-neutral-500">
-              <span>Goal: 💎 {Number.isFinite(goal) ? goal.toLocaleString() : '—'}</span>
-              <span>⏰ {daysLeft !== null ? `${daysLeft} days left` : 'Deadline unknown'}</span>
+              <span className="tabular-nums">Goal: <span className="text-accent font-semibold"><span aria-hidden="true">💎 </span>{Number.isFinite(goal) ? goal.toLocaleString() : '—'}</span></span>
+              <span><span aria-hidden="true">⏰ </span>{daysLeft !== null ? `${daysLeft} days left` : 'Deadline unknown'}</span>
             </div>
           </div>
 
           {/* Story */}
-          <div className="bg-surface rounded-2xl border border-neutral-100 p-5">
+          <div className="bg-surface rounded-2xl border border-neutral-200 p-5">
             <h2 className="font-semibold text-neutral-900 mb-3">Campaign Story</h2>
             <p className="text-sm text-neutral-600 leading-relaxed whitespace-pre-line">{campaign.story}</p>
           </div>
 
           {/* Rewards */}
-          <div className="bg-surface rounded-2xl border border-neutral-100 p-5">
-            <h2 className="font-semibold text-neutral-900 mb-2">🎁 Reward Info</h2>
+          <div className="bg-surface rounded-2xl border border-neutral-200 p-5">
+            <h2 className="font-semibold text-neutral-900 mb-2"><span aria-hidden="true">🎁 </span>Reward Info</h2>
             <p className="text-sm text-neutral-600">{campaign.reward_info}</p>
           </div>
 
           {/* Creator updates */}
           {(campaign.updates || []).length > 0 && (
-            <div className="bg-surface rounded-2xl border border-neutral-100 p-5">
+            <div className="bg-surface rounded-2xl border border-neutral-200 p-5">
               <h2 className="font-semibold text-neutral-900 mb-4">
-                📣 Creator Updates
+                <span aria-hidden="true">📣 </span>Creator Updates
                 <span className="text-xs font-normal text-neutral-500 ml-2">
                   {campaign.updates.length} posted
                 </span>
@@ -192,14 +201,14 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
           {user && (
             <button onClick={() => setReportOpen(true)}
               className="text-xs text-neutral-500 hover:text-error transition-colors flex items-center gap-1">
-              🚩 Report this campaign
+              <span aria-hidden="true">🚩</span> Report this campaign
             </button>
           )}
         </div>
 
         {/* Contribution form */}
         <div className="lg:col-span-1">
-          <div className="bg-surface rounded-2xl border border-neutral-100 p-5 sticky top-4">
+          <div className="bg-surface rounded-2xl border border-neutral-200 p-5 sticky top-4">
             <h2 className="font-semibold text-neutral-900 mb-4">Contribute Credits</h2>
             <p className="text-xs text-neutral-500 mb-4">
               Minimum contribution: <strong className="text-accent-hover">{campaign.minimum_contribution} credits</strong>
@@ -227,8 +236,8 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
                 {daysLeft === 0 ? (
                   <p className="text-error text-xs text-center" role="alert">This campaign has ended</p>
                 ) : (
-                  <Button type="submit" width="full" loading={submitting} loadingText="Submitting…">
-                    💎 Contribute Now
+                  <Button type="submit" width="full" loading={submitting} loadingText="Submitting…" leftIcon="💎">
+                    Contribute Now
                   </Button>
                 )}
               </form>
@@ -261,9 +270,10 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
               loading={reporting}
               loadingText="Sending…"
               disabled={!reportReason.trim()}
+              leftIcon="🚩"
               className="flex-1"
             >
-              🚩 Submit Report
+              Submit Report
             </Button>
           </>
         }

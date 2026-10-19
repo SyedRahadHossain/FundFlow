@@ -61,7 +61,7 @@ export default function TopFundedCampaigns() {
     return (
       <section className="py-20 bg-surface" aria-label="Top funded campaigns error">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card variant="outline" className="max-w-md mx-auto">
+          <Card className="max-w-md mx-auto">
             <div className="p-6 text-center">
               <div className="w-16 h-16 rounded-full bg-error-light flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

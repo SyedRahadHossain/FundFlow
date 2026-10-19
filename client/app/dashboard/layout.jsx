@@ -40,7 +40,7 @@ export default function DashboardLayout({ children }) {
   // While auth state resolves, show spinner — never redirect prematurely
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-canvas">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" style={{ animationDuration: '1s' }} />
           <p className="text-sm text-neutral-500">Loading…</p>
@@ -52,7 +52,7 @@ export default function DashboardLayout({ children }) {
   if (!user) return null;
 
   return (
-      <div className="flex h-screen bg-neutral-50 overflow-hidden">
+      <div className="flex h-screen bg-canvas overflow-hidden">
         <DashboardSidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} profile={profile} />
 
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

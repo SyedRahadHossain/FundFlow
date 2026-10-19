@@ -93,7 +93,7 @@ export default function Testimonials() {
         >
           {testimonials.map((t) => (
             <SwiperSlide key={t.name} className="!h-auto">
-              <figure className="h-full bg-neutral-50 border border-neutral-100 rounded-2xl p-6 flex flex-col">
+              <figure className="h-full bg-neutral-50 border border-neutral-200 rounded-2xl p-6 flex flex-col">
                 <div className="flex items-center justify-between mb-4">
                   {/* Rating marks stay in ink: amber is this system's review /
                       pending state, not a review score. */}
@@ -111,7 +111,7 @@ export default function Testimonials() {
                   &ldquo;{t.quote}&rdquo;
                 </blockquote>
 
-                <figcaption className="flex items-center gap-3 mt-6 pt-5 border-t border-neutral-100">
+                <figcaption className="flex items-center gap-3 mt-6 pt-5 border-t border-neutral-200">
                   <Avatar src={t.photo} alt={t.name} name={t.name} size="lg" />
                   <div>
                     <div className="font-semibold text-neutral-900 text-sm">{t.name}</div>

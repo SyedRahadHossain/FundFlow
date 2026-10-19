@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function CreatorPaymentHistoryPage() {
   const [withdrawals, setWithdrawals] = useState([]);
@@ -60,17 +61,16 @@ export default function CreatorPaymentHistoryPage() {
       )}
 
       {!error && (
-        <div className="bg-surface rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
+        <div className="bg-surface rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
           {loading ? (
             <div className="p-4 space-y-3">
               {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-neutral-50 animate-pulse rounded-xl" />)}
             </div>
           ) : withdrawals.length === 0 ? (
-            <div className="py-20 text-center text-neutral-500">
-              <span className="text-5xl block mb-3">💸</span>
-              <p>No withdrawals yet.</p>
-              <a href="/dashboard/withdrawals" className="text-sm text-accent hover:underline mt-1 block">Request your first withdrawal →</a>
-            </div>
+            <EmptyState
+              variant="withdrawals"
+              role="creator"
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -84,11 +84,11 @@ export default function CreatorPaymentHistoryPage() {
                     <th className="px-5 py-3 text-left">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-50">
+                <tbody className="divide-y divide-neutral-200">
                   {withdrawals.map(w => (
                     <tr key={w._id} className="hover:bg-neutral-50 transition-colors">
                       <td className="px-5 py-3.5 text-neutral-500">{new Date(w.withdraw_date).toLocaleDateString()}</td>
-                      <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">💎 {w.withdrawal_credit.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums"><span aria-hidden="true">💎 </span>{w.withdrawal_credit.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right font-bold text-neutral-800 tabular-nums">${w.withdrawal_amount.toFixed(2)}</td>
                       <td className="px-5 py-3.5 text-neutral-500">{w.payment_system}</td>
                       <td className="px-5 py-3.5 text-neutral-500 text-xs">{w.account_number}</td>

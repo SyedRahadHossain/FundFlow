@@ -72,7 +72,7 @@ export default function CreatorHomePage() {
     return (
       <div className="max-w-xl mx-auto">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-neutral-900">Welcome to FundFlow, Creator! 🎯</h2>
+          <h2 className="text-2xl font-bold text-neutral-900">Welcome to FundFlow, Creator! <span aria-hidden="true">🎯</span></h2>
           <p className="text-neutral-500 text-sm mt-1">{user?.email}</p>
         </div>
 
@@ -84,13 +84,11 @@ export default function CreatorHomePage() {
             Campaigns need Admin approval before going live, and you control every contribution.
           </p>
           <div className="space-y-3">
-            <Link
-              href="/dashboard/add-campaign"
-              onClick={markVisited}
-              className="block bg-primary text-white font-semibold py-3 px-6 rounded-lg hover:bg-primary-hover transition-colors"
-            >
-              Create Your First Campaign
-            </Link>
+            <Button asChild size="lg" width="full" className="font-semibold">
+              <Link href="/dashboard/add-campaign" onClick={markVisited}>
+                Create Your First Campaign
+              </Link>
+            </Button>
             <p className="text-xs text-neutral-500">
               Need 200+ credits raised (=$10) to withdraw · 20 credits = $1 withdrawal
             </p>
@@ -103,7 +101,7 @@ export default function CreatorHomePage() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-neutral-900">Creator Dashboard 🎯</h2>
+        <h2 className="text-2xl font-bold text-neutral-900">Creator Dashboard <span aria-hidden="true">🎯</span></h2>
         <p className="text-neutral-500 text-sm mt-1">{user?.email}</p>
       </div>
 
@@ -148,7 +146,7 @@ export default function CreatorHomePage() {
             Rejection = instant credit refund to supporter
           </p>
           {stats.pendingContributions > 0 && (
-            <span className="absolute top-4 right-4 w-5 h-5 rounded-full bg-success text-white text-xs flex items-center justify-center font-bold">
+            <span className="absolute top-4 right-4 min-w-5 h-5 px-1 rounded-full bg-warning-light text-warning-dark text-xs flex items-center justify-center font-bold tabular-nums ring-1 ring-warning/30">
               {stats.pendingContributions > 9 ? '9+' : stats.pendingContributions}
             </span>
           )}

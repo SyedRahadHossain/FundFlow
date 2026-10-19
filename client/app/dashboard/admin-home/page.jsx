@@ -59,7 +59,7 @@ export default function AdminHomePage() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-neutral-900">Admin Dashboard 🛡️</h2>
+        <h2 className="text-2xl font-bold text-neutral-900">Admin Dashboard <span aria-hidden="true">🛡️</span></h2>
         <p className="text-neutral-500 text-sm mt-1">Platform overview</p>
       </div>
 
@@ -102,7 +102,7 @@ export default function AdminHomePage() {
             <h3 className="font-semibold text-neutral-900 group-hover:text-primary transition-colors">{l.label}</h3>
             <p className="text-sm text-neutral-500 mt-1">{l.desc}</p>
             {l.count !== null && l.count > 0 && (
-              <span className="absolute top-4 right-4 w-5 h-5 rounded-full bg-warning text-white text-xs flex items-center justify-center font-bold">
+              <span className="absolute top-4 right-4 min-w-5 h-5 px-1 rounded-full bg-warning-light text-warning-dark text-xs flex items-center justify-center font-bold tabular-nums ring-1 ring-warning/30">
                 {l.count > 9 ? '9+' : l.count}
               </span>
             )}

@@ -51,7 +51,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-surface/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-100">
+    <nav className="bg-surface/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -103,8 +103,8 @@ export default function Navbar() {
                     <Avatar name={user.email} size="sm" />
                   </button>
                   {userMenuOpen && (
-                    <div id="user-menu" className="absolute right-0 top-full mt-2 w-56 bg-surface border border-neutral-100 rounded-xl shadow-lg py-2 animate-fade-in">
-                      <div className="px-4 py-2 text-sm text-neutral-500 border-b border-neutral-100">
+                    <div id="user-menu" className="absolute right-0 top-full mt-2 w-56 bg-surface border border-neutral-200 rounded-xl shadow-lg py-2 animate-fade-in">
+                      <div className="px-4 py-2 text-sm text-neutral-500 border-b border-neutral-200">
                         {user.email}
                       </div>
                       <Link
@@ -121,7 +121,7 @@ export default function Navbar() {
                       >
                         Purchase Credits
                       </Link>
-                      <hr className="my-2 border-neutral-100" />
+                      <hr className="my-2 border-neutral-200" />
                       <button
                         onClick={() => setShowLogoutConfirm(true)}
                         className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error-light"
@@ -162,7 +162,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div id="mobile-menu" ref={menuRef} className="md:hidden border-t border-neutral-100 py-3 space-y-2 pb-4 animate-slide-down">
+          <div id="mobile-menu" ref={menuRef} className="md:hidden border-t border-neutral-200 py-3 space-y-2 pb-4 animate-slide-down">
             <div className="px-4 py-2 flex items-center justify-between">
               <span className="text-sm text-neutral-500">Theme</span>
               <ThemeToggle className="!min-h-[40px]" />

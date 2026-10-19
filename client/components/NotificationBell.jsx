@@ -74,7 +74,7 @@ export default function NotificationBell() {
         className={cn(
           'relative w-10 h-10 rounded-xl flex items-center justify-center',
           'text-neutral-500 hover:bg-neutral-100 transition-colors',
-          'focus:outline-none focus:ring-3 focus:ring-primary'
+          'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2'
         )}
         aria-label={unread > 0 ? `${unread} unread notifications` : 'Notifications'}
         aria-expanded={open}
@@ -84,7 +84,7 @@ export default function NotificationBell() {
         </svg>
         {unread > 0 && (
           <span className={cn(
-            'absolute -top-0.5 -right-0.5 w-5 h-5 bg-error text-white text-[11px] font-bold rounded-full flex items-center justify-center',
+            'absolute -top-0.5 -right-0.5 w-5 h-5 bg-error text-white text-xs font-bold rounded-full flex items-center justify-center',
             'animate-scale-in'
           )}>
             {unread > 9 ? '9+' : unread}
@@ -93,8 +93,8 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-88 bg-surface border border-neutral-100 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
-          <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between">
+        <div className="absolute right-0 top-full mt-2 w-88 bg-surface border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
+          <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between">
             <h3 className="font-semibold text-sm text-neutral-900">Notifications</h3>
             {unread > 0 && (
               <button

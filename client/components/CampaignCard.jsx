@@ -97,7 +97,7 @@ export default function CampaignCard({
         />
 
         <div className="flex items-center justify-between text-xs text-neutral-500">
-          <span className="font-medium text-neutral-700 tabular-nums">
+          <span className="font-medium text-accent tabular-nums">
             {(c.amount_raised || 0).toLocaleString()} credits raised
           </span>
           <span className="flex items-center gap-1 tabular-nums">

@@ -53,7 +53,7 @@ export default function SupporterHomePage() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-neutral-900">Welcome back 👋</h2>
+        <h2 className="text-2xl font-bold text-neutral-900">Welcome back <span aria-hidden="true">👋</span></h2>
         <p className="text-neutral-500 text-sm mt-1">{user?.email}</p>
       </div>
 

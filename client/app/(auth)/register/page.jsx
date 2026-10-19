@@ -76,7 +76,7 @@ export default function RegisterPage() {
 
   return (
     <main id="main-content" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent-light to-primary-light px-4">
-      <div className="bg-surface rounded-2xl shadow-lg p-8 w-full max-w-md">
+      <div className="bg-surface rounded-2xl border border-neutral-200 shadow-sm p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-neutral-900 mb-1">Create account</h1>
         <p className="text-sm text-neutral-500 mb-6">Join FundFlow and start making an impact</p>
 
@@ -144,7 +144,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-neutral-500 mt-4">
           Already have an account?{' '}
-          <Link href="/login" className="text-accent hover:underline font-medium">Sign in</Link>
+          <Link href="/login" className="text-primary hover:text-primary-hover hover:underline font-medium">Sign in</Link>
         </p>
       </div>
     </main>

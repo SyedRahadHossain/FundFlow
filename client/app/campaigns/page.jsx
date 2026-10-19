@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import api from '@/lib/api';
 import { Input, Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { SkeletonCard, EmptyState } from '@/components/ui/EmptyState';
 import CampaignCard from '@/components/CampaignCard';
 
 export default function PublicCampaignsPage() {
@@ -43,7 +44,7 @@ export default function PublicCampaignsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main id="main-content" className="flex-1 bg-neutral-50">
+      <main id="main-content" className="flex-1 bg-canvas">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <h1 className="text-3xl font-bold text-neutral-900 mb-2">Explore Campaigns</h1>
           <p className="text-neutral-500 mb-6">Discover projects that need your support</p>
@@ -76,15 +77,21 @@ export default function PublicCampaignsPage() {
 
           {loading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => <div key={i} className="h-64 bg-neutral-100 rounded-2xl animate-pulse" />)}
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-surface rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
+                  <SkeletonCard />
+                </div>
+              ))}
             </div>
           )}
 
           {!loading && !error && filtered.length === 0 && (
-            <div className="py-20 text-center text-neutral-500">
-              <span className="text-5xl block mb-3">🔍</span>
-              <p>No campaigns found.</p>
-            </div>
+            <EmptyState
+              variant="search"
+              subtitle={search || category !== 'All'
+                ? 'Try a different search term or category.'
+                : 'No campaigns are live right now — check back soon.'}
+            />
           )}
 
           {!loading && !error && filtered.length > 0 && (

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
 
@@ -48,7 +49,7 @@ const emptyStates = {
       title: 'No withdrawal requests',
       subtitle: 'Request a withdrawal once you\'ve raised 200+ credits ($10+)',
       actionText: 'Request Withdrawal',
-      actionHref: '/dashboard/withdrawals/new',
+      actionHref: '/dashboard/withdrawals',
     },
     admin: {
       emoji: '💰',
@@ -117,7 +118,7 @@ export function EmptyState({
   const finalSubtitle = subtitle || config.subtitle;
   const finalAction = action || (config.actionText && config.actionHref ? (
     <Button variant="primary" asChild>
-      <a href={config.actionHref}>{config.actionText}</a>
+      <Link href={config.actionHref}>{config.actionText}</Link>
     </Button>
   ) : null);
 
@@ -162,15 +163,15 @@ export function SkeletonCard({ className }) {
 
 export function SkeletonTable({ rows = 5, columns = 4, className }) {
   return (
-    <div className={cn('bg-surface rounded-2xl border border-neutral-100 overflow-hidden', className)}>
-      <div className="bg-neutral-50 px-5 py-3 border-b border-neutral-100 animate-pulse">
+    <div className={cn('bg-surface rounded-2xl border border-neutral-200 overflow-hidden', className)}>
+      <div className="bg-neutral-50 px-5 py-3 border-b border-neutral-200 animate-pulse">
         <div className="flex gap-4">
           {Array.from({ length: columns }).map((_, i) => (
             <div key={i} className="h-4 bg-neutral-200 rounded" style={{ width: i === 0 ? '120px' : '80px' }} />
           ))}
         </div>
       </div>
-      <div className="divide-y divide-neutral-100">
+      <div className="divide-y divide-neutral-200">
         {Array.from({ length: rows }).map((_, i) => (
           <div key={i} className="px-5 py-4 animate-pulse">
             <div className="flex gap-4">
@@ -189,7 +190,7 @@ export function SkeletonList({ items = 3, className }) {
   return (
     <div className={cn('space-y-4', className)}>
       {Array.from({ length: items }).map((_, i) => (
-        <div key={i} className="bg-surface rounded-2xl border border-neutral-100 p-5 animate-pulse">
+        <div key={i} className="bg-surface rounded-2xl border border-neutral-200 p-5 animate-pulse">
           <div className="flex gap-4">
             <div className="w-12 h-12 rounded-xl bg-neutral-200 flex-shrink-0" />
             <div className="flex-1 space-y-2">
@@ -207,7 +208,7 @@ export function SkeletonList({ items = 3, className }) {
 export function LoadingOverlay({ message = 'Loading...', className }) {
   return (
     <div className={cn('fixed inset-0 z-50 flex items-center justify-center bg-surface/80 backdrop-blur-sm', className)}>
-      <div className="flex flex-col items-center gap-4 p-6 bg-surface rounded-2xl shadow-lg border border-neutral-100">
+      <div className="flex flex-col items-center gap-4 p-6 bg-surface rounded-2xl shadow-sm border border-neutral-200">
         <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-sm font-medium text-neutral-700">{message}</p>
       </div>

@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/Modal';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function WithdrawalRequestsPage() {
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading]         = useState(true);
   const [approving, setApproving]     = useState(null);
   const [error, setError]             = useState(false);
+  const [confirming, setConfirming]   = useState(null); // withdrawal pending approval
 
   // Reloading is driven by a token so the loader can stay inside the effect:
   // the effect calls setState only after an await, never synchronously.
@@ -37,13 +40,6 @@ export default function WithdrawalRequestsPage() {
   };
 
   const approve = async (w) => {
-    // The approve route pays out and decrements amount_raised, and there is no
-    // matching reject route, so this cannot be undone from the UI once sent.
-    const confirmMessage =
-      `Approve withdrawal of $${w.withdrawal_amount?.toFixed(2)} ` +
-      `(${w.withdrawal_credit?.toLocaleString()} credits) for "${w.creator_name}"?\n\n` +
-      `This cannot be undone — the payout is marked paid and the creator's raised credits are reduced.`;
-    if (!window.confirm(confirmMessage)) return;
     setApproving(w._id);
     try {
       await api.patch(`/api/withdrawals/${w._id}/approve`);
@@ -53,8 +49,22 @@ export default function WithdrawalRequestsPage() {
       toast.error(err.response?.data?.error || 'Action failed');
     } finally {
       setApproving(null);
+      setConfirming(null);
     }
   };
+
+  const ApproveButton = ({ w, className = '' }) => (
+    <Button
+      size="sm"
+      variant="ghost"
+      leftIcon="💳"
+      onClick={() => setConfirming(w)}
+      disabled={approving === w._id}
+      className={`min-h-11 bg-success-light border border-success/20 text-success-dark hover:bg-success/20 ${className}`}
+    >
+      Payment Success
+    </Button>
+  );
 
   return (
     <div>
@@ -73,14 +83,11 @@ export default function WithdrawalRequestsPage() {
       )}
 
       {!error && (
-        <div className="bg-surface rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
+        <div className="bg-surface rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
           {loading ? (
             <div className="p-4 space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-14 bg-neutral-50 animate-pulse rounded-xl" />)}</div>
           ) : withdrawals.length === 0 ? (
-            <div className="py-20 text-center text-neutral-500">
-              <span className="text-5xl block mb-3">💸</span>
-              <p>No pending withdrawal requests.</p>
-            </div>
+            <EmptyState variant="withdrawals" role="admin" />
           ) : (
             <>
               {/* Desktop */}
@@ -97,23 +104,20 @@ export default function WithdrawalRequestsPage() {
                       <th className="px-5 py-3 text-center">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-50">
+                  <tbody className="divide-y divide-neutral-200">
                     {withdrawals.map(w => (
                       <tr key={w._id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-5 py-3.5">
                           <p className="font-medium text-neutral-800">{w.creator_name}</p>
                           <p className="text-xs text-neutral-500">{w.creator_email}</p>
                         </td>
-                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums">💎 {w.withdrawal_credit?.toLocaleString()}</td>
+                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums"><span aria-hidden="true">💎 </span>{w.withdrawal_credit?.toLocaleString()}</td>
                         <td className="px-5 py-3.5 text-right font-bold text-neutral-800 tabular-nums">${w.withdrawal_amount?.toFixed(2)}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{w.payment_system}</td>
                         <td className="px-5 py-3.5 text-neutral-500 text-xs">{w.account_number}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{new Date(w.withdraw_date).toLocaleDateString()}</td>
                         <td className="px-5 py-3.5 text-center">
-                          <button onClick={() => approve(w)} disabled={approving === w._id}
-                            className="text-xs bg-success-light border border-success/20 text-success-dark hover:bg-success/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium">
-                            {approving === w._id ? '…' : '💳 Payment Success'}
-                          </button>
+                          <ApproveButton w={w} />
                         </td>
                       </tr>
                     ))}
@@ -122,7 +126,7 @@ export default function WithdrawalRequestsPage() {
               </div>
 
               {/* Mobile */}
-              <div className="sm:hidden divide-y divide-neutral-50">
+              <div className="sm:hidden divide-y divide-neutral-200">
                 {withdrawals.map(w => (
                   <div key={w._id} className="px-4 py-4">
                     <div className="flex justify-between items-start mb-2">
@@ -132,13 +136,10 @@ export default function WithdrawalRequestsPage() {
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-neutral-800 tabular-nums">${w.withdrawal_amount?.toFixed(2)}</p>
-                        <p className="text-xs text-accent tabular-nums">💎 {w.withdrawal_credit?.toLocaleString()}</p>
+                        <p className="text-xs text-accent tabular-nums"><span aria-hidden="true">💎 </span>{w.withdrawal_credit?.toLocaleString()}</p>
                       </div>
                     </div>
-                    <button onClick={() => approve(w)} disabled={approving === w._id}
-                      className="w-full mt-2 text-sm bg-success hover:bg-success-dark disabled:opacity-60 text-white font-semibold py-2 rounded-lg transition-colors">
-                      {approving === w._id ? 'Processing…' : '💳 Mark Payment Success'}
-                    </button>
+                    <ApproveButton w={w} className="w-full mt-2" />
                   </div>
                 ))}
               </div>
@@ -146,6 +147,21 @@ export default function WithdrawalRequestsPage() {
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!confirming}
+        onClose={() => setConfirming(null)}
+        onConfirm={() => approve(confirming)}
+        title="Approve withdrawal?"
+        description={
+          confirming
+            ? `Approve withdrawal of $${confirming.withdrawal_amount?.toFixed(2)} (${confirming.withdrawal_credit?.toLocaleString()} credits) for "${confirming.creator_name}"? This cannot be undone — the payout is marked paid and the creator's raised credits are reduced.`
+            : ''
+        }
+        confirmText="Approve payout"
+        cancelText="Cancel"
+        loading={!!approving}
+      />
     </div>
   );
 }

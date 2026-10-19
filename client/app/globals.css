@@ -71,6 +71,17 @@
      indigo→teal gradient needs; sized for large numerals only, where 3:1 is
      the bar. Small credit text stays on light surfaces, where accent passes. */
   --color-field-credit: #7ff0dd;
+
+  /* Constant chrome — the footer and toast host are dark in both themes, so
+     they must not follow the neutral ramp inversion. Declared in @theme so
+     real utilities (bg-footer-bg, text-footer-fg/80, …) exist instead of
+     arbitrary bg-[var(...)] values. */
+  --color-footer-bg: #111827;
+  --color-footer-fg: #d1d5db;
+  --color-footer-chip: #1f2937;
+  --color-footer-chip-hover: #6366f1;
+  --color-toast-bg: #111827;
+  --color-toast-fg: #ffffff;
 }
 
 :root {
@@ -84,15 +95,6 @@
   --surface-1: #f9fafb;
   --surface-2: #f3f4f6;
   --surface-3: #e5e7eb;
-
-  /* Constant chrome — the footer and toast host are dark in both themes, so
-     they must not follow the neutral ramp inversion above. */
-  --color-footer-bg: #111827;
-  --color-footer-fg: #d1d5db;
-  --color-footer-chip: #1f2937;
-  --color-footer-chip-hover: #6366f1;
-  --color-toast-bg: #111827;
-  --color-toast-fg: #ffffff;
 
   /* Persuade fields. The hero and the impact band are dark in both themes for
      the same reason the footer is: they are brand surfaces, not product

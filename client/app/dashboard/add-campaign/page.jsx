@@ -78,7 +78,7 @@ export default function AddCampaignPage() {
         <p className="text-neutral-500 text-sm mt-1">Submit a campaign for Admin review before it goes live</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-neutral-100 p-6 space-y-5 shadow-sm">
+      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-neutral-200 p-6 space-y-5 shadow-sm">
         <Input
           label="Campaign Title"
           required
@@ -169,8 +169,8 @@ export default function AddCampaignPage() {
           />
         </div>
 
-        <Button type="submit" width="full" size="lg" loading={submitting} loadingText="Submitting…">
-          🚀 Submit Campaign for Review
+        <Button type="submit" width="full" size="lg" loading={submitting} loadingText="Submitting…" leftIcon="🚀">
+          Submit Campaign for Review
         </Button>
       </form>
     </div>
