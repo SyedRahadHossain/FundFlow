@@ -6,8 +6,8 @@ Source: `Crowdfunding_Platform.docx` (the original assessment brief) cross-check
 Status of everything already verified working is in the appendix at the bottom.
 
 Items 1–7, 10, and 11 are complete. Item 12 is partly done, with the two impeccable reports
-holding the unfixed findings. Item 14 (deploy) needs your accounts, and item 13 has one
-small remainder: your LinkedIn and Facebook profile URLs.
+holding the unfixed findings. Items 13 and 14 are complete: both apps are deployed and the
+live URLs are recorded in `client/README.md`, `server/README.md`, and `PRODUCT.md`.
 
 Severity: **blocker** = grader explicitly checks it · **major** = explicit docx requirement ·
 **minor** = explicit docx wording that current UI softens · **admin** = needs your accounts.
@@ -193,10 +193,12 @@ floors at zero, so a duplicate payout was the only harm here.
 - [x] **P2 fixed** — the testimonials presented six invented people with portraits as real
       customer quotes. They are now labelled sample content, and the women's portraits were
       removed on request, falling back to initials
-- [ ] **Not fixed** — the remaining audit findings: `text-neutral-400` body text at 2.54:1
-      across 62 sites, the mobile drawer with no focus trap, the client-only fetch that
-      blanks the public catalog on first paint, the notification panel overflowing narrow
-      phones, and 10 P3 items. Both reports hold the ranked list
+- [ ] **Not fixed** — the remaining audit findings: the client-only fetch that blanks the
+      public catalog on first paint, the notification panel overflowing narrow phones, and
+      10 P3 items. Both reports hold the ranked list
+- [x] **Fixed since** — the secondary-text contrast sweep (60 sites), the mobile drawer
+      focus trap/dialog semantics, and the load-failure-vs-empty-state issue on 11 pages
+      (see item 15)
 
 ## 13. Submission metadata — partly done, remainder needs your accounts
 
@@ -213,22 +215,47 @@ Docx §What to Submit asks for five items.
 - [x] `client/lib/links.js` — `LINKEDIN_URL` and `FACEBOOK_URL` now point at
       `https://www.linkedin.com/in/syedrahadhossain` and
       `https://www.facebook.com/ArchSun.IT/`, so both footer icons resolve to your profiles
-- [ ] Live site URL — `client/README.md` still reads
-      `https://fundflow.vercel.app  ← update after deploy`; fills in once you deploy (item 14)
+- [x] Live site URL — `client/README.md`, `server/README.md`, and `PRODUCT.md` now carry the
+      deployed origins: https://fundflow-client-wine.vercel.app (client) and
+      https://fundflow-server-seven.vercel.app (server)
 
-## 14. Deploy to Vercel — admin, needs your accounts
+## 14. Deploy to Vercel — done
 
 Docx §Additional Information: "Make sure you deploy the server side and client side on the
 first day."
 
-- [ ] Deploy `server/` — needs your Vercel account and `MONGODB_URI`, `JWT_SECRET`,
-      `CLIENT_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-- [ ] Deploy `client/` — needs the six `NEXT_PUBLIC_FIREBASE_*` vars plus
-      `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_IMGBB_KEY`
+- [x] Deploy `server/` — live at https://fundflow-server-seven.vercel.app; verified 200 on
+      `GET /api/campaigns?status=approved` and 401 on the admin-only `GET /api/payments/all`
+- [x] Deploy `client/` — live at https://fundflow-client-wine.vercel.app; its shipped bundle
+      targets https://fundflow-server-seven.vercel.app, so `NEXT_PUBLIC_API_URL` is set
 - [ ] Register the Stripe webhook URL on the deployed server — credits are granted **only**
-      by the signature-verified `POST /api/stripe/webhook`; without `STRIPE_WEBHOOK_SECRET`
-      configured, no purchase ever grants credits
+      by the signature-verified `POST /api/stripe/webhook`; this still needs your Stripe
+      dashboard and `STRIPE_WEBHOOK_SECRET`
 - [ ] Point `CLIENT_URL` at the deployed client origin, or Stripe redirects and CORS fail
+
+## 15. Full-project code review — done
+
+A read-only review of `client/` and `server/` scored every candidate finding for confidence
+and reported the six that cleared the bar. Full write-up with links and remediation:
+`docs/reviews/2026-10-19-full-project-review.md`.
+
+- [x] **Credit loss on delete** — `deleteCampaignWithRefunds` refunded only `approved`
+      contributions, stranding the credits of every contribution still `pending`. Now claims
+      `approved` and `pending` (`server/lib/campaignLifecycle.js`)
+- [x] **Notification read flag** — the schema had no `read` path, so mark-all-read was
+      stripped by strict mode and the badge never cleared (`server/models/Notification.js`)
+- [x] **Dashboard counts** — the admin tiles read `total` off array responses and the creator
+      tile hit a route that 500d, so both read zero; now sourced from
+      `GET /api/dashboard/counts`, and `/api/payments/all` returns a real `totalVolume`
+- [x] **Mobile drawer** — dialog semantics, Escape, focus move/restore, close button
+- [x] **Load failures** — 11 pages rendered the empty state on a failed fetch; each now
+      shows a `role="alert"` banner with a retry
+- [x] Written test-first: the three server fixes each have a new suite, run RED before the
+      fix. Server suite **141/141 across 15 suites**; client build **25/25 pages**; lint
+      unchanged at 19 problems
+- [ ] **Below threshold, still real** — `GET /api/campaigns/:id` is public and returns
+      `pending`/`rejected` campaigns; the `FileInput` drop handler never reads
+      `dataTransfer.files`; report Dismiss is local-only and returns on reload
 
 ## 10. Git history — done
 

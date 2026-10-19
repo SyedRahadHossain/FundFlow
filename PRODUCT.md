@@ -54,7 +54,7 @@ The meaningfully different mechanism a neighboring product could not truthfully 
 
 ## Evidence on Hand
 
-- **Live site:** https://fundflow.vercel.app (needs update after deploy)
+- **Live site:** https://fundflow-client-wine.vercel.app
 - **Admin seed credentials:** `admin@fundflow.com` / `Admin@123456`
 - **Server test suite:** 63 passing tests covering auth, campaigns, contributions, withdrawals, payments, notifications, reports, users, Stripe, middleware, models.
 - **Design tokens:** Documented in `client/DESIGN.md` and implemented as CSS variables in `client/app/globals.css`.

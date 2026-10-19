@@ -4,7 +4,7 @@ Express + MongoDB REST API for the FundFlow crowdfunding platform.
 
 ## Live URL
 
-> Update after deploying to Vercel.
+> https://fundflow-server-seven.vercel.app
 
 ## Source Code
 
