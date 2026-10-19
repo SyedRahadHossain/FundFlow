@@ -37,7 +37,13 @@ router.post('/', verifyToken, verifyRole('creator'), validate(withdrawalSchema),
     if (totalRaised < MIN_WITHDRAWAL_CREDITS) {
       return res.status(400).json({ error: `Minimum ${MIN_WITHDRAWAL_CREDITS} raised credits required` });
     }
-    if (withdrawal_credit > totalRaised) {
+
+    // Pending requests hold the same balance until an admin approves them;
+    // subtract them so a second request cannot claim credits already claimed.
+    const pending = await Withdrawal.find({ creator_email: req.user.email, status: 'pending' });
+    const pendingTotal = pending.reduce((sum, w) => sum + (w.withdrawal_credit || 0), 0);
+
+    if (withdrawal_credit > totalRaised - pendingTotal) {
       return res.status(400).json({ error: 'Cannot withdraw more than raised credits' });
     }
 
