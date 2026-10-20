@@ -1,54 +1,67 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { SkeletonList, EmptyState } from '@/components/ui/EmptyState';
-import { Button } from '@/components/ui/Button';
-import { Input, Select } from '@/components/ui/Input';
 import CampaignCard from '@/components/CampaignCard';
+import CampaignFilters from '@/components/CampaignFilters';
+import CampaignResultBar from '@/components/CampaignResultBar';
 import api from '@/lib/api';
+import { DEFAULT_FILTERS, toQuery, hasActiveFilters } from '@/lib/campaignFilters';
 
+/**
+ * The supporter's own explore screen.
+ *
+ * The same filters as the public index, and the same server-side endpoint,
+ * because the two surfaces answer the same question. A reader who learns
+ * the filters on one of them should not have to learn them again.
+ */
 export default function ExploreCampaignsPage() {
-  const [campaigns, setCampaigns] = useState([]);
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('All');
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [results, setResults] = useState({ campaigns: [], total: 0, page: 1, pages: 1, facets: { categories: [] } });
   const [loading, setLoading] = useState(true);
-
-  const categories = ['All', 'Technology', 'Art & Design', 'Community', 'Health', 'Music', 'Education', 'Environment', 'Gaming', 'Other'];
+  const [error, setError] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
-    let mounted = true;
-    api.get('/api/campaigns?status=approved&active=true')
-      .then(res => { if (mounted) { setCampaigns(res.data); setLoading(false); } })
-      .catch(() => { if (mounted) setLoading(false); });
-    return () => { mounted = false; };
-  }, []);
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await api.get(`/api/campaigns/search?${toQuery(filters)}`);
+        if (cancelled) return;
+        setResults({
+          campaigns: res.data.campaigns || [],
+          total: res.data.total ?? 0,
+          page: res.data.page ?? 1,
+          pages: res.data.pages ?? 1,
+          facets: res.data.facets ?? { categories: [] },
+        });
+        setError(false);
+      } catch {
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, filters.q ? 300 : 0);
 
-  const filtered = useMemo(() => {
-    let result = campaigns;
-    if (category !== 'All') result = result.filter(c => c.category === category);
-    if (search.trim()) result = result.filter(c =>
-      c.title.toLowerCase().includes(search.toLowerCase()) ||
-      c.creator_name?.toLowerCase().includes(search.toLowerCase())
-    );
-    return result;
-  }, [search, category, campaigns]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [filters, reloadToken]);
 
-  if (loading) {
+  const categoryCounts = Object.fromEntries(
+    (results.facets?.categories || []).map((c) => [c.value, c.count])
+  );
+
+  const campaigns = results.campaigns || [];
+
+  if (loading && campaigns.length === 0) {
     return (
       <div>
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-neutral-900">Explore Campaigns</h2>
           <p className="text-neutral-500 text-sm mt-1">Browse live campaigns and support what inspires you</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <Input
-            type="text"
-            aria-label="Search campaigns or creators"
-            placeholder="Search campaigns or creators…"
-            className="flex-1"
-            disabled
-          />
-          <Select className="w-full sm:w-56" options={categories.map(c => ({ value: c, label: c }))} disabled />
         </div>
         <SkeletonList items={6} />
       </div>
@@ -62,39 +75,45 @@ export default function ExploreCampaignsPage() {
         <p className="text-neutral-500 text-sm mt-1">Browse live campaigns and support what inspires you</p>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <Input
-          type="text"
-          aria-label="Search campaigns or creators"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search campaigns or creators…"
-          className="flex-1"
-        />
-        <Select
-          aria-label="Filter by category"
-          className="w-full sm:w-56"
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-          options={categories.map(c => ({ value: c, label: c }))}
-        />
-      </div>
+      <CampaignFilters
+        filters={filters}
+        onChange={setFilters}
+        categoryCounts={categoryCounts}
+      />
 
-      {filtered.length === 0 && (
+      {error && (
+        <p role="alert" className="text-sm text-error mb-4">
+          We couldn’t load campaigns.
+          <button
+            type="button"
+            onClick={() => { setError(false); setReloadToken((token) => token + 1); }}
+            className="ml-2 underline underline-offset-4"
+          >
+            Try again
+          </button>
+        </p>
+      )}
+
+      <CampaignResultBar
+        total={results.total ?? 0}
+        page={results.page ?? 1}
+        pages={results.pages ?? 1}
+        filtered={hasActiveFilters(filters)}
+        onPageChange={(page) => setFilters({ ...filters, page })}
+      />
+
+      {!error && campaigns.length === 0 && (
         <EmptyState
           variant="search"
-          action={
-            <Button variant="secondary" onClick={() => { setSearch(''); setCategory('All'); }}>
-              Clear filters
-            </Button>
-          }
+          subtitle={hasActiveFilters(filters)
+            ? 'No campaigns match these filters. Try a different search or clear them.'
+            : 'No campaigns are live right now — check back soon.'}
         />
       )}
 
-      {filtered.length > 0 && (
+      {!error && campaigns.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map(c => (
+          {campaigns.map((c) => (
             <CampaignCard key={c._id} campaign={c} href={`/dashboard/explore/${c._id}`} />
           ))}
         </div>

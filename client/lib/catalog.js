@@ -42,3 +42,27 @@ export async function getPlatformStats() {
   if (!data || typeof data !== 'object') return { stats: null, failed: true };
   return { stats: data, failed: false };
 }
+
+/**
+ * The campaign index, read through the search endpoint: the rows for the
+ * first page, the size of the whole filtered set, and the category counts.
+ *
+ * The page arrives with all three, so the count under the filters is right
+ * from the first paint instead of after the browser's own request.
+ */
+export async function getCampaignSearch(query = '') {
+  const search = query ? `?${query}` : '';
+  const data = await getJson(`/api/campaigns/search${search}`);
+  if (!data || !Array.isArray(data.campaigns)) {
+    return { campaigns: [], total: 0, page: 1, limit: 12, pages: 1, facets: { categories: [] }, failed: true };
+  }
+  return {
+    campaigns: data.campaigns,
+    total: typeof data.total === 'number' ? data.total : data.campaigns.length,
+    page: data.page ?? 1,
+    limit: data.limit ?? 12,
+    pages: data.pages ?? 1,
+    facets: data.facets ?? { categories: [] },
+    failed: false,
+  };
+}

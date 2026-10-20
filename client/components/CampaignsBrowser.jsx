@@ -4,65 +4,78 @@ import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import api from '@/lib/api';
-import { Input, Select } from '@/components/ui/Input';
 import { SkeletonCard, EmptyState } from '@/components/ui/EmptyState';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import CampaignCard from '@/components/CampaignCard';
+import CampaignFilters from '@/components/CampaignFilters';
+import CampaignResultBar from '@/components/CampaignResultBar';
+import { DEFAULT_FILTERS, toQuery, hasActiveFilters } from '@/lib/campaignFilters';
 
 /**
  * The campaign index.
  *
- * The list itself is rendered on the server and handed in as a prop, so the
- * page arrives with its campaigns in the HTML instead of a skeleton and a
- * request. The filters still run in the browser over that list.
+ * The first page of results is read on the server and handed in as a prop,
+ * so the page arrives with its campaigns in the HTML instead of a skeleton
+ * and a request. The filters then run on the server too: the browser asks
+ * the API for the rows that match, and the answer is the whole filtered
+ * set, not a guess made over the list that happened to arrive.
  */
-export default function CampaignsBrowser({ initialCampaigns, initialFailed }) {
-  const [campaigns, setCampaigns] = useState(initialCampaigns || []);
-  const [search, setSearch]       = useState('');
-  const [category, setCategory]   = useState('All');
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState(initialFailed);
-  // The server delivered the list; the browser only fetches when that read
-  // failed and the reader asks for another try.
-  const [needsFetch, setNeedsFetch] = useState(initialFailed);
-
-  // Reloading is driven by a token so the loader can stay inside the effect:
-  // the effect calls setState only after an await, never synchronously.
+export default function CampaignsBrowser({ initialResults, initialFilters = DEFAULT_FILTERS }) {
+  const [filters, setFilters] = useState(initialFilters);
+  const [results, setResults] = useState(initialResults);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(initialResults?.failed ?? false);
   const [reloadToken, setReloadToken] = useState(0);
 
-  const categories = ['All','Technology','Art & Design','Community','Health','Music','Education','Environment','Gaming','Other'];
-
+  // The filters drive the request. The search term waits for a pause in
+  // typing, so a sentence does not become ten requests.
   useEffect(() => {
-    if (!needsFetch) return;
     let cancelled = false;
-    (async () => {
+    const timer = setTimeout(async () => {
+      setLoading(true);
       try {
-        const res = await api.get('/api/campaigns?status=approved&active=true');
+        const res = await api.get(`/api/campaigns/search?${toQuery(filters)}`);
         if (cancelled) return;
-        setCampaigns(res.data || []);
+        setResults({
+          campaigns: res.data.campaigns || [],
+          total: res.data.total ?? 0,
+          page: res.data.page ?? 1,
+          limit: res.data.limit ?? 12,
+          pages: res.data.pages ?? 1,
+          facets: res.data.facets ?? { categories: [] },
+        });
         setError(false);
-        setNeedsFetch(false);
       } catch {
         if (!cancelled) setError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
-    return () => { cancelled = true; };
-  }, [needsFetch, reloadToken]);
+    }, filters.q ? 300 : 0);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [filters, reloadToken]);
+
+  const applyFilters = (next) => {
+    setFilters(next);
+    // The address bar follows the filters, so a reader can send the view
+    // they are looking at to someone else.
+    const query = toQuery(next);
+    window.history.replaceState(null, '', query ? `?${query}` : window.location.pathname);
+  };
 
   const retry = () => {
     setError(false);
-    setLoading(true);
-    setReloadToken(t => t + 1);
-    setNeedsFetch(true);
+    setReloadToken((token) => token + 1);
   };
 
-  const filtered = campaigns.filter(c => {
-    const matchCat = category === 'All' || c.category === category;
-    const matchSearch = !search.trim() || c.title.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
+  const categoryCounts = Object.fromEntries(
+    (results.facets?.categories || []).map((c) => [c.value, c.count])
+  );
+
+  const campaigns = results.campaigns || [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -77,23 +90,19 @@ export default function CampaignsBrowser({ initialCampaigns, initialFailed }) {
             <ErrorBanner message="We couldn’t load campaigns." onRetry={retry} />
           )}
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-8">
-            <Input
-              type="text"
-              aria-label="Search campaigns"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search campaigns…"
-              className="flex-1"
-            />
-            <Select
-              aria-label="Filter by category"
-              className="w-full sm:w-56"
-              value={category}
-              onChange={e => setCategory(e.target.value)}
-              options={categories.map(c => ({ value: c, label: c }))}
-            />
-          </div>
+          <CampaignFilters
+            filters={filters}
+            onChange={applyFilters}
+            categoryCounts={categoryCounts}
+          />
+
+          <CampaignResultBar
+            total={results.total ?? 0}
+            page={results.page ?? 1}
+            pages={results.pages ?? 1}
+            filtered={hasActiveFilters(filters)}
+            onPageChange={(page) => applyFilters({ ...filters, page })}
+          />
 
           {loading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -105,20 +114,20 @@ export default function CampaignsBrowser({ initialCampaigns, initialFailed }) {
             </div>
           )}
 
-          {!loading && !error && filtered.length === 0 && (
+          {!loading && !error && campaigns.length === 0 && (
             <EmptyState
               variant="search"
-              subtitle={search || category !== 'All'
-                ? 'Try a different search term or category.'
+              subtitle={hasActiveFilters(filters)
+                ? 'No campaigns match these filters. Try a different search or clear them.'
                 : 'No campaigns are live right now — check back soon.'}
             />
           )}
 
-          {!loading && !error && filtered.length > 0 && (
+          {!loading && !error && campaigns.length > 0 && (
             <>
               <h2 className="sr-only">Campaign results</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filtered.map(c => (
+                {campaigns.map((c) => (
                   <CampaignCard key={c._id} campaign={c} href={`/campaigns/${c._id}`} />
                 ))}
               </div>
