@@ -37,7 +37,9 @@ export default function TopFundedCampaigns({ initialCampaigns, initialFailed }) 
   // HTML on the first paint. The browser only fetches when that read failed.
   const [campaigns, setCampaigns] = useState(initialCampaigns || []);
   const [loading, setLoading] = useState(!initialCampaigns);
-  const [error, setError] = useState(initialFailed ? new Error('Failed to load campaigns') : null);
+  // A string, never an Error object: this value is rendered as a child, and
+  // an Error rendered as a child crashes the prerender.
+  const [error, setError] = useState(initialFailed ? 'We couldn’t load campaigns.' : null);
   const [needsFetch, setNeedsFetch] = useState(Boolean(initialFailed));
   // Bumping this re-runs the effect below. The fetch itself lives in the effect
   // so `setLoading(true)` is never called synchronously from an effect body
@@ -98,7 +100,9 @@ export default function TopFundedCampaigns({ initialCampaigns, initialFailed }) 
                     </svg>
                   </div>
                   <h3 className="text-lg font-semibold text-neutral-900 mb-2">Unable to load campaigns</h3>
-                  <p className="text-base text-neutral-600 mb-4">{error}</p>
+                  <p className="text-base text-neutral-600 mb-4">
+                    {typeof error === 'string' ? error : 'We couldn’t load campaigns.'}
+                  </p>
                   <Button variant="primary" onClick={retry}>
                     Try again
                   </Button>
