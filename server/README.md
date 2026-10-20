@@ -14,13 +14,27 @@ Client and server ship from a single repository.
 - **Server source (this directory):** https://github.com/SyedRahadHossain/FundFlow/tree/main/server
 - **Client source:** https://github.com/SyedRahadHossain/FundFlow/tree/main/client
 
+## Features
+
+- **3-role authorization** — `verifyRole` guards every protected route and the JWT role claim decides access; the request body never does
+- **Public catalog gate** — only `status=approved` is readable without a token; every other status needs an Admin, and a non-string filter is a 400
+- **Credit economy** — 10 credits = $1 bought, 20 credits = $1 withdrawn, 200 raised credits minimum per withdrawal
+- **Atomic contributions** — the debit is conditional on the balance, runs first, and is compensated if the insert fails
+- **Withdrawal double-claim guard** — a creator's pending requests are subtracted before a new one is approved, so the same credits cannot be claimed twice
+- **Campaign delete refunds** — deleting a campaign refunds every Supporter with an approved or pending contribution
+- **Stripe webhook is the only credit path** — signature-verified, amount cross-checked against the metadata the server authored, idempotent on `stripe_session_id`
+- **Dashboard counts** — one route serves every role's tiles instead of counting array lengths in the browser
+- **Notifications** — six platform events write a notification row for the recipient, read newest-first
+- **Password recovery** — hashed single-use tokens, one-hour expiry, one live link per account, and the same answer for an unknown address
+- **Tested** — 175 Jest + Supertest tests over 18 suites, in-memory model mocks, no database required
+
 ## Setup
 
 ```bash
 npm install
 cp .env.example .env   # fill in your values
 npm run dev            # http://localhost:5000
-npm test               # run 171 tests (18 suites)
+npm test               # run 175 tests (18 suites)
 ```
 
 ## Password recovery
@@ -62,7 +76,7 @@ provider still has to be wired before this route can deliver to a real user.
 | POST | `/api/campaigns` | Creator | Create campaign |
 | PATCH | `/api/campaigns/:id` | Creator | Update title/story/reward |
 | POST | `/api/campaigns/:id/updates` | Creator | Post a progress update to backers |
-| DELETE | `/api/campaigns/:id` | Creator | Delete + refund supporters |
+| DELETE | `/api/campaigns/:id` | Creator (own) or Admin (any) | Delete + refund supporters |
 | PATCH | `/api/campaigns/:id/status` | Admin | Approve / reject |
 | POST | `/api/contributions` | Supporter | Submit contribution |
 | GET | `/api/contributions/mine` | Supporter | Paginated own contributions |
@@ -85,6 +99,22 @@ provider still has to be wired before this route can deliver to a real user.
 | GET | `/api/users/stats` | Admin | Platform stats |
 | POST | `/api/stripe/create-checkout-session` | Supporter | Stripe checkout (server-side pricing) |
 | POST | `/api/stripe/webhook` | Stripe signature | Grant credits — the only path that mints credits |
+
+## Stripe
+
+Credits are granted **only** by `POST /api/stripe/webhook`. It verifies the `stripe-signature` header, accepts only `checkout.session.completed`, cross-checks the charged amount against the metadata this server wrote, and claims the event on a unique `stripe_session_id` so a replay cannot grant credits twice.
+
+The endpoint must exist in Stripe itself, or no purchase grants anything:
+
+1. Stripe Dashboard → **Webhooks** → add endpoint `https://fundflow-server-seven.vercel.app/api/stripe/webhook` (test mode) with the event `checkout.session.completed`
+2. Copy the endpoint's signing secret into Vercel as `STRIPE_WEBHOOK_SECRET` (production target) and redeploy
+3. The deployed endpoint is currently test-mode; a live Stripe key needs a live-mode endpoint and its own secret
+
+For local development, forward events with the Stripe CLI instead:
+
+```bash
+stripe listen --forward-to localhost:5000/api/stripe/webhook
+```
 
 ## Deploy to Vercel
 
