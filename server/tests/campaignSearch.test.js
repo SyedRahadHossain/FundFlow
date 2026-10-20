@@ -125,13 +125,13 @@ beforeEach(() => {
   lastPipeline = null;
 });
 
-describe('GET /api/campaigns/search', () => {
+describe('GET /api/campaigns/query', () => {
   test('returns only approved campaigns to an anonymous caller', async () => {
     seed({ title: 'Approved one' });
     seed({ title: 'Pending one', status: 'pending' });
     seed({ title: 'Rejected one', status: 'rejected' });
 
-    const res = await request(app).get('/api/campaigns/search');
+    const res = await request(app).get('/api/campaigns/query');
 
     expect(res.status).toBe(200);
     expect(res.body.campaigns).toHaveLength(1);
@@ -142,7 +142,7 @@ describe('GET /api/campaigns/search', () => {
     seed();
     seed();
 
-    const res = await request(app).get('/api/campaigns/search');
+    const res = await request(app).get('/api/campaigns/query');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(
@@ -160,7 +160,7 @@ describe('GET /api/campaigns/search', () => {
     seed({ title: 'A Clinic Queue That Works Offline' });
     seed({ title: 'The Night Market Print Residency' });
 
-    const res = await request(app).get('/api/campaigns/search?q=CLINIC');
+    const res = await request(app).get('/api/campaigns/query?q=CLINIC');
 
     expect(res.status).toBe(200);
     expect(res.body.campaigns).toHaveLength(1);
@@ -171,7 +171,7 @@ describe('GET /api/campaigns/search', () => {
     seed({ title: 'One', creator_name: 'Amara Osei' });
     seed({ title: 'Two', creator_name: 'Daniel Reyes' });
 
-    const res = await request(app).get('/api/campaigns/search?q=osei');
+    const res = await request(app).get('/api/campaigns/query?q=osei');
 
     expect(res.status).toBe(200);
     expect(res.body.campaigns).toHaveLength(1);
@@ -183,7 +183,7 @@ describe('GET /api/campaigns/search', () => {
     seed({ title: 'Music two', category: 'Music' });
     seed({ title: 'Education one', category: 'Education' });
 
-    const res = await request(app).get('/api/campaigns/search?category=Music');
+    const res = await request(app).get('/api/campaigns/query?category=Music');
 
     expect(res.status).toBe(200);
     expect(res.body.campaigns).toHaveLength(2);
@@ -194,8 +194,8 @@ describe('GET /api/campaigns/search', () => {
     seed({ title: 'Running', deadline: soon(5) });
     seed({ title: 'Ended', deadline: past(5) });
 
-    const active = await request(app).get('/api/campaigns/search?deadline=active');
-    const ended = await request(app).get('/api/campaigns/search?deadline=ended');
+    const active = await request(app).get('/api/campaigns/query?deadline=active');
+    const ended = await request(app).get('/api/campaigns/query?deadline=ended');
 
     expect(active.body.campaigns.map((c) => c.title)).toEqual(['Running']);
     expect(ended.body.campaigns.map((c) => c.title)).toEqual(['Ended']);
@@ -206,7 +206,7 @@ describe('GET /api/campaigns/search', () => {
     seed({ title: 'Ending next month', deadline: soon(25) });
     seed({ title: 'Ending next year', deadline: soon(200) });
 
-    const res = await request(app).get('/api/campaigns/search?deadline=ending');
+    const res = await request(app).get('/api/campaigns/query?deadline=ending');
 
     expect(res.body.campaigns.map((c) => c.title).sort()).toEqual([
       'Ending next month',
@@ -219,57 +219,57 @@ describe('GET /api/campaigns/search', () => {
     seed({ title: 'Middle', funding_goal: 1200 });
     seed({ title: 'Large', funding_goal: 5000 });
 
-    const res = await request(app).get('/api/campaigns/search?minGoal=1000&maxGoal=2000');
+    const res = await request(app).get('/api/campaigns/query?minGoal=1000&maxGoal=2000');
 
     expect(res.status).toBe(200);
     expect(res.body.campaigns.map((c) => c.title)).toEqual(['Middle']);
   });
 
   test('rejects an inverted goal range', async () => {
-    const res = await request(app).get('/api/campaigns/search?minGoal=900&maxGoal=100');
+    const res = await request(app).get('/api/campaigns/query?minGoal=900&maxGoal=100');
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/goal/i);
   });
 
   test('rejects a goal that is not a number', async () => {
-    const res = await request(app).get('/api/campaigns/search?minGoal=many');
+    const res = await request(app).get('/api/campaigns/query?minGoal=many');
 
     expect(res.status).toBe(400);
   });
 
   test('rejects an unknown deadline value', async () => {
-    const res = await request(app).get('/api/campaigns/search?deadline=soonish');
+    const res = await request(app).get('/api/campaigns/query?deadline=soonish');
 
     expect(res.status).toBe(400);
   });
 
   test('rejects an unknown sort value', async () => {
-    const res = await request(app).get('/api/campaigns/search?sort=random');
+    const res = await request(app).get('/api/campaigns/query?sort=random');
 
     expect(res.status).toBe(400);
   });
 
   test('rejects an unknown status value', async () => {
-    const res = await request(app).get('/api/campaigns/search?status=deleted');
+    const res = await request(app).get('/api/campaigns/query?status=deleted');
 
     expect(res.status).toBe(400);
   });
 
   test('rejects a status filter that is not a plain string', async () => {
-    const res = await request(app).get('/api/campaigns/search?status[$ne]=approved');
+    const res = await request(app).get('/api/campaigns/query?status[$ne]=approved');
 
     expect(res.status).toBe(400);
   });
 
   test('rejects a repeated status parameter', async () => {
-    const res = await request(app).get('/api/campaigns/search?status=approved&status=pending');
+    const res = await request(app).get('/api/campaigns/query?status=approved&status=pending');
 
     expect(res.status).toBe(400);
   });
 
   test('rejects a search term longer than the limit', async () => {
-    const res = await request(app).get(`/api/campaigns/search?q=${'x'.repeat(200)}`);
+    const res = await request(app).get(`/api/campaigns/query?q=${'x'.repeat(200)}`);
 
     expect(res.status).toBe(400);
   });
@@ -277,7 +277,7 @@ describe('GET /api/campaigns/search', () => {
   test('keeps unapproved campaigns away from an anonymous caller asking for them', async () => {
     seed({ title: 'Pending one', status: 'pending' });
 
-    const res = await request(app).get('/api/campaigns/search?status=pending');
+    const res = await request(app).get('/api/campaigns/query?status=pending');
 
     expect(res.status).toBe(401);
   });
@@ -287,7 +287,7 @@ describe('GET /api/campaigns/search', () => {
     seed({ title: 'Approved one', status: 'approved' });
 
     const res = await request(app)
-      .get('/api/campaigns/search?status=pending')
+      .get('/api/campaigns/query?status=pending')
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.status).toBe(200);
@@ -298,7 +298,7 @@ describe('GET /api/campaigns/search', () => {
   test('pages through the results and counts the whole set', async () => {
     for (let i = 1; i <= 5; i += 1) seed({ title: `Campaign ${i}`, createdAt: new Date(Date.now() - i * 1000) });
 
-    const res = await request(app).get('/api/campaigns/search?page=2&limit=2');
+    const res = await request(app).get('/api/campaigns/query?page=2&limit=2');
 
     expect(res.status).toBe(200);
     expect(res.body.campaigns).toHaveLength(2);
@@ -309,8 +309,8 @@ describe('GET /api/campaigns/search', () => {
   });
 
   test('rejects a page below one and a limit above the cap', async () => {
-    const zero = await request(app).get('/api/campaigns/search?page=0');
-    const huge = await request(app).get('/api/campaigns/search?limit=500');
+    const zero = await request(app).get('/api/campaigns/query?page=0');
+    const huge = await request(app).get('/api/campaigns/query?limit=500');
 
     expect(zero.status).toBe(400);
     expect(huge.status).toBe(400);
@@ -320,7 +320,7 @@ describe('GET /api/campaigns/search', () => {
     seed({ title: 'Least funded', amount_raised: 100 });
     seed({ title: 'Most funded', amount_raised: 900 });
 
-    const res = await request(app).get('/api/campaigns/search?sort=funded');
+    const res = await request(app).get('/api/campaigns/query?sort=funded');
 
     expect(res.body.campaigns.map((c) => c.title)).toEqual(['Most funded', 'Least funded']);
   });
@@ -329,7 +329,7 @@ describe('GET /api/campaigns/search', () => {
     seed({ title: 'Later', deadline: soon(40) });
     seed({ title: 'Sooner', deadline: soon(3) });
 
-    const res = await request(app).get('/api/campaigns/search?sort=ending');
+    const res = await request(app).get('/api/campaigns/query?sort=ending');
 
     expect(res.body.campaigns.map((c) => c.title)).toEqual(['Sooner', 'Later']);
   });
@@ -339,7 +339,7 @@ describe('GET /api/campaigns/search', () => {
     seed({ category: 'Music' });
     seed({ category: 'Education' });
 
-    const res = await request(app).get('/api/campaigns/search');
+    const res = await request(app).get('/api/campaigns/query');
 
     expect(res.body.facets.categories).toEqual([
       { value: 'Music', count: 2 },
@@ -352,7 +352,7 @@ describe('GET /api/campaigns/search', () => {
     seed({ category: 'Music' });
     seed({ category: 'Education' });
 
-    const res = await request(app).get('/api/campaigns/search?category=Music');
+    const res = await request(app).get('/api/campaigns/query?category=Music');
 
     expect(res.body.campaigns).toHaveLength(2);
     expect(res.body.facets.categories.map((c) => c.value).sort()).toEqual(['Education', 'Music']);
@@ -361,7 +361,7 @@ describe('GET /api/campaigns/search', () => {
   test('runs the filters through an aggregation pipeline', async () => {
     seed();
 
-    await request(app).get('/api/campaigns/search?category=Music&q=hall');
+    await request(app).get('/api/campaigns/query?category=Music&q=hall');
 
     expect(lastPipeline).not.toBeNull();
     expect(lastPipeline.some((stage) => stage.$facet)).toBe(true);

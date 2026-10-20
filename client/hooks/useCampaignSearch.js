@@ -50,7 +50,7 @@ export function useCampaignSearch(filters, { limit = 12, initial = null } = {}) 
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/api/campaigns/search?${toQuery(filters)}`);
+        const res = await api.get(`/api/campaigns/query?${toQuery(filters)}`);
         if (cancelled) return;
         setResults({
           campaigns: res.data.campaigns || [],
