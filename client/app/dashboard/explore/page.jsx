@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { SkeletonList, EmptyState } from '@/components/ui/EmptyState';
 import CampaignCard from '@/components/CampaignCard';
 import CampaignFilters from '@/components/CampaignFilters';
 import CampaignResultBar from '@/components/CampaignResultBar';
-import api from '@/lib/api';
-import { DEFAULT_FILTERS, toQuery, hasActiveFilters } from '@/lib/campaignFilters';
+import { useCampaignSearch } from '@/hooks/useCampaignSearch';
+import { DEFAULT_FILTERS, hasActiveFilters } from '@/lib/campaignFilters';
 
 /**
  * The supporter's own explore screen.
@@ -17,38 +17,7 @@ import { DEFAULT_FILTERS, toQuery, hasActiveFilters } from '@/lib/campaignFilter
  */
 export default function ExploreCampaignsPage() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [results, setResults] = useState({ campaigns: [], total: 0, page: 1, pages: 1, facets: { categories: [] } });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [reloadToken, setReloadToken] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`/api/campaigns/search?${toQuery(filters)}`);
-        if (cancelled) return;
-        setResults({
-          campaigns: res.data.campaigns || [],
-          total: res.data.total ?? 0,
-          page: res.data.page ?? 1,
-          pages: res.data.pages ?? 1,
-          facets: res.data.facets ?? { categories: [] },
-        });
-        setError(false);
-      } catch {
-        if (!cancelled) setError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }, filters.q ? 300 : 0);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [filters, reloadToken]);
+  const { results, loading, error, retry } = useCampaignSearch(filters);
 
   const categoryCounts = Object.fromEntries(
     (results.facets?.categories || []).map((c) => [c.value, c.count])
@@ -86,7 +55,7 @@ export default function ExploreCampaignsPage() {
           We couldn’t load campaigns.
           <button
             type="button"
-            onClick={() => { setError(false); setReloadToken((token) => token + 1); }}
+            onClick={retry}
             className="ml-2 underline underline-offset-4"
           >
             Try again

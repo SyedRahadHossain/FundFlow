@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import api from '@/lib/api';
 import { SkeletonCard, EmptyState } from '@/components/ui/EmptyState';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import CampaignCard from '@/components/CampaignCard';
 import CampaignFilters from '@/components/CampaignFilters';
 import CampaignResultBar from '@/components/CampaignResultBar';
+import { useCampaignSearch } from '@/hooks/useCampaignSearch';
 import { DEFAULT_FILTERS, toQuery, hasActiveFilters } from '@/lib/campaignFilters';
 
 /**
@@ -22,41 +22,7 @@ import { DEFAULT_FILTERS, toQuery, hasActiveFilters } from '@/lib/campaignFilter
  */
 export default function CampaignsBrowser({ initialResults, initialFilters = DEFAULT_FILTERS }) {
   const [filters, setFilters] = useState(initialFilters);
-  const [results, setResults] = useState(initialResults);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(initialResults?.failed ?? false);
-  const [reloadToken, setReloadToken] = useState(0);
-
-  // The filters drive the request. The search term waits for a pause in
-  // typing, so a sentence does not become ten requests.
-  useEffect(() => {
-    let cancelled = false;
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`/api/campaigns/search?${toQuery(filters)}`);
-        if (cancelled) return;
-        setResults({
-          campaigns: res.data.campaigns || [],
-          total: res.data.total ?? 0,
-          page: res.data.page ?? 1,
-          limit: res.data.limit ?? 12,
-          pages: res.data.pages ?? 1,
-          facets: res.data.facets ?? { categories: [] },
-        });
-        setError(false);
-      } catch {
-        if (!cancelled) setError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }, filters.q ? 300 : 0);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [filters, reloadToken]);
+  const { results, loading, error, retry } = useCampaignSearch(filters, { initial: initialResults });
 
   const applyFilters = (next) => {
     setFilters(next);
@@ -64,11 +30,6 @@ export default function CampaignsBrowser({ initialResults, initialFilters = DEFA
     // they are looking at to someone else.
     const query = toQuery(next);
     window.history.replaceState(null, '', query ? `?${query}` : window.location.pathname);
-  };
-
-  const retry = () => {
-    setError(false);
-    setReloadToken((token) => token + 1);
   };
 
   const categoryCounts = Object.fromEntries(
@@ -104,7 +65,7 @@ export default function CampaignsBrowser({ initialResults, initialFilters = DEFA
             onPageChange={(page) => applyFilters({ ...filters, page })}
           />
 
-          {loading && (
+          {loading && campaigns.length === 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="bg-surface rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
@@ -123,7 +84,7 @@ export default function CampaignsBrowser({ initialResults, initialFilters = DEFA
             />
           )}
 
-          {!loading && !error && campaigns.length > 0 && (
+          {!error && campaigns.length > 0 && (
             <>
               <h2 className="sr-only">Campaign results</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
