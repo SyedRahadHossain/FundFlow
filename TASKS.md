@@ -327,8 +327,14 @@ All three are explicitly not required for submission.
 
 - [ ] **Automated email notifications** (SendGrid or AWS SES) on campaign
       approval/rejection, contribution confirmation, withdrawal processing
-- [ ] **Advanced search and filter** by category, deadline, funding goal, status, using
-      MongoDB aggregation on the server
+- [x] **Advanced search and filter** by category, deadline, funding goal, status, using
+      MongoDB aggregation on the server — `GET /api/campaigns/search` runs one
+      aggregation (`$match` → `$facet`) that returns the rows for the page, the size of the
+      whole filtered set and the category counts in one round trip. The public index and the
+      supporter's explore screen share one filter bar: search, category (with counts),
+      deadline, sort and a funding-goal range. A link may carry the filters
+      (`/campaigns?category=Music`), the server reads them and renders the filtered page
+      directly, and the address bar follows the filters as they change.
 - [ ] **Report system** — **already fully implemented**. Supporter flags from the campaign
       details page; admin queue has Suspend, Delete (with supporter refunds), and Dismiss.
       No work needed.

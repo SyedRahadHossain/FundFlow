@@ -33,6 +33,7 @@ Client and server ship from a single repository.
 - **Real-time notifications** — Bell icon in every dashboard polls every 30 seconds; all 6 platform events insert notifications
 - **imgBB image upload** — Profile photo and campaign cover image support direct file upload via imgBB API with a URL fallback
 - **Paginated contributions** — Supporter My Contributions table paginates server-side (10 per page)
+- **Server-side campaign search** — the campaign index filters on the server: search, category, deadline, funding-goal range and sort, with the matched count and the category counts beside the results
 - **Responsive design** — All pages and dashboards adapt to mobile, tablet and desktop with a collapsible sidebar
 - **Google Sign-In** — Firebase Auth supports Google OAuth alongside email/password; private routes persist auth across reloads via localStorage JWT
 

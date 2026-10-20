@@ -42,7 +42,7 @@ The meaningfully different mechanism a neighboring product could not truthfully 
 - **Dark mode:** Implemented via a `prefers-color-scheme` media query plus a manual toggle in the navbar and the dashboard top bar. The choice is persisted in `localStorage['fundflow-theme']` and applied before first paint, so there is no flash of the wrong theme.
 - **Theme switching:** Implemented. The whole neutral ramp, the semantic tints and the native surfaces (scrollbars, selects, autofill, caret) invert with the theme.
 - **Stripe:** Optional — checkout answers 503 when `STRIPE_SECRET_KEY` or `CLIENT_URL` is missing, and credits are granted only by the signature-verified webhook. The client checks for the publishable key.
-- **Testing:** Server has 171 Jest + Supertest tests across 18 suites (the models are mocked, so no database is needed). The client has a small `node --test` suite (`client/tests/`) covering the file-drop path.
+- **Testing:** Server has 200 Jest + Supertest tests across 19 suites (the models are mocked, so no database is needed). The client has a `node --test` suite (`client/tests/`) covering the file-drop path, the filter state and the session rule.
 - **Linting:** Client has ESLint (flat config, extends next/core-web-vitals + TypeScript). Server has no lint configured.
 - **Accessibility baseline:** Focus rings (3px primary), 44px touch targets, `prefers-reduced-motion` respected, ARIA labels/roles/states on interactive elements, alt text on images, decorative emoji `aria-hidden="true"`.
 
@@ -57,7 +57,7 @@ The meaningfully different mechanism a neighboring product could not truthfully 
 
 - **Live site:** https://fundflow-client-wine.vercel.app
 - **Admin seed credentials:** `admin@fundflow.com` / `Admin@123456`
-- **Server test suite:** 171 passing tests covering auth, password recovery, campaigns, contributions, withdrawals, payments, notifications, reports, users, Stripe, middleware, models.
+- **Server test suite:** 200 passing tests covering auth, password recovery, campaigns, campaign search, contributions, withdrawals, payments, notifications, reports, users, Stripe, middleware, models.
 - **Design tokens:** Documented in `client/DESIGN.md` and implemented as CSS variables in `client/app/globals.css`.
 - **Component library:** `client/components/ui/` (Button, Input, Modal, Card, Avatar, ProgressBar, Badge, EmptyState, Icon, ErrorBanner) + dashboard/layout components (Navbar, DashboardSidebar, NotificationBell, HeroSlider, CreditConverter, HowItWorks, PlatformImpact, StatCard, CampaignCard, CampaignDetail, CampaignsBrowser, TopFundedCampaigns, Testimonials, Footer, ConfirmDialog, ErrorBoundary).
 - **Route map:** Public (`/`, `/campaigns`, `/campaigns/[id]`, `/login`, `/register`) + Protected dashboards under `/dashboard/` (role-specific home, campaign management, contributions review, withdrawals, payment histories, credit purchase, users, reports, admin approvals, explore).

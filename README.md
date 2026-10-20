@@ -122,8 +122,8 @@ The deployed server registers the endpoint `https://fundflow-server-seven.vercel
 
 | Package | Command | Coverage |
 |---------|---------|----------|
-| server | `npm test` | 175 tests across 18 suites (Jest + Supertest, mocked models) |
-| client | `npm test` | 3 tests (`node --test`) |
+| server | `npm test` | 200 tests across 19 suites (Jest + Supertest, mocked models) |
+| client | `npm test` | 20 tests (`node --test`) |
 | client | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript) |
 
 The server suite uses in-memory model mocks and needs no database.

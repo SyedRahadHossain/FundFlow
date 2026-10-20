@@ -26,7 +26,8 @@ Client and server ship from a single repository.
 - **Dashboard counts** — one route serves every role's tiles instead of counting array lengths in the browser
 - **Notifications** — six platform events write a notification row for the recipient, read newest-first
 - **Password recovery** — hashed single-use tokens, one-hour expiry, one live link per account, and the same answer for an unknown address
-- **Tested** — 175 Jest + Supertest tests over 18 suites, in-memory model mocks, no database required
+- **Campaign search on the server** — one aggregation answers a search, a filter set, a sort and a page, and returns the rows, the size of the whole filtered set and the category counts together
+- **Tested** — 200 Jest + Supertest tests over 19 suites, in-memory model mocks, no database required
 
 ## Setup
 
@@ -34,7 +35,7 @@ Client and server ship from a single repository.
 npm install
 cp .env.example .env   # fill in your values
 npm run dev            # http://localhost:5000
-npm test               # run 175 tests (18 suites)
+npm test               # run 200 tests (19 suites)
 ```
 
 ## Password recovery
@@ -71,6 +72,7 @@ provider still has to be wired before this route can deliver to a real user.
 | POST | `/api/auth/reset-password` | — | Set a new password with a reset token |
 | GET | `/api/auth/me` | Any | Current user profile |
 | GET | `/api/campaigns` | Approved public; other statuses Admin | List campaigns (`status` filter) |
+| GET | `/api/campaigns/search` | Approved public; other statuses Admin | Search, filter, sort and page campaigns (`q`, `category`, `deadline`, `minGoal`, `maxGoal`, `status`, `sort`, `page`, `limit`) |
 | GET | `/api/campaigns/top-funded` | — | Top 6 by amount raised |
 | GET | `/api/campaigns/mine` | Creator | Creator's own campaigns |
 | POST | `/api/campaigns` | Creator | Create campaign |
