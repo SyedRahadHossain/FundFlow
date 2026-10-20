@@ -16,13 +16,18 @@ import api from '@/lib/api';
  * credit tint because a credit is teal everywhere, while the other three
  * counts stay white ink.
  *
- * One figure owns the band. The credits raised lead the readout at display
- * size and the other three facts sit beside it on the same baseline as quiet
- * phrases, so the section reads as one line of live account rather than four
- * tiles of the same size. There is no count-up: the ledger path above is the
- * page's one authored moment, four concurrent counters would be a second one,
- * and the markup's default state is the settled state — the same trick the
- * ledger path uses so a page with no script still shows the whole mechanism.
+ * The band reads as a statement. The credits raised hold the left column as
+ * the total — display size, in the field's credit tint — and the other three
+ * counts sit opposite it as ruled line items with right-aligned tabular
+ * values, the way a ledger sheet records a figure and the rows that break it
+ * down. One total, not four tiles of the same size. There is no count-up: the
+ * ledger path above is the page's one authored moment, four concurrent
+ * counters would be a second one, and the markup's default state is the
+ * settled state — the same trick the ledger path uses so a page with no script
+ * still shows the whole mechanism.
+ *
+ * The statement's rules live in `globals.css` under `.impact-*`: they are the
+ * band's own layout, not markup, so the section keeps one class per part.
  */
 
 /**
@@ -76,11 +81,11 @@ export default function PlatformImpact({ initialStats }) {
 
   return (
     <section
-      className="relative py-20 sm:py-24 overflow-hidden"
+      className="relative overflow-hidden"
       style={{ backgroundImage: 'var(--field-impact)' }}
       aria-labelledby="impact-heading"
     >
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
         {/* The masthead: the section's name and the promise that holds it up,
             paired on one baseline at the two ends of the sheet. */}
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-16 lg:items-end">
@@ -96,34 +101,34 @@ export default function PlatformImpact({ initialStats }) {
           </p>
         </div>
 
-        {/* The readout: one line of live facts on a shared baseline. The credit
-            figure leads at display size, the other three read as quiet
-            phrases beside it rather than tiles of their own. */}
-        <ul
-          role="list"
-          className="mt-12 sm:mt-16 flex flex-wrap items-baseline justify-between gap-x-8 sm:gap-x-12 gap-y-4"
-        >
+        {/* The statement: the platform's total holds the left column, the other
+            three counts sit opposite it as ruled line items with right-aligned
+            tabular values. A figure and the rows that break it down. */}
+        <ul role="list" className="impact-statement">
           {facts.map((fact) => (
-            <li key={fact.label} className="flex items-baseline gap-2 sm:gap-3">
-              <span
-                className={`font-extrabold tabular-nums tracking-tight ${
-                  fact.lead ? 'text-5xl sm:text-6xl text-field-credit' : 'text-2xl text-white'
-                }`}
-              >
-                {fact.value.toLocaleString()}
-              </span>
-              <span
-                className={`text-field-muted ${fact.lead ? 'text-xl' : 'text-base'}`}
-              >
-                {fact.label}
-              </span>
+            <li key={fact.label} className={fact.lead ? 'impact-total' : 'impact-row'}>
+              {fact.lead ? (
+                <>
+                  <span className="impact-total-figure tabular-nums tracking-tight text-field-credit">
+                    {fact.value.toLocaleString()}
+                  </span>
+                  <span className="impact-total-label text-field-muted">{fact.label}</span>
+                </>
+              ) : (
+                <>
+                  <span className="impact-row-label text-field-muted">{fact.label}</span>
+                  <span className="impact-row-value tabular-nums text-white">
+                    {fact.value.toLocaleString()}
+                  </span>
+                </>
+              )}
             </li>
           ))}
         </ul>
 
         {/* The sheet's last band. The counts are exact, zeros included, so the
             band closes on what the numbers are rather than on another number. */}
-        <p className="mt-12 sm:mt-14 text-base text-field-muted max-w-[60ch]">
+        <p className="impact-note text-field-muted">
           Nothing is estimated or rounded up, and a zero here is a real count.
         </p>
       </div>

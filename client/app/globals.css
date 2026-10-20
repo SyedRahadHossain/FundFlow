@@ -635,6 +635,87 @@ input:-webkit-autofill:focus {
   }
 }
 
+/* ── The impact statement ─────────────────────────────────────────
+   The live count, read as a statement: the platform's total holds the
+   left column and the other three counts sit opposite it as ruled line
+   items with right-aligned tabular values. A ledger sheet records a
+   figure and the rows that break it down, so the band reads as one
+   account rather than four tiles of the same size.
+
+   The rules are white on a constant field, so they hold in both themes:
+   they are the sheet's own lines, not product chrome. */
+.impact-statement {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+}
+
+.impact-total {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* The one figure the band owns: display size, in the field's credit tint.
+   The clamp is the system's display token, so the total scales with the
+   viewport like every other display figure in the product. */
+.impact-total-figure {
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+.impact-total-label {
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+/* A line item: the name on the left, the count on the right, ruled. */
+.impact-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.15);
+}
+
+.impact-row-label {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.impact-row-value {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+/* The method note under the statement. */
+.impact-note {
+  margin-top: 2.5rem;
+  max-width: 60ch;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 1024px) {
+  .impact-statement {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+    column-gap: 4rem;
+    align-items: start;
+  }
+
+  .impact-total {
+    grid-row: 1 / span 3;
+  }
+
+  .impact-row {
+    grid-column: 2;
+  }
+}
+
 /* The example mark ── the initials on the ledger sheet.
    The avatar palette picks a -light ground that inverts with the theme, so
    on the constant field the circle would lose its edge in dark mode (the
