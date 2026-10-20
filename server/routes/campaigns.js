@@ -5,6 +5,7 @@ const Campaign = require('../models/Campaign');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { deleteCampaignWithRefunds } = require('../lib/campaignLifecycle');
+const { parseCampaignSearchQuery, buildCampaignSearchPipeline } = require('../lib/campaignSearch');
 const verifyToken = require('../middleware/verifyToken');
 const verifyRole = require('../middleware/verifyRole');
 
@@ -42,6 +43,45 @@ const validate = (schema) => (req, res, next) => {
   req.validated = value;
   next();
 };
+
+// GET /api/campaigns/search — server-side search, filter, sort and paging
+//
+// The public index used to filter in the browser, so the answer was capped
+// by what had already been sent down. One aggregation does the matching,
+// the counting and the paging, and returns the rows, the size of the whole
+// filtered set and the category counts together.
+router.get('/search', (req, res, next) => {
+  const { filters, errors } = parseCampaignSearchQuery(req.query);
+  if (errors.length > 0) {
+    return res.status(400).json({ error: errors[0], details: errors });
+  }
+  req.searchFilters = filters;
+  return next();
+}, (req, res, next) => {
+  // An unapproved campaign is moderation data. Only an admin may ask for
+  // one; everyone else gets the approved catalog.
+  if (req.searchFilters.status === 'approved') return next();
+  return verifyToken(req, res, () => verifyRole('admin')(req, res, next));
+}, async (req, res) => {
+  try {
+    const pipeline = buildCampaignSearchPipeline(req.searchFilters);
+    const [facet] = await Campaign.aggregate(pipeline);
+    const campaigns = facet?.campaigns || [];
+    const total = facet?.total?.[0]?.count || 0;
+    return res.json({
+      campaigns,
+      total,
+      page: req.searchFilters.page,
+      limit: req.searchFilters.limit,
+      pages: Math.ceil(total / req.searchFilters.limit),
+      facets: {
+        categories: (facet?.categories || []).map((c) => ({ value: c._id, count: c.count })),
+      },
+    });
+  } catch {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // GET /api/campaigns/top-funded — public, top 6 by amount_raised
 router.get('/top-funded', async (req, res) => {
