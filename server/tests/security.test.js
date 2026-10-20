@@ -52,22 +52,30 @@ jest.mock('../models/Campaign', () => ({
   },
 }));
 
-jest.mock('../models/Contribution', () => ({
-  find: async (filter = {}) =>
-    Object.values(mockContributions).filter(
-      (c) =>
-        (!filter.campaign_id || c.campaign_id === filter.campaign_id) &&
-        (!filter.status || c.status === filter.status)
-    ),
-  findOneAndUpdate: async (filter, update) => {
-    const c = Object.values(mockContributions).find(
-      (x) => x._id === filter._id && (!filter.status || x.status === filter.status)
-    );
-    if (!c) return null;
-    Object.assign(c, update.$set || {});
-    return c;
-  },
-}));
+jest.mock('../models/Contribution', () => {
+  // Mirrors Mongoose's filter matching for the operators the service uses:
+  // a status may arrive as a scalar or as `{ $in: [...] }`.
+  const matchesStatus = (status, filter) =>
+    !filter ||
+    (typeof filter === 'string' ? status === filter : filter.$in.includes(status));
+
+  return {
+    find: async (filter = {}) =>
+      Object.values(mockContributions).filter(
+        (c) =>
+          (!filter.campaign_id || c.campaign_id === filter.campaign_id) &&
+          matchesStatus(c.status, filter.status)
+      ),
+    findOneAndUpdate: async (filter, update) => {
+      const c = Object.values(mockContributions).find(
+        (x) => x._id === filter._id && matchesStatus(x.status, filter.status)
+      );
+      if (!c) return null;
+      Object.assign(c, update.$set || {});
+      return c;
+    },
+  };
+});
 
 // Stripe is mocked at the SDK boundary: only signature verification and the
 // event payload matter to the route.

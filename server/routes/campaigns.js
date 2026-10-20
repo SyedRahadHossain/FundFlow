@@ -52,6 +52,7 @@ router.get('/top-funded', async (req, res) => {
       // Cards need deadline/goal/creator too: without them the card renders a
       // false "Ended" badge and an empty creator line.
       .select('title campaign_image_url amount_raised deadline funding_goal creator_name');
+    res.set('Cache-Control', 'public, max-age=60');
     return res.json(campaigns);
   } catch {
     return res.status(500).json({ error: 'Server error' });
@@ -98,18 +99,33 @@ router.get('/', validateStatusFilter, adminOnlyForUnapproved, async (req, res) =
     if (req.query.status) filter.status = req.query.status;
     if (req.query.active === 'true') filter.deadline = { $gt: new Date() };
     const campaigns = await Campaign.find(filter).sort({ createdAt: -1 });
+    // The approved list is the public catalog: the landing page and the
+    // campaign index read it, and it may be cached for a minute. Anything
+    // else is moderation data and stays uncached.
+    if (req.query.status === 'approved') {
+      res.set('Cache-Control', 'public, max-age=60');
+    }
     return res.json(campaigns);
   } catch {
     return res.status(500).json({ error: 'Server error' });
   }
 });
 
-// GET /api/campaigns/:id
+// GET /api/campaigns/:id — approved is public; anything else needs an admin
+// The detail route answers under the same rule as the list, because it is the
+// same disclosure: an unapproved campaign is moderation data. The load happens
+// here, once, so the route cannot serve a document it never classified.
+async function sendCampaign(req, res, campaign) {
+  if (campaign.status === 'approved') return res.json(campaign);
+  return verifyToken(req, res, () =>
+    verifyRole('admin')(req, res, () => res.json(campaign)));
+}
+
 router.get('/:id', async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id);
     if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
-    return res.json(campaign);
+    return await sendCampaign(req, res, campaign);
   } catch {
     return res.status(500).json({ error: 'Server error' });
   }
@@ -134,6 +150,12 @@ router.post('/', verifyToken, verifyRole('creator'), validate(campaignCreateSche
     await campaign.save();
     return res.status(201).json(campaign);
   } catch (err) {
+    // A rejected document is the caller's problem, not the server's: say what
+    // is wrong instead of a blind "Server error".
+    if (err && err.name === 'ValidationError') {
+      return res.status(400).json({ error: 'Campaign could not be saved: check the title, story, category, goal, deadline, reward note and image URL.' });
+    }
+    console.error('campaign create failed:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });
@@ -170,10 +192,21 @@ router.post('/:id/updates', verifyToken, verifyRole('creator'), validate(campaig
   }
 });
 
-// DELETE /api/campaigns/:id — creator: delete + refund approved supporters
-router.delete('/:id', verifyToken, verifyRole('creator'), async (req, res) => {
+// DELETE /api/campaigns/:id — creator deletes their own, admin deletes any
+// A creator may only delete a campaign they own. An admin may delete any
+// campaign: the admin surfaces (campaign management, the report queue) both
+// offer the action, and an admin who cannot delete is left with a control that
+// always answers "Forbidden".
+//
+// Both paths go through the same delete-and-refund helper, so deleting a
+// campaign returns the credits of every supporter who backed it — an admin
+// delete cannot confiscate supporter money either.
+router.delete('/:id', verifyToken, verifyRole('creator', 'admin'), async (req, res) => {
   try {
-    const campaign = await Campaign.findOne({ _id: req.params.id, creator_email: req.user.email });
+    const scope = req.user.role === 'admin'
+      ? { _id: req.params.id }
+      : { _id: req.params.id, creator_email: req.user.email };
+    const campaign = await Campaign.findOne(scope);
     if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
 
     const { refunded } = await deleteCampaignWithRefunds(req.params.id);

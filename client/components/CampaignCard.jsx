@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Badge, CategoryBadge, TopFundedBadge } from '@/components/ui/Badge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Button } from '@/components/ui/Button';
+import Icon from '@/components/ui/Icon';
 
 const daysLeft = (d) => Math.max(0, Math.ceil((new Date(d) - new Date()) / 86400000));
 
@@ -59,7 +60,7 @@ export default function CampaignCard({
           src={imageUrl}
           alt={`${c.title} campaign image`}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          className="object-cover transition-transform duration-300 [@media(hover:hover)]:group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           loading="lazy"
           placeholder="blur"
@@ -77,7 +78,7 @@ export default function CampaignCard({
           </Badge>
         )}
         {daysRemaining === 0 && (
-          <Badge variant="neutral" size="sm" className="absolute bottom-2 left-2">
+          <Badge variant="default" size="sm" className="absolute bottom-2 left-2">
             Ended
           </Badge>
         )}
@@ -85,7 +86,7 @@ export default function CampaignCard({
 
       <CardContent className={cn(contentPadding[variant], 'space-y-3')}>
         <h3 className="font-semibold text-neutral-900 line-clamp-2">{c.title}</h3>
-        <p className="text-xs text-neutral-500">by {c.creator_name}</p>
+        <p className="text-[13px] text-neutral-500">by {c.creator_name}</p>
 
         <ProgressBar
           value={percentFunded}
@@ -96,14 +97,12 @@ export default function CampaignCard({
           animated
         />
 
-        <div className="flex items-center justify-between text-xs text-neutral-500">
-          <span className="font-medium text-neutral-700">
+        <div className="flex items-center justify-between text-[13px] text-neutral-500">
+          <span className="font-medium text-accent tabular-nums">
             {(c.amount_raised || 0).toLocaleString()} credits raised
           </span>
-          <span className="flex items-center gap-1">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <span className="flex items-center gap-1 tabular-nums">
+            <Icon name="calendar" className="w-3.5 h-3.5" />
             {daysRemaining !== null
               ? (daysRemaining > 0 ? `${daysRemaining}d left` : 'Ended')
               : '—'}

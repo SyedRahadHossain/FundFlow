@@ -55,16 +55,28 @@ export default function LoginPage() {
       toast.success('Signed in with Google!');
       router.push(redirectTarget());
     } catch (err) {
+      // Surface the underlying cause. A misconfigured Firebase project answers
+      // with a code such as auth/unauthorized-domain or auth/operation-not-allowed,
+      // which is far more actionable than a generic failure message.
       const data = err.response?.data;
-      toast.error(data?.error || (typeof data === 'string' ? data : null) || 'Google sign-in failed');
+      const serverMessage = data?.error || (typeof data === 'string' ? data : null);
+      toast.error(serverMessage || `Google sign-in failed${err.code ? ` (${err.code})` : ''}`);
     } finally {
       setGoogleLoading(false);
     }
   };
 
   return (
-    <main id="main-content" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent-light to-primary-light px-4">
-      <div className="bg-surface rounded-2xl shadow-lg p-8 w-full max-w-md">
+    <main id="main-content" className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-accent-light to-primary-light px-4 py-10">
+      {/* The auth pages carry no navbar, so the wordmark is also the way back
+          to the landing page. */}
+      <Link href="/" className="flex items-center gap-2 mb-6 min-h-11 font-bold text-xl text-primary hover:text-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm">
+        <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+        <span>FundFlow</span>
+      </Link>
+      <div className="bg-surface rounded-2xl border border-neutral-200 shadow-sm p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-neutral-900 mb-1">Welcome back</h1>
         <p className="text-sm text-neutral-500 mb-6">Sign in to your FundFlow account</p>
 
@@ -94,6 +106,15 @@ export default function LoginPage() {
             placeholder="••••••••"
           />
 
+          <div className="flex justify-end -mt-2">
+            <Link
+              href="/forgot-password"
+              className="inline-flex items-center min-h-11 text-sm font-medium text-primary hover:text-primary-hover hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           <Button type="submit" width="full" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign in'}
           </Button>
@@ -113,7 +134,6 @@ export default function LoginPage() {
           width="full"
           onClick={handleGoogle}
           disabled={googleLoading}
-          aria-label="Sign in with Google"
           className="gap-3"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -127,7 +147,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-neutral-500 mt-4">
           No account?{' '}
-          <Link href="/register" className="text-accent hover:underline font-medium">Create one</Link>
+          <Link href="/register" className="text-primary hover:text-primary-hover hover:underline font-medium">Create one</Link>
         </p>
       </div>
     </main>

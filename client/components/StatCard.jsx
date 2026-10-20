@@ -1,6 +1,8 @@
 'use client';
 
-export default function StatCard({ emoji, label, value, sub, color = 'primary', loading = false, skeleton = false }) {
+import Icon from '@/components/ui/Icon';
+
+export default function StatCard({ icon, label, value, sub, color = 'primary', tone = 'ink', loading = false, skeleton = false }) {
   const colorStyles = {
     primary: 'bg-primary-light text-primary-dark',
     success: 'bg-success-light text-success',
@@ -9,6 +11,10 @@ export default function StatCard({ emoji, label, value, sub, color = 'primary', 
     info: 'bg-info-light text-info',
     accent: 'bg-accent-light text-accent',
   };
+
+  // The Credit Color Rule: a credit figure is teal wherever it appears; money
+  // figures stay ink. Ink is the default, so no other call site needs a prop.
+  const valueTone = tone === 'credit' ? 'text-accent' : 'text-neutral-900';
 
   if (skeleton) {
     return (
@@ -24,27 +30,30 @@ export default function StatCard({ emoji, label, value, sub, color = 'primary', 
   }
 
   const displayValue = loading ? (
-    <span className="text-2xl font-bold text-neutral-900 animate-pulse" aria-busy="true" aria-label="Loading">
+    <span
+      className={`text-2xl font-bold tabular-nums animate-pulse ${valueTone}`}
+      aria-busy="true"
+      aria-label="Loading"
+    >
       {'\u2026'}
     </span>
   ) : (
-    <span className="text-2xl font-bold text-neutral-900" aria-live="polite">
+    <span className={`text-2xl font-bold tabular-nums ${valueTone}`} aria-live="polite">
       {value ?? '\u2014'}
     </span>
   );
 
   return (
-    <div className="bg-surface rounded-2xl border border-neutral-200 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-surface rounded-2xl border border-neutral-200 p-5 flex items-center gap-4 shadow-sm">
       <div
-        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 ${colorStyles[color] || colorStyles.primary}`}
-        aria-hidden="true"
+        className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${colorStyles[color] || colorStyles.primary}`}
       >
-        {emoji}
+        <Icon name={icon} className="w-6 h-6" />
       </div>
       <div>
-        <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">{label}</p>
+        <p className="text-[13px] text-neutral-500 font-medium uppercase tracking-wide">{label}</p>
         {displayValue}
-        {sub && <p className="text-xs text-neutral-500 mt-0.5">{sub}</p>}
+        {sub && <p className="text-[13px] text-neutral-500 mt-0.5">{sub}</p>}
       </div>
     </div>
   );

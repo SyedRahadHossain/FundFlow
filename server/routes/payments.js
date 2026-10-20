@@ -7,11 +7,16 @@ const verifyRole  = require('../middleware/verifyRole');
 // Credits are never granted from a request body. The only path that mints
 // credits is the signature-verified Stripe webhook (routes/stripeWebhook.js).
 
-// GET /api/payments/all — admin: total payment count
+// GET /api/payments/all — admin: total payment count and dollar volume
 router.get('/all', verifyToken, verifyRole('admin'), async (req, res) => {
   try {
-    const total = await Payment.countDocuments();
-    return res.json({ total });
+    const [total, [volume]] = await Promise.all([
+      Payment.countDocuments(),
+      Payment.aggregate([
+        { $group: { _id: null, totalVolume: { $sum: '$amount' } } },
+      ]),
+    ]);
+    return res.json({ total, totalVolume: volume?.totalVolume || 0 });
   } catch {
     return res.status(500).json({ error: 'Server error' });
   }

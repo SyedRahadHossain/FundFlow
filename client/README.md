@@ -9,7 +9,7 @@ A full-stack crowdfunding platform where Creators raise money by collecting cred
 
 ## Live Site
 
-> https://fundflow.vercel.app  ← update after deploy
+> https://fundflow-client-wine.vercel.app
 
 ## Source Code
 

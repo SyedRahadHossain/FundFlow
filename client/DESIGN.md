@@ -70,7 +70,7 @@
 - **Motion**: Respects `prefers-reduced-motion`
 - **ARIA**: Labels, roles, and states on all interactive elements
 - **Alt text**: Descriptive text for all images
-- **Emoji**: `aria-hidden="true"` on decorative emoji
+- **Icons**: drawn SVG lines from `components/ui/Icon.jsx`, never emoji — decorative glyphs carry `aria-hidden="true"`, a standalone glyph takes `role="img"` and an `aria-label`
 
 ## Current State
 - **Implementation**: CSS variables defined in `globals.css`

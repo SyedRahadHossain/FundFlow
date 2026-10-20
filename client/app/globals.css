@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* ── Colour roles ────────────────────────────────────────────────
+   Four roles, one job each. Colour that marks nothing earns nothing.
+
+     1. Action  — primary indigo. The one thing to press on a screen.
+     2. Credit  — accent teal. Every credit count and balance, everywhere.
+     3. Money   — ink (neutral-900 / neutral-700) with tabular-nums.
+                  Dollars are ledger ink; teal is a credit, never a price.
+     4. State   — success / warning / error / info. Approval and review
+                  state only; green never means money.
+
+   Interaction states are composed from the same tokens (a tint at rest,
+   the hue itself on hover), so no control paints the same value twice. */
+
 /* Colour tokens must live in @theme so Tailwind v4 generates the matching
    utilities (bg-primary, text-accent, border-error, …). @theme also emits each
    value to :root, so var(--color-*) keeps working. */
@@ -48,23 +61,61 @@
      card/panel backgrounds instead. */
   --color-surface: #ffffff;
   --color-canvas: #f9fafb;
-}
 
-:root {
-  /* Surface */
-  --surface-0: #ffffff;
-  --surface-1: #f9fafb;
-  --surface-2: #f3f4f6;
-  --surface-3: #e5e7eb;
+  /* Secondary copy on a Persuade field, tinted from the field's own hue. On a
+     dark indigo→teal gradient, a neutral gray reads as unlit; this stays part
+     of the field. Constant in both themes, because the fields are. */
+  --color-field-muted: #dbe3ff;
+
+  /* The credit figure on a persuade field. Teal at the lightness a dark
+     indigo→teal gradient needs; sized for large numerals only, where 3:1 is
+     the bar. Small credit text stays on light surfaces, where accent passes. */
+  --color-field-credit: #7ff0dd;
+
+  /* The ledger sheet: a constant ink ground for a section that must hold its
+     own colour in both themes. It is never redefined in the dark block, so
+     one contrast pair is verified instead of two. */
+  --color-field-ink: #111827;
+
+  /* The example mark on that field. The avatar palette's -light grounds
+     invert with the theme, so the monogram is pinned to a constant pair and
+     keeps the same contrast in both themes. */
+  --color-field-mark: #eef2ff;
+  --color-field-mark-ink: #3730a3;
 
   /* Constant chrome — the footer and toast host are dark in both themes, so
-     they must not follow the neutral ramp inversion above. */
+     they must not follow the neutral ramp inversion. Declared in @theme so
+     real utilities (bg-footer-bg, text-footer-fg/80, …) exist instead of
+     arbitrary bg-[var(...)] values. */
   --color-footer-bg: #111827;
   --color-footer-fg: #d1d5db;
   --color-footer-chip: #1f2937;
   --color-footer-chip-hover: #6366f1;
   --color-toast-bg: #111827;
   --color-toast-fg: #ffffff;
+}
+
+:root {
+  /* Light is the resting theme. color-scheme drives the native widgets the
+     design does not draw — scrollbars, select popups, date pickers, the
+     autofill wash — so they follow the palette instead of the OS. */
+  color-scheme: light;
+
+  /* Surface */
+  --surface-0: #ffffff;
+  --surface-1: #f9fafb;
+  --surface-2: #f3f4f6;
+  --surface-3: #e5e7eb;
+
+  /* Persuade fields. The hero and the impact band are dark in both themes for
+     the same reason the footer is: they are brand surfaces, not product
+     chrome, and the neutral ramp flipping underneath them would put white copy
+     on a light gradient. Keeping them constant leaves one contrast pair to
+     verify instead of two. Built from the palette's own dark ends. */
+  --field-hero-a: linear-gradient(135deg, #3730a3 0%, #4f46e5 48%, #0f766e 100%);
+  --field-hero-b: linear-gradient(135deg, #0f766e 0%, #4338ca 52%, #4f46e5 100%);
+  --field-hero-c: linear-gradient(135deg, #312e81 0%, #3730a3 42%, #115e59 100%);
+  --field-impact: linear-gradient(120deg, #3730a3 0%, #0f766e 100%);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -78,6 +129,10 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
+
+  /* Authored deceleration for arrivals. One curve, named, so the ledger
+     path, the counters and every reveal land the same way. */
+  --ease-out-quint: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Dark theme ──────────────────────────────────────────────────
@@ -90,6 +145,10 @@
    This single block must stay last: it shares equal specificity with :root
    and the @theme output, so source order is what makes the dark values win. */
 .dark {
+  /* Dark mode is composed, not inverted: native widgets and scrollbars must
+     follow the same switch, or dark pages ship light select popups and rails. */
+  color-scheme: dark;
+
   /* Neutral ramp inverted: light greys become dark, dark greys become light */
   --color-neutral-50:  #0b1220;
   --color-neutral-100: #111827;
@@ -160,12 +219,41 @@ body {
   color: var(--color-neutral-900);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* The browser surfaces the design does not draw: the text caret and the
+     native check/radio/progress fill both come from the palette, not the OS
+     default blue. */
+  caret-color: var(--color-primary);
+  accent-color: var(--color-primary);
+}
+
+/* Anchored jumps land below the sticky navbar instead of under it. */
+html { scroll-padding-top: 5.5rem; }
+
+/* Links carry the ledger's own underline weight where no utility overrides it. */
+a { text-underline-offset: 3px; }
+
+/* Autofill paints a UA-owned wash that ignores every token. Repaint the field
+   in the surface colour and keep the text token so autofilled values are not
+   the one thing on the page that leaves the system. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-neutral-900);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  caret-color: var(--color-primary);
 }
 
 /* Focus visible — accessible focus rings */
 :focus-visible {
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+/* A button rendered as a wrapper (asChild) draws its own ring when the
+   focus lands inside it. The link inside must not also draw the global
+   outline, or the control grows two rings. */
+.button-ring:focus-within :focus-visible {
+  outline: none;
 }
 
 /* Skip link */
@@ -176,9 +264,12 @@ body {
   z-index: 100;
   background: var(--color-primary);
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1rem;
   border-radius: var(--radius-lg);
   font-weight: 500;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   transition: transform 0.2s ease;
 }
 .skip-link:focus {
@@ -194,6 +285,14 @@ body {
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* The hero's entrance. The copy is legible from the first frame, so the
+   move is a rise — never a fade from nothing, and never a moment where the
+   headline is invisible. */
+@keyframes hero-rise {
+  from { transform: translateY(10px); }
+  to   { transform: translateY(0); }
 }
 
 @keyframes slide-down {
@@ -216,10 +315,11 @@ body {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
-  .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
-  .animate-slide-down { animation: slide-down 0.2s ease-out forwards; }
-  .animate-scale-in { animation: scale-in 0.2s ease-out forwards; }
+  .animate-fade-in { animation: fade-in 0.4s ease-out both; }
+  .animate-slide-up { animation: slide-up 0.3s ease-out both; }
+  .animate-slide-down { animation: slide-down 0.2s ease-out both; }
+  .animate-hero-rise { animation: hero-rise 0.5s var(--ease-out-quint) both; }
+  .animate-scale-in { animation: scale-in 0.2s ease-out both; }
   .animate-spin { animation: spin 1s linear infinite; }
   
   .shimmer {
@@ -232,10 +332,318 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in, .animate-slide-up, .animate-slide-down, .animate-scale-in { animation: none; opacity: 1; transform: none; }
-  .animate-spin, .animate-pulse, .animate-ping, .animate-bounce { animation: none; }
+  .animate-fade-in, .animate-slide-up, .animate-slide-down, .animate-scale-in, .animate-hero-rise { animation: none; opacity: 1; transform: none; }
+  .animate-spin, .animate-pulse { animation: none; }
   .shimmer { background: var(--color-neutral-200); animation: none; }
   html { scroll-behavior: auto; }
+}
+
+/* ── The credit slider ───────────────────────────────────────────
+   A native range input, restyled: a 44px hit area so the thumb is
+   reachable with a thumb, a 4px rail, a 20px thumb, and the filled
+   part of the rail drawn in the action colour. The focus ring is
+   painted on the thumb, because the track itself cannot show one. */
+.credit-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+.credit-range:focus { outline: none; }
+.credit-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--color-primary) 0 var(--credit-fill, 0%),
+    var(--color-neutral-200) var(--credit-fill, 0%) 100%
+  );
+}
+.credit-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  margin-top: -8px;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.15);
+}
+.credit-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--color-primary-medium), 0 1px 2px 0 rgb(0 0 0 / 0.15);
+}
+.credit-range::-moz-range-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--color-neutral-200);
+}
+.credit-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--color-primary);
+}
+.credit-range::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.15);
+}
+.credit-range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--color-primary-medium), 0 1px 2px 0 rgb(0 0 0 / 0.15);
+}
+
+/* ── The ledger path ─────────────────────────────────────────────
+   How the money moves, drawn as the route it takes: a supporter buys in
+   at 10 credits = $1, the creator approves, the creator cashes out at
+   20 credits = $1. One rail, three nodes; the rail fills in the
+   direction the credit travels.
+
+   Three states, in this order of override:
+     1. rest      — the completed route. This is the markup's default, so a
+                    browser with no animation and a page with no JS both
+                    show the mechanism whole.
+     2. played    — `data-run` (set when the section enters view) fills the
+                    rail on a time curve.
+     3. scrolled  — on a wide viewport with view-timeline support the fill
+                    is bound to the scroll position instead, and the stage
+                    pins while the credit completes its journey.
+
+   The rail is teal because a credit is teal everywhere; the dollar figures
+   stay ink. Reduced motion keeps the completed route and drops the travel. */
+.ledger-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* The rail from this node to the next, split in two: `::after` is the track
+   and `::before` is the fill that travels it. The track stays visible while
+   the credit is still in transit, so the route reads even at scroll positions
+   where the fill has not arrived yet. The offsets are the node's centre and
+   its foot, so the rail meets the node exactly. */
+.ledger-step::before,
+.ledger-step::after {
+  content: '';
+  position: absolute;
+  left: 1.5rem;
+  top: 3rem;
+  bottom: -1.25rem;
+  width: 2px;
+}
+
+.ledger-step::after {
+  background: var(--color-neutral-200);
+}
+
+/* Complete at rest, so no-JS and no-animation browsers see the whole route. */
+.ledger-step::before {
+  z-index: 1;
+  background: var(--color-accent);
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.ledger-step:last-child::before,
+.ledger-step:last-child::after { display: none; }
+
+.ledger-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  border: 2px solid var(--color-accent);
+  background: var(--color-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+}
+
+/* The sheet: the stage's own column. Three bands — the title, the route and
+   the closing note — so the pinned screen is composed by the mechanism
+   instead of floating in the middle of it. */
+.ledger-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+@keyframes ledger-fill-y {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+@keyframes ledger-fill-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes ledger-node-lit {
+  from {
+    background: var(--color-surface);
+    border-color: var(--color-neutral-200);
+    color: var(--color-neutral-500);
+  }
+  to {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #ffffff;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Two up-and-over movements per node: the rail runs across, not down. */
+  .ledger-step {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .ledger-node { justify-self: start; }
+  .ledger-step::before,
+  .ledger-step::after {
+    left: 3.75rem;
+    right: -1.25rem;
+    top: 1.5rem;
+    bottom: auto;
+    width: auto;
+    height: 2px;
+  }
+  .ledger-step::before {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* The rate row holds one height so the stations' notes share a baseline,
+     and the station that carries a state instead of a rate sits on the same
+     baseline as the figures — an optical correction, checked in the browser. */
+  .ledger-value { min-height: 2.75rem; }
+  .ledger-status { align-self: end; margin-bottom: 0.375rem; }
+}
+
+/* The tablet sheet: the steps are stacked, so each one reads as a ledger
+   row — the story on the left, the rate in its own column on the right —
+   instead of a narrow strip of text in a wide page. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .ledger-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    column-gap: 2rem;
+    align-items: end;
+  }
+  .ledger-copy > h3 { grid-area: 1 / 1; }
+  .ledger-copy > p { grid-area: 2 / 1; }
+  .ledger-copy > .ledger-data { grid-area: 1 / 2 / 3 / 3; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Played once, on reveal. The two delay vars are the travel order, set per
+     step in the markup. Both branches below are gated so they can never match
+     the scroll branch further down — a step fills once, never twice. */
+  @media (max-width: 1023.98px) {
+    .ledger[data-run] .ledger-step::before {
+      animation: ledger-fill-y 500ms var(--ease-out-quint) both;
+      animation-delay: var(--ledger-rail-at, 0ms);
+    }
+    .ledger[data-run] .ledger-node {
+      animation: ledger-node-lit 400ms var(--ease-out-quint) both;
+      animation-delay: var(--ledger-node-at, 0ms);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    /* Wide, but no view timeline to bind the fill to the scroll position. */
+    @supports not (animation-timeline: view()) {
+      .ledger[data-run] .ledger-step::before {
+        animation: ledger-fill-x 500ms var(--ease-out-quint) both;
+        animation-delay: var(--ledger-rail-at, 0ms);
+      }
+      .ledger[data-run] .ledger-node {
+        animation: ledger-node-lit 400ms var(--ease-out-quint) both;
+        animation-delay: var(--ledger-node-at, 0ms);
+      }
+    }
+  }
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /* The stage pins for the length of the wrapper, so the route completes
+       while the reader is still looking at it. The wrapper is 130vh over a
+       100vh stage, so its cover range is 230vh long and the pinned phase is
+       the middle third: cover 33.3% to cover 66.7%. The ladder below runs
+       34% to 62%, so the travel starts just after the pin engages and lands
+       before it releases — approach and release stay quiet. */
+    .ledger-scroll {
+      height: 130vh;
+      view-timeline-name: --ledger;
+      view-timeline-axis: block;
+    }
+    .ledger-stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+    }
+
+    /* The pinned screen holds three bands — title, route, closing note — and
+       the free space falls between them, so the stage is composed rather than
+       a band floating in the middle of a viewport. The top padding clears the
+       sticky navbar the stage sits under. */
+    .ledger-sheet {
+      flex: 1;
+      justify-content: space-between;
+      padding-block: 6rem 4rem;
+    }
+
+    .ledger .ledger-step::before {
+      animation: ledger-fill-x linear both;
+      animation-timeline: --ledger;
+      animation-duration: auto;
+      animation-delay: 0ms;
+      animation-range: cover 36% cover 47%;
+    }
+    .ledger .ledger-step:nth-child(2)::before {
+      animation-range: cover 49% cover 60%;
+    }
+    .ledger .ledger-step .ledger-node {
+      animation: ledger-node-lit linear both;
+      animation-timeline: --ledger;
+      animation-duration: auto;
+      animation-delay: 0ms;
+      animation-range: cover 34% cover 36%;
+    }
+    .ledger .ledger-step:nth-child(2) .ledger-node { animation-range: cover 47% cover 49%; }
+    .ledger .ledger-step:nth-child(3) .ledger-node { animation-range: cover 60% cover 62%; }
+  }
+}
+
+/* Reduced motion keeps the route and drops the travel. */
+@media (prefers-reduced-motion: reduce) {
+  .ledger[data-run] .ledger-step::before,
+  .ledger[data-run] .ledger-node {
+    animation: none;
+  }
+}
+
+/* The example mark ── the initials on the ledger sheet.
+   The avatar palette picks a -light ground that inverts with the theme, so
+   on the constant field the circle would lose its edge in dark mode (the
+   ground and the field land within 1.1:1 of each other). The mark is pinned
+   to one constant pair instead, so the monogram is the same shape in both
+   themes. */
+.example-mark > div {
+  background: var(--color-field-mark);
+  color: var(--color-field-mark-ink);
 }
 
 /* Line clamp utilities */

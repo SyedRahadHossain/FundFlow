@@ -4,7 +4,7 @@ Express + MongoDB REST API for the FundFlow crowdfunding platform.
 
 ## Live URL
 
-> Update after deploying to Vercel.
+> https://fundflow-server-seven.vercel.app
 
 ## Source Code
 
@@ -20,8 +20,19 @@ Client and server ship from a single repository.
 npm install
 cp .env.example .env   # fill in your values
 npm run dev            # http://localhost:5000
-npm test               # run 122 tests (11 suites)
+npm test               # run 171 tests (18 suites)
 ```
+
+## Password recovery
+
+`POST /api/auth/forgot-password` always answers the same way, so it never
+reveals whether an account exists. For a known address it stores a single-use
+token (hashed, one hour, one live link per account) and hands the reset URL to
+the user.
+
+**No email provider is configured yet.** Outside production the link is printed
+to the server console; in production it is never emitted anywhere. A mail
+provider still has to be wired before this route can deliver to a real user.
 
 ## Environment Variables
 
@@ -42,6 +53,8 @@ npm test               # run 122 tests (11 suites)
 | POST | `/api/auth/register` | — | Register new user |
 | POST | `/api/auth/login` | — | Email/password login |
 | POST | `/api/auth/google` | — | Google sign-in (verifies a Firebase ID token) |
+| POST | `/api/auth/forgot-password` | — | Request a password reset link (always the same answer) |
+| POST | `/api/auth/reset-password` | — | Set a new password with a reset token |
 | GET | `/api/auth/me` | Any | Current user profile |
 | GET | `/api/campaigns` | Approved public; other statuses Admin | List campaigns (`status` filter) |
 | GET | `/api/campaigns/top-funded` | — | Top 6 by amount raised |

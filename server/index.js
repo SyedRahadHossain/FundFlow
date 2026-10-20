@@ -12,6 +12,11 @@ if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
 
 const app = express();
 
+// Vercel terminates TLS one proxy hop ahead of the function, so the client IP
+// arrives in X-Forwarded-For. Without this, express-rate-limit rejects the
+// header and IP-keyed limits would bucket every user together.
+app.set('trust proxy', 1);
+
 // Request logging
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 

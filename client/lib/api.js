@@ -35,6 +35,9 @@ api.interceptors.response.use(
     if (status === 401 && !isAuthAttempt && typeof window !== 'undefined') {
       localStorage.removeItem('cf_token');
       if (!window.location.pathname.startsWith('/login')) {
+        // A full navigation, not a router push: the app has to drop its auth
+        // state and start again from the login screen.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = '/login';
       }
     }

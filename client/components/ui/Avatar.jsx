@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -43,6 +44,15 @@ const sizes = {
   lg: 'w-12 h-12 text-lg',
   xl: 'w-16 h-16 text-xl',
   '2xl': 'w-20 h-20 text-2xl',
+};
+
+const sizePx = {
+  xs: 24,
+  sm: 32,
+  md: 40,
+  lg: 48,
+  xl: 64,
+  '2xl': 80,
 };
 
 const shapes = {
@@ -92,11 +102,12 @@ export const Avatar = forwardRef(
         {...props}
       >
         {hasImage ? (
-          <img
+          <Image
             src={src}
             alt={alt || name || 'Avatar'}
+            width={sizePx[size]}
+            height={sizePx[size]}
             className={cn(sizes[size], shapes[shape], 'object-cover')}
-            loading="lazy"
           />
         ) : (
           <div

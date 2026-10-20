@@ -116,6 +116,31 @@ router.get('/mine', verifyToken, verifyRole('supporter'), async (req, res) => {
   }
 });
 
+// GET /api/contributions/stats — the supporter's own totals, computed by the
+// database. The dashboard used to pull up to a thousand rows to add up three
+// numbers; Mongo can answer them without moving the rows at all.
+router.get('/stats', verifyToken, verifyRole('supporter'), async (req, res) => {
+  try {
+    const filter = { supporter_email: req.user.email };
+    const [total, pending, approved] = await Promise.all([
+      Contribution.countDocuments(filter),
+      Contribution.countDocuments({ ...filter, status: 'pending' }),
+      Contribution.aggregate([
+        { $match: { ...filter, status: 'approved' } },
+        { $group: { _id: null, amount: { $sum: '$contribution_amount' } } },
+      ]),
+    ]);
+
+    return res.json({
+      total,
+      pending,
+      approvedAmount: approved[0]?.amount || 0,
+    });
+  } catch {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/contributions/campaign/:id — creator views contributions for their campaign
 router.get('/campaign/:id', verifyToken, verifyRole('creator'), async (req, res) => {
   try {

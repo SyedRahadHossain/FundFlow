@@ -6,8 +6,9 @@ Source: `Crowdfunding_Platform.docx` (the original assessment brief) cross-check
 Status of everything already verified working is in the appendix at the bottom.
 
 Items 1–7, 10, and 11 are complete. Item 12 is partly done, with the two impeccable reports
-holding the unfixed findings. Item 14 (deploy) needs your accounts, and item 13 has one
-small remainder: your LinkedIn and Facebook profile URLs.
+holding the unfixed findings. Items 13 and 14 are complete: both apps are deployed and the
+live URLs are recorded in `client/README.md`, `server/README.md`, and `PRODUCT.md`. Item 15 is
+complete and item 16 records the landing-page craft pass.
 
 Severity: **blocker** = grader explicitly checks it · **major** = explicit docx requirement ·
 **minor** = explicit docx wording that current UI softens · **admin** = needs your accounts.
@@ -193,10 +194,12 @@ floors at zero, so a duplicate payout was the only harm here.
 - [x] **P2 fixed** — the testimonials presented six invented people with portraits as real
       customer quotes. They are now labelled sample content, and the women's portraits were
       removed on request, falling back to initials
-- [ ] **Not fixed** — the remaining audit findings: `text-neutral-400` body text at 2.54:1
-      across 62 sites, the mobile drawer with no focus trap, the client-only fetch that
-      blanks the public catalog on first paint, the notification panel overflowing narrow
-      phones, and 10 P3 items. Both reports hold the ranked list
+- [ ] **Not fixed** — the remaining audit findings: the client-only fetch that blanks the
+      public catalog on first paint, the notification panel overflowing narrow phones, and
+      10 P3 items. Both reports hold the ranked list
+- [x] **Fixed since** — the secondary-text contrast sweep (60 sites), the mobile drawer
+      focus trap/dialog semantics, and the load-failure-vs-empty-state issue on 11 pages
+      (see item 15)
 
 ## 13. Submission metadata — partly done, remainder needs your accounts
 
@@ -210,25 +213,86 @@ Docx §What to Submit asks for five items.
 - [x] `client/lib/links.js` — `CLIENT_REPO_URL` now points at the `client/` subtree and
       `GITHUB_URL` at your profile, so the navbar "Join as Developer" link and the GitHub
       footer icon are correct
-- [ ] **Still unfilled:** `LINKEDIN_URL` and `FACEBOOK_URL` remain the `RAHAD` placeholders,
-      so those two footer icons resolve to someone else's profile. Replace both in
-      `client/lib/links.js` before deploying
-- [ ] Live site URL — `client/README.md` still reads
-      `https://fundflow.vercel.app  ← update after deploy`; fills in once you deploy (item 14)
+- [x] `client/lib/links.js` — `LINKEDIN_URL` and `FACEBOOK_URL` now point at
+      `https://www.linkedin.com/in/syedrahadhossain` and
+      `https://www.facebook.com/ArchSun.IT/`, so both footer icons resolve to your profiles
+- [x] Live site URL — `client/README.md`, `server/README.md`, and `PRODUCT.md` now carry the
+      deployed origins: https://fundflow-client-wine.vercel.app (client) and
+      https://fundflow-server-seven.vercel.app (server)
 
-## 14. Deploy to Vercel — admin, needs your accounts
+## 14. Deploy to Vercel — done
 
 Docx §Additional Information: "Make sure you deploy the server side and client side on the
 first day."
 
-- [ ] Deploy `server/` — needs your Vercel account and `MONGODB_URI`, `JWT_SECRET`,
-      `CLIENT_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-- [ ] Deploy `client/` — needs the six `NEXT_PUBLIC_FIREBASE_*` vars plus
-      `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_IMGBB_KEY`
-- [ ] Register the Stripe webhook URL on the deployed server — credits are granted **only**
-      by the signature-verified `POST /api/stripe/webhook`; without `STRIPE_WEBHOOK_SECRET`
-      configured, no purchase ever grants credits
-- [ ] Point `CLIENT_URL` at the deployed client origin, or Stripe redirects and CORS fail
+- [x] Deploy `server/` — live at https://fundflow-server-seven.vercel.app; verified 200 on
+      `GET /api/campaigns?status=approved` and 401 on the admin-only `GET /api/payments/all`
+- [x] Deploy `client/` — live at https://fundflow-client-wine.vercel.app; its shipped bundle
+      targets https://fundflow-server-seven.vercel.app, so `NEXT_PUBLIC_API_URL` is set
+- [x] `CLIENT_URL` — the server replies to a preflight from the deployed client origin with
+      `access-control-allow-origin: https://fundflow-client-wine.vercel.app`, so it is set
+- [x] `MONGODB_URI` — `POST /api/auth/login` returns 401 "Invalid credentials" rather than a
+      connection error, so the deployed server reaches Atlas
+- [x] `FIREBASE_SERVICE_ACCOUNT` — `POST /api/auth/google` answers 401 "Invalid Google
+      credential" rather than the 503 the route returns when the Admin SDK is unconfigured
+- [ ] Register the Stripe webhook URL and set `STRIPE_WEBHOOK_SECRET` — **still failing**:
+      `POST /api/stripe/webhook` answers 503 "Stripe webhook not configured", so no purchase
+      grants credits on the deployed server yet.
+
+## 15. Full-project code review — done
+
+A read-only review of `client/` and `server/` scored every candidate finding for confidence
+and reported the six that cleared the bar. Full write-up with links and remediation:
+`docs/reviews/2026-10-19-full-project-review.md`.
+
+- [x] **Credit loss on delete** — `deleteCampaignWithRefunds` refunded only `approved`
+      contributions, stranding the credits of every contribution still `pending`. Now claims
+      `approved` and `pending` (`server/lib/campaignLifecycle.js`)
+- [x] **Notification read flag** — the schema had no `read` path, so mark-all-read was
+      stripped by strict mode and the badge never cleared (`server/models/Notification.js`)
+- [x] **Dashboard counts** — the admin tiles read `total` off array responses and the creator
+      tile hit a route that 500d, so both read zero; now sourced from
+      `GET /api/dashboard/counts`, and `/api/payments/all` returns a real `totalVolume`
+- [x] **Mobile drawer** — dialog semantics, Escape, focus move/restore, close button
+- [x] **Load failures** — 11 pages rendered the empty state on a failed fetch; each now
+      shows a `role="alert"` banner with a retry
+- [x] Written test-first: the three server fixes each have a new suite, run RED before the
+      fix. Server suite **141/141 across 15 suites**; client build **25/25 pages**; lint
+      unchanged at 19 problems
+- [x] **Below threshold, still real** — fixed test-first, each with a RED run first: the detail
+      route now answers under the same rule as the list (`approved` public, `pending`/`rejected`
+      need an admin); drops reach the hidden input through `client/lib/fileDrop.js`, so
+      `onChange` fires once for a click and a drop; Dismiss calls the new admin-only
+      `DELETE /api/reports/:id`, so a reload cannot resurrect the row. Server **152/152 across
+      16 suites**; client `npm test` **3/3** (new `node --test` runner); lint holds the 4
+      pre-existing errors with no new findings; build **25/25 pages**
+
+## 16. Landing-page craft pass — done
+
+A design pass over the public landing page. The three sections that read as generic marketing
+(hero, how-it-works, impact) now carry the system's own vocabulary, and `DESIGN.md` was brought
+back in line with what ships.
+
+- [x] **Hero** — per-slide constant indigo→teal fields (`--field-hero-a|b|c`) cross-faded so the
+      field never flashes mid-transition; the decorative blobs and the eyebrow badge are gone,
+      because the ledger below is the page's one authored moment
+- [x] **How It Works** — rebuilt as the ledger path (`client/components/HowItWorks.jsx`): one
+      rail, three nodes, the rail filling in the direction the credit travels. Rest is the
+      completed route, so a browser with no JS and a page with no animation both show the whole
+      mechanism; `data-run` plays it once on reveal, and a wide viewport with
+      `animation-timeline: view()` pins the stage and binds the fill to the scroll position
+- [x] **Platform Impact** — keeps its own dark field in both themes, the figures count up once
+      when the band is read, and the credit figure carries the credit hue while the rest stay
+      white ink
+- [x] **Money stays ink, credits stay teal** — `StatCard` gained a `tone="credit"` prop, so only
+      the credit tiles tint (admin total credits, creator raised, supporter credits
+      contributed); dollar figures and the rate beside the balance chip stay neutral
+- [x] **Reduced motion** drops every one of these animations and keeps the settled values
+- [x] **`DESIGN.md` synced** — a Persuade Fields token group, the Constant Field Rule, the
+      rewritten Hero Slider section, and a new How It Works (Ledger Path) section
+- [x] Verified: client build **25/25 pages**, lint unchanged at **19 problems** (the same 4
+      pre-existing `react-hooks/set-state-in-effect` errors), server suite **141/141 across 15
+      suites**
 
 ## 10. Git history — done
 

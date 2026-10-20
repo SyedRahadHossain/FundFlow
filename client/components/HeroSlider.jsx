@@ -3,16 +3,30 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import CreditConverter from '@/components/CreditConverter';
 
+/**
+ * The hero field.
+ *
+ * Each slide owns one constant indigo→teal gradient (`--field-hero-*` in
+ * globals.css) and they cross-fade, so the field never flashes the wrong hue
+ * mid-transition. The fields are theme-independent on purpose: this is the
+ * page's Persuade surface, and the neutral ramp inverting under it would put
+ * white copy on a light gradient.
+ *
+ * The headline runs the full width of the frame so it holds one line at
+ * desktop, and the second column carries the platform's own credit converter
+ * rather than empty field: what is being sold is the credit economy, so the
+ * page shows the credit economy.
+ */
 const slides = [
   {
     heading: 'Bring Your Ideas to Life',
-    subtitle: 'Launch a campaign and let the world back your vision. From tech to art — every dream deserves a chance.',
+    subtitle: 'Launch a campaign and let the world back your vision. From tech to art, every dream deserves a chance.',
     cta: 'Start a Campaign',
     href: '/register',
     alt: { label: 'Browse Campaigns', href: '/campaigns' },
-    gradient: 'from-primary via-accent to-primary-dark',
-    illustration: '🚀',
+    field: '--field-hero-a',
   },
   {
     heading: 'Support What Matters',
@@ -20,8 +34,7 @@ const slides = [
     cta: 'Explore Campaigns',
     href: '/campaigns',
     alt: { label: 'Start a Campaign', href: '/register' },
-    gradient: 'from-accent via-primary-hover to-primary',
-    illustration: '💎',
+    field: '--field-hero-b',
   },
   {
     heading: 'Turn Backers Into Believers',
@@ -29,8 +42,37 @@ const slides = [
     cta: 'See How It Works',
     href: '#how-it-works',
     alt: { label: 'Browse Campaigns', href: '/campaigns' },
-    gradient: 'from-primary-dark via-primary to-accent',
-    illustration: '🤝',
+    field: '--field-hero-c',
+  },
+];
+
+// Three indicators, per DESIGN.md's hero spec.
+const trust = [
+  {
+    text: 'Every campaign is admin-reviewed before it goes live',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+      </svg>
+    ),
+  },
+  {
+    text: 'Rejected contributions refund instantly',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 15L3 21m0 0h6m-6 0v-6m8.5-6.5A7.5 7.5 0 0111 21" />
+      </svg>
+    ),
+  },
+  {
+    text: '10 credits = $1 in · 20 credits = $1 out',
+    icon: (
+      // A credit, drawn: the diamond the platform calls a credit.
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinejoin="round" d="M12 3l7 5.5-7 12.5-7-12.5L12 3z" />
+        <path strokeLinejoin="round" d="M5 8.5h14M12 3l-3 18M12 3l3 18" />
+      </svg>
+    ),
   },
 ];
 
@@ -57,7 +99,7 @@ export default function HeroSlider() {
     if (paused || hovered) return;
     // Respect the OS "reduce motion" setting: never auto-advance.
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    timerRef.current = setInterval(nextSlide, 6000);
+    timerRef.current = setInterval(nextSlide, 7000);
     return () => clearInterval(timerRef.current);
   }, [paused, hovered, nextSlide]);
 
@@ -70,7 +112,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className={`relative bg-gradient-to-br ${slide.gradient} transition-all duration-1000 min-h-[500px] flex items-center overflow-hidden`}
+      className="relative flex items-center overflow-hidden min-h-[560px] lg:min-h-[640px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-inset"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}
@@ -80,100 +122,122 @@ export default function HeroSlider() {
       aria-label="Hero carousel"
       role="region"
     >
-      {/* Background decorative elements. Dark blobs: white blobs lightened the
-          gradient under the trust copy and pushed it below 4.5:1. */}
-      <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-black/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-black/5 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-black/5 blur-3xl" />
+      {/* The field. Constant gradients, crossed faded. */}
+      <div className="absolute inset-0" aria-hidden="true">
+        {slides.map((s, i) => (
+          <div
+            key={s.heading}
+            className={`absolute inset-0 transition-opacity duration-700 motion-reduce:transition-none ${
+              i === active ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ backgroundImage: `var(${s.field})` }}
+          />
+        ))}
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-        <div className="max-w-3xl animate-fade-in">
-          {/* Illustration badge */}
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
-            <span className="text-xl w-10 h-10 rounded-xl flex items-center justify-center" aria-hidden="true">{slide.illustration}</span>
-            <span className="text-white text-sm font-medium">FundFlow</span>
-          </div>
+      {/* The slide changes on its own every 7s, so a screen reader has to be
+          told — otherwise the hero swaps its message in silence. The region is
+          persistent: a live region that is remounted with the content does not
+          announce. */}
+      <p className="sr-only" aria-live="polite">
+        Slide {active + 1} of {slides.length}: {slide.heading}
+      </p>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6 animate-slide-up" style={{ animationDelay: '200ms' }}>
-            {slide.heading}
-          </h1>
-          <p className="text-lg sm:text-xl text-white mb-10 max-w-2xl animate-slide-up" style={{ animationDelay: '300ms' }}>
-            {slide.subtitle}
-          </p>
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        {/* The headline runs the full width of the frame: at desktop it holds
+            one line, and it is the one large thing on the first screen. */}
+        <h1
+          key={active}
+          className="max-w-[26ch] text-4xl sm:text-6xl lg:text-[4.5rem] font-extrabold text-white tracking-[-0.03em] leading-[1.05] text-balance animate-hero-rise"
+        >
+          {slide.heading}
+        </h1>
 
-          <div className="flex flex-col sm:flex-row gap-4 animate-slide-up" style={{ animationDelay: '400ms' }}>
-            <Button
-              asChild
-              variant="primary"
-              size="lg"
-            >
-              <Link href={slide.href}>{slide.cta}</Link>
-            </Button>
-            {slide.alt && (
+        <div className="mt-8 lg:mt-10 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:items-start">
+          {/* Remounted per slide, so the copy's entrance ladder is the
+              carousel's one rehearsed sequence rather than a scroll effect.
+              Reduced motion drops the ladder and keeps the copy. */}
+          <div key={active}>
+            <p className="text-lg sm:text-xl text-field-muted max-w-[46ch] animate-hero-rise" style={{ animationDelay: '80ms' }}>
+              {slide.subtitle}
+            </p>
+
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 animate-hero-rise" style={{ animationDelay: '160ms' }}>
+              {/* The primary indigo ring disappears on the field it sits
+                  on, so the buttons on the field carry a light one. */}
               <Button
                 asChild
-                variant="ghost"
+                variant="primary"
                 size="lg"
+                className="focus-within:ring-white/90! focus-within:ring-offset-0!"
               >
-                <Link href={slide.alt.href} className="text-white">{slide.alt.label}</Link>
+                <Link href={slide.href}>{slide.cta}</Link>
               </Button>
-            )}
+              {slide.alt && (
+                /* The secondary CTA rests on a translucent fill and deepens on
+                   hover, like the carousel controls below it. Without a resting
+                   state it reads as a caption, not a control. */
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="lg"
+                  className="bg-white/10! hover:bg-white/25! text-white! focus-within:ring-white/90! focus-within:ring-offset-0!"
+                >
+                  <Link href={slide.alt.href}>{slide.alt.label}</Link>
+                </Button>
+              )}
+            </div>
+
+            <ul
+              role="list"
+              className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 animate-hero-rise"
+              style={{ animationDelay: '240ms' }}
+            >
+              {trust.map((item) => (
+                <li key={item.text} className="flex items-center gap-2 text-base text-white">
+                  <span className="text-field-muted flex-shrink-0">{item.icon}</span>
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Trust indicators */}
-          <div className="mt-12 flex flex-wrap items-center gap-6 text-white text-sm animate-fade-in" style={{ animationDelay: '500ms' }}>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-success-light" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span>Every campaign is admin-reviewed</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary-light" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-              </svg>
-              <span>Rejected contributions refunded instantly</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-info-light" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-              <span>Secure payments via Stripe</span>
-            </div>
-            <div className="flex items-center gap-2 border-l border-white/20 pl-6">
-              <span className="text-primary-light font-medium" aria-hidden="true">💎</span>
-              <span>10 credits = $1 in · 20 credits = $1 out</span>
-            </div>
+          {/* The other half of the first screen: the product's own
+              mechanic, live. No stock photography of strangers at laptops —
+              the thing being sold is the credit economy, so the page shows
+              the credit economy. */}
+          <div className="mt-10 lg:mt-0">
+            <CreditConverter />
           </div>
         </div>
       </div>
 
       {/* Carousel controls */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4" role="group" aria-label="Slide navigation">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3" role="group" aria-label="Slide navigation">
         <button
           onClick={prevSlide}
           aria-label="Previous slide"
-          className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm"
+          className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 active:scale-[0.97] transition-[background-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/90 focus-visible:ring-offset-0"
         >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-1">
           {slides.map((s, i) => (
             <button
-              key={i}
+              key={s.heading}
               onClick={() => goToSlide(i)}
               aria-label={`Go to slide ${i + 1}: ${s.heading}`}
               aria-current={i === active}
-              className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all ${i === active ? 'bg-white' : 'bg-white/30 hover:bg-white/50'}`}
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/90 focus-visible:ring-offset-0"
             >
               <span
                 aria-hidden="true"
-                className={`block rounded-full transition-all ${i === active ? 'w-8 h-2.5 bg-primary' : 'w-2.5 h-2.5 bg-white/70'}`}
+                className={`block h-2 rounded-full transition-[width,background-color] duration-300 ${
+                  i === active ? 'w-8 bg-white' : 'w-2.5 bg-white/40 hover:bg-white/70'
+                }`}
               />
             </button>
           ))}
@@ -183,7 +247,7 @@ export default function HeroSlider() {
           onClick={() => setPaused((p) => !p)}
           aria-label={paused ? 'Play slideshow' : 'Pause slideshow'}
           aria-pressed={paused}
-          className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm"
+          className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 active:scale-[0.97] transition-[background-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/90 focus-visible:ring-offset-0"
         >
           {paused ? (
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -191,25 +255,15 @@ export default function HeroSlider() {
             </svg>
           ) : (
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M5.75 3.5A1.75 1.75 0 014 5.25v9.5c0 .966.784 1.75 1.75 1.75h1.5A1.75 1.75 0 009 14.75v-9.5A1.75 1.75 0 007.25 3.5h-1.5zm7 0A1.75 1.75 0 0011 5.25v9.5c0 .966.784 1.75 1.75 1.75h1.5A1.75 1.75 0 0016 14.75v-9.5A1.75 1.75 0 0014.25 3.5h-1.5z" />
+              <path d="M5.75 3.5A1.75 1.75 0 004 5.25v9.5c0 .966.784 1.75 1.75 1.75h1.5A1.75 1.75 0 0010 15.25v-9.5A1.75 1.75 0 008.25 3.5h-1.5zm7 0A1.75 1.75 0 0011 5.25v9.5c0 .966.784 1.75 1.75 1.75h1.5A1.75 1.75 0 0016 15.25v-9.5A1.75 1.75 0 0014.25 3.5h-1.5z" />
             </svg>
           )}
-        </button>
-
-        <button
-          onClick={nextSlide}
-          aria-label="Next slide"
-          className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm"
-        >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
         </button>
       </div>
 
       {/* Pause indicator */}
       {paused && (
-        <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white animate-fade-in" aria-live="polite">
+        <div className="absolute top-4 right-4 bg-white/10 rounded-full px-3 py-1.5 text-sm text-white animate-fade-in" aria-live="polite">
           Slideshow paused
         </div>
       )}
