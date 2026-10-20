@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { sessionResponseShouldEndSession } from './session';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -22,17 +23,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// A 401 means the stored token is stale or invalid. Drop it and send the user
-// back to the login screen. Login/register requests are excluded so a bad
-// password still surfaces the server's message instead of a redirect loop.
+// A rejected token, or an account that no longer exists, ends the session:
+// the token is dropped and the visitor goes back to the login screen. A
+// failed sign-in attempt is excluded, so a wrong password still surfaces
+// the server's message instead of a redirect loop.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
     const url = error?.config?.url || '';
-    const isAuthAttempt = url.includes('/api/auth/');
 
-    if (status === 401 && !isAuthAttempt && typeof window !== 'undefined') {
+    if (
+      sessionResponseShouldEndSession({ status, url }) &&
+      typeof window !== 'undefined'
+    ) {
       localStorage.removeItem('cf_token');
       if (!window.location.pathname.startsWith('/login')) {
         // A full navigation, not a router push: the app has to drop its auth
