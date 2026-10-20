@@ -3,7 +3,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
+import { subscribePoller } from '@/lib/poller';
 import { cn } from '@/lib/utils';
+import Icon from '@/components/ui/Icon';
+
+// One meaning, one glyph: the bell and the notification kinds take their
+// icons from the registry like every other surface in the product.
+const typeIcon = {
+  contribution: 'credits',
+  approval: 'approve',
+  rejection: 'reject',
+  withdrawal: 'payouts',
+  system: 'warning',
+  comment: 'message',
+};
 
 export default function NotificationBell() {
   const { user } = useAuth();
@@ -12,12 +25,25 @@ export default function NotificationBell() {
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(false);
   const ref = useRef(null);
+  const buttonRef = useRef(null);
 
-  // Close on outside click
+  // Close on outside click, and on Escape for keyboard users. Focus returns to
+  // the bell so the panel is never a dead end.
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKeyDown = (e) => {
+      if (e.key !== 'Escape') return;
+      setOpen((wasOpen) => {
+        if (wasOpen) buttonRef.current?.focus();
+        return false;
+      });
+    };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', onKeyDown);
+    };
   }, []);
 
   const fetchNotes = async () => {
@@ -29,7 +55,9 @@ export default function NotificationBell() {
     } catch { /* silent */ }
   };
 
-  // Poll every 30s for new notifications
+  // Poll for new notifications on the app's shared 30s tick. The bell used to
+  // own a second interval of its own, so the dashboard ran two timers and both
+  // kept firing in background tabs.
   useEffect(() => {
     if (!user) return;
     let mounted = true;
@@ -44,8 +72,8 @@ export default function NotificationBell() {
       } catch { /* silent */ }
     };
     fetchAndSet();
-    const interval = setInterval(fetchAndSet, 30000);
-    return () => { mounted = false; clearInterval(interval); };
+    const unsubscribe = subscribePoller(fetchAndSet);
+    return () => { mounted = false; unsubscribe(); };
   }, [user]);
 
   const handleToggle = () => {
@@ -70,18 +98,17 @@ export default function NotificationBell() {
   return (
     <div className="relative" ref={ref}>
       <button
+        ref={buttonRef}
         onClick={handleToggle}
         className={cn(
-          'relative w-10 h-10 rounded-xl flex items-center justify-center',
+          'relative w-11 h-11 rounded-xl flex items-center justify-center',
           'text-neutral-500 hover:bg-neutral-100 transition-colors',
           'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2'
         )}
         aria-label={unread > 0 ? `${unread} unread notifications` : 'Notifications'}
         aria-expanded={open}
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
+        <Icon name="notifications" className="w-5 h-5" />
         {unread > 0 && (
           <span className={cn(
             'absolute -top-0.5 -right-0.5 w-5 h-5 bg-error text-white text-xs font-bold rounded-full flex items-center justify-center',
@@ -93,13 +120,17 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-88 bg-surface border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
+        /* On a phone the panel is a sheet under the top bar, not a dropdown
+           hanging off a bell: a 352px panel anchored to the top-right corner
+           runs off the left edge of a 360px screen. From sm up it stays a
+           dropdown under the bell. */
+        <div className="fixed left-4 right-4 top-16 z-50 overflow-hidden rounded-2xl border border-neutral-200 bg-surface shadow-xl animate-fade-in sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-88 sm:max-w-[calc(100vw-1.5rem)]">
           <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between">
             <h3 className="font-semibold text-sm text-neutral-900">Notifications</h3>
             {unread > 0 && (
               <button
                 onClick={markAllRead}
-                className="text-xs text-primary hover:underline font-medium"
+                className="inline-flex items-center min-h-11 text-[13px] text-primary hover:underline font-medium"
               >
                 Mark all read
               </button>
@@ -117,11 +148,9 @@ export default function NotificationBell() {
             )}
             {!loading && notes.length === 0 && (
               <div className="py-10 text-center">
-                <svg className="w-12 h-12 mx-auto text-neutral-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
+                <Icon name="notifications" className="w-12 h-12 mx-auto text-neutral-300 mb-3" />
                 <p className="text-sm text-neutral-500">No notifications yet</p>
-                <p className="text-xs text-neutral-500 mt-1">You&apos;ll see updates about your campaigns here</p>
+                <p className="text-[13px] text-neutral-500 mt-1">You&apos;ll see updates about your campaigns here</p>
               </div>
             )}
             {!loading && notes.map((n, i) => (
@@ -142,40 +171,11 @@ export default function NotificationBell() {
                     n.type === 'system' && 'bg-info-light text-info',
                     n.type === 'comment' && 'bg-accent-light text-accent'
                   )}>
-                    {n.type === 'contribution' && (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a1 1 0 100-2 1 1 0 000 2z" />
-                      </svg>
-                    )}
-                    {n.type === 'approval' && (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                    {n.type === 'rejection' && (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                    {n.type === 'withdrawal' && (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zm0 16a1 1 0 100-2 1 1 0 000 2z" />
-                      </svg>
-                    )}
-                    {n.type === 'system' && (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                    {n.type === 'comment' && (
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                      </svg>
-                    )}
+                    <Icon name={typeIcon[n.type] || 'notifications'} className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-neutral-700">{n.message}</p>
-                    <p className="text-xs text-neutral-500 mt-1">
+                    <p className="text-[13px] text-neutral-500 mt-1">
                       {new Date(n.time).toLocaleString()}
                     </p>
                   </div>

@@ -1,6 +1,8 @@
 'use client';
 
-export default function StatCard({ emoji, label, value, sub, color = 'primary', tone = 'ink', loading = false, skeleton = false }) {
+import Icon from '@/components/ui/Icon';
+
+export default function StatCard({ icon, label, value, sub, color = 'primary', tone = 'ink', loading = false, skeleton = false }) {
   const colorStyles = {
     primary: 'bg-primary-light text-primary-dark',
     success: 'bg-success-light text-success',
@@ -44,15 +46,14 @@ export default function StatCard({ emoji, label, value, sub, color = 'primary', 
   return (
     <div className="bg-surface rounded-2xl border border-neutral-200 p-5 flex items-center gap-4 shadow-sm">
       <div
-        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 ${colorStyles[color] || colorStyles.primary}`}
-        aria-hidden="true"
+        className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${colorStyles[color] || colorStyles.primary}`}
       >
-        {emoji}
+        <Icon name={icon} className="w-6 h-6" />
       </div>
       <div>
-        <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">{label}</p>
+        <p className="text-[13px] text-neutral-500 font-medium uppercase tracking-wide">{label}</p>
         {displayValue}
-        {sub && <p className="text-xs text-neutral-500 mt-0.5">{sub}</p>}
+        {sub && <p className="text-[13px] text-neutral-500 mt-0.5">{sub}</p>}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
+import Icon from './Icon';
 
 const focusableElementsSelector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -128,12 +129,10 @@ export function Modal({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-1.5 text-neutral-500 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="h-11 w-11 flex items-center justify-center text-neutral-500 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
                 aria-label="Close modal"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <Icon name="close" className="w-5 h-5" />
               </button>
             )}
           </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import CreditConverter from '@/components/CreditConverter';
 
 /**
  * The hero field.
@@ -13,9 +14,10 @@ import { Button } from '@/components/ui/Button';
  * page's Persuade surface, and the neutral ramp inverting under it would put
  * white copy on a light gradient.
  *
- * There is no eyebrow label above the headline — the headline carries its own
- * weight — and no decorative blurred blobs; the ledger section below is the
- * page's one authored moment.
+ * The headline runs the full width of the frame so it holds one line at
+ * desktop, and the second column carries the platform's own credit converter
+ * rather than empty field: what is being sold is the credit economy, so the
+ * page shows the credit economy.
  */
 const slides = [
   {
@@ -64,7 +66,13 @@ const trust = [
   },
   {
     text: '10 credits = $1 in · 20 credits = $1 out',
-    icon: <span className="text-base leading-none" aria-hidden="true">💎</span>,
+    icon: (
+      // A credit, drawn: the diamond the platform calls a credit.
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinejoin="round" d="M12 3l7 5.5-7 12.5-7-12.5L12 3z" />
+        <path strokeLinejoin="round" d="M5 8.5h14M12 3l-3 18M12 3l3 18" />
+      </svg>
+    ),
   },
 ];
 
@@ -104,7 +112,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="relative flex items-center overflow-hidden min-h-[520px] lg:min-h-[600px]"
+      className="relative flex items-center overflow-hidden min-h-[560px] lg:min-h-[640px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-inset"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}
@@ -114,9 +122,7 @@ export default function HeroSlider() {
       aria-label="Hero carousel"
       role="region"
     >
-      {/* The field. Constant gradients, crossed faded, plus one hairline rule
-          at the composition's baseline so the copy sits on a drawn line rather
-          than on the gradient alone. */}
+      {/* The field. Constant gradients, crossed faded. */}
       <div className="absolute inset-0" aria-hidden="true">
         {slides.map((s, i) => (
           <div
@@ -127,49 +133,82 @@ export default function HeroSlider() {
             style={{ backgroundImage: `var(${s.field})` }}
           />
         ))}
-        <div className="absolute inset-x-0 bottom-0 h-px bg-white/15" />
       </div>
 
-      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24">
-        {/* Remounted per slide, so the copy's entrance ladder is the carousel's
-            one rehearsed sequence rather than a scroll effect. Reduced motion
-            drops the ladder and keeps the copy. */}
-        <div key={active} className="max-w-3xl">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.1] text-balance animate-slide-up">
-            {slide.heading}
-          </h1>
-          <p className="mt-6 text-lg sm:text-xl text-field-muted max-w-[52ch] animate-slide-up" style={{ animationDelay: '80ms' }}>
-            {slide.subtitle}
-          </p>
+      {/* The slide changes on its own every 7s, so a screen reader has to be
+          told — otherwise the hero swaps its message in silence. The region is
+          persistent: a live region that is remounted with the content does not
+          announce. */}
+      <p className="sr-only" aria-live="polite">
+        Slide {active + 1} of {slides.length}: {slide.heading}
+      </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 animate-slide-up" style={{ animationDelay: '160ms' }}>
-            <Button asChild variant="primary" size="lg">
-              <Link href={slide.href}>{slide.cta}</Link>
-            </Button>
-            {slide.alt && (
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        {/* The headline runs the full width of the frame: at desktop it holds
+            one line, and it is the one large thing on the first screen. */}
+        <h1
+          key={active}
+          className="max-w-[26ch] text-4xl sm:text-6xl lg:text-[4.5rem] font-extrabold text-white tracking-[-0.03em] leading-[1.05] text-balance animate-hero-rise"
+        >
+          {slide.heading}
+        </h1>
+
+        <div className="mt-8 lg:mt-10 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:items-start">
+          {/* Remounted per slide, so the copy's entrance ladder is the
+              carousel's one rehearsed sequence rather than a scroll effect.
+              Reduced motion drops the ladder and keeps the copy. */}
+          <div key={active}>
+            <p className="text-lg sm:text-xl text-field-muted max-w-[46ch] animate-hero-rise" style={{ animationDelay: '80ms' }}>
+              {slide.subtitle}
+            </p>
+
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 animate-hero-rise" style={{ animationDelay: '160ms' }}>
+              {/* The primary indigo ring disappears on the field it sits
+                  on, so the buttons on the field carry a light one. */}
               <Button
                 asChild
-                variant="ghost"
+                variant="primary"
                 size="lg"
-                className="text-white! hover:bg-white/15!"
+                className="focus-within:ring-white/90! focus-within:ring-offset-0!"
               >
-                <Link href={slide.alt.href}>{slide.alt.label}</Link>
+                <Link href={slide.href}>{slide.cta}</Link>
               </Button>
-            )}
+              {slide.alt && (
+                /* The secondary CTA rests on a translucent fill and deepens on
+                   hover, like the carousel controls below it. Without a resting
+                   state it reads as a caption, not a control. */
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="lg"
+                  className="bg-white/10! hover:bg-white/25! text-white! focus-within:ring-white/90! focus-within:ring-offset-0!"
+                >
+                  <Link href={slide.alt.href}>{slide.alt.label}</Link>
+                </Button>
+              )}
+            </div>
+
+            <ul
+              role="list"
+              className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 animate-hero-rise"
+              style={{ animationDelay: '240ms' }}
+            >
+              {trust.map((item) => (
+                <li key={item.text} className="flex items-center gap-2 text-base text-white">
+                  <span className="text-field-muted flex-shrink-0">{item.icon}</span>
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <ul
-            role="list"
-            className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 animate-slide-up"
-            style={{ animationDelay: '240ms' }}
-          >
-            {trust.map((item) => (
-              <li key={item.text} className="flex items-center gap-2 text-sm text-white">
-                <span className="text-field-muted flex-shrink-0">{item.icon}</span>
-                <span>{item.text}</span>
-              </li>
-            ))}
-          </ul>
+          {/* The other half of the first screen: the product's own
+              mechanic, live. No stock photography of strangers at laptops —
+              the thing being sold is the credit economy, so the page shows
+              the credit economy. */}
+          <div className="mt-10 lg:mt-0">
+            <CreditConverter />
+          </div>
         </div>
       </div>
 
@@ -178,7 +217,7 @@ export default function HeroSlider() {
         <button
           onClick={prevSlide}
           aria-label="Previous slide"
-          className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 transition-colors"
+          className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 active:scale-[0.97] transition-[background-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/90 focus-visible:ring-offset-0"
         >
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -192,11 +231,11 @@ export default function HeroSlider() {
               onClick={() => goToSlide(i)}
               aria-label={`Go to slide ${i + 1}: ${s.heading}`}
               aria-current={i === active}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/90 focus-visible:ring-offset-0"
             >
               <span
                 aria-hidden="true"
-                className={`block h-2 rounded-full transition-all duration-300 ${
+                className={`block h-2 rounded-full transition-[width,background-color] duration-300 ${
                   i === active ? 'w-8 bg-white' : 'w-2.5 bg-white/40 hover:bg-white/70'
                 }`}
               />
@@ -208,7 +247,7 @@ export default function HeroSlider() {
           onClick={() => setPaused((p) => !p)}
           aria-label={paused ? 'Play slideshow' : 'Pause slideshow'}
           aria-pressed={paused}
-          className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 transition-colors"
+          className="min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 active:scale-[0.97] transition-[background-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/90 focus-visible:ring-offset-0"
         >
           {paused ? (
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -216,7 +255,7 @@ export default function HeroSlider() {
             </svg>
           ) : (
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M5.75 3.5A1.75 1.75 0 014 5.25v9.5c0 .966.784 1.75 1.75 1.75h1.5A1.75 1.75 0 009 14.75v-9.5A1.75 1.75 0 007.25 3.5h-1.5zm7 0A1.75 1.75 0 0011 5.25v9.5c0 .966.784 1.75 1.75 1.75h1.5A1.75 1.75 0 0016 14.75v-9.5A1.75 1.75 0 0014.25 3.5h-1.5z" />
+              <path d="M5.75 3.5A1.75 1.75 0 004 5.25v9.5c0 .966.784 1.75 1.75 1.75h1.5A1.75 1.75 0 0010 15.25v-9.5A1.75 1.75 0 008.25 3.5h-1.5zm7 0A1.75 1.75 0 0011 5.25v9.5c0 .966.784 1.75 1.75 1.75h1.5A1.75 1.75 0 0016 15.25v-9.5A1.75 1.75 0 0014.25 3.5h-1.5z" />
             </svg>
           )}
         </button>
@@ -224,7 +263,7 @@ export default function HeroSlider() {
 
       {/* Pause indicator */}
       {paused && (
-        <div className="absolute top-4 right-4 bg-white/10 rounded-full px-3 py-1.5 text-xs text-white animate-fade-in" aria-live="polite">
+        <div className="absolute top-4 right-4 bg-white/10 rounded-full px-3 py-1.5 text-sm text-white animate-fade-in" aria-live="polite">
           Slideshow paused
         </div>
       )}

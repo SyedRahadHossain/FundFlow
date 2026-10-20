@@ -2,6 +2,7 @@
 
 import { forwardRef, useId } from 'react';
 import { cn } from '@/lib/utils';
+import Icon from './Icon';
 import { applyDroppedFiles } from '@/lib/fileDrop';
 
 export const Input = forwardRef(
@@ -57,7 +58,7 @@ export const Input = forwardRef(
             aria-describedby={describedBy}
             aria-required={required}
             className={cn(
-              'w-full rounded-xl border bg-surface text-sm',
+              'w-full rounded-xl border bg-surface text-base sm:text-sm min-h-11',
               'transition-colors duration-150',
               'placeholder:text-neutral-500',
               'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2',
@@ -92,9 +93,7 @@ export const Input = forwardRef(
             role="alert"
             className="mt-1.5 text-xs text-error flex items-center gap-1"
           >
-            <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
+            <Icon name="warning" className="w-3.5 h-3.5 flex-shrink-0" />
             {error}
           </p>
         )}
@@ -144,7 +143,7 @@ export const Textarea = forwardRef(
           aria-describedby={describedBy}
           aria-required={required}
           className={cn(
-            'w-full rounded-xl border bg-surface text-sm px-4 py-2.5 resize-y min-h-[80px]',
+            'w-full rounded-xl border bg-surface text-base sm:text-sm px-4 py-2.5 resize-y min-h-[80px]',
             'transition-colors duration-150',
             'placeholder:text-neutral-500',
             'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2',
@@ -158,9 +157,7 @@ export const Textarea = forwardRef(
         {help && <p id={helpId} className="mt-1.5 text-xs text-neutral-500" role={error ? undefined : 'note'}>{help}</p>}
         {error && (
           <p id={errorId} role="alert" className="mt-1.5 text-xs text-error flex items-center gap-1">
-            <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
+            <Icon name="warning" className="w-3.5 h-3.5 flex-shrink-0" />
             {error}
           </p>
         )}
@@ -211,7 +208,7 @@ export const Select = forwardRef(
             aria-describedby={describedBy}
             aria-required={required}
             className={cn(
-              'w-full rounded-xl border bg-surface text-sm pl-4 pr-10 py-2.5 appearance-none',
+              'w-full rounded-xl border bg-surface text-base sm:text-sm pl-4 pr-10 py-2.5 appearance-none min-h-11',
               'transition-colors duration-150',
               'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2',
               'disabled:bg-neutral-50 disabled:cursor-not-allowed',
@@ -228,21 +225,15 @@ export const Select = forwardRef(
               </option>
             ))}
           </select>
-          <svg
+          <Icon
+            name="chevronDown"
             className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-          </svg>
+          />
         </div>
         {help && <p id={helpId} className="mt-1.5 text-xs text-neutral-500" role={error ? undefined : 'note'}>{help}</p>}
         {error && (
           <p id={errorId} role="alert" className="mt-1.5 text-xs text-error flex items-center gap-1">
-            <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
+            <Icon name="warning" className="w-3.5 h-3.5 flex-shrink-0" />
             {error}
           </p>
         )}
@@ -315,9 +306,7 @@ export const FileInput = forwardRef(
             {...props}
           />
           <div className="flex flex-col items-center justify-center gap-2 text-center pointer-events-none">
-            <svg className="w-8 h-8 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
+            <Icon name="upload" className="w-8 h-8 text-neutral-500" />
             <span className="text-sm text-neutral-600">Drag & drop or click to upload</span>
             <span className="text-xs text-neutral-500">PNG, JPG up to 5MB</span>
           </div>
@@ -325,9 +314,7 @@ export const FileInput = forwardRef(
         {help && <p id={helpId} className="mt-1.5 text-xs text-neutral-500" role={error ? undefined : 'note'}>{help}</p>}
         {error && (
           <p id={errorId} role="alert" className="mt-1.5 text-xs text-error flex items-center gap-1">
-            <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
+            <Icon name="warning" className="w-3.5 h-3.5 flex-shrink-0" />
             {error}
           </p>
         )}

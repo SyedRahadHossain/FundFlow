@@ -40,7 +40,7 @@ export const ProgressBar = forwardRef(
     return (
       <div ref={ref} className={cn('w-full', className)} {...props}>
         {label && (
-          <div className="flex justify-between text-xs font-medium text-neutral-600 mb-1.5">
+          <div className="flex justify-between text-[13px] font-medium text-neutral-600 mb-1.5">
             <span>{label}</span>
             {showValue && <span className="tabular-nums">{Math.round(percentage)}%</span>}
           </div>
@@ -58,7 +58,7 @@ export const ProgressBar = forwardRef(
         >
           <div
             className={cn(
-              'rounded-full transition-all duration-500 ease-out',
+              'rounded-full transition-[width] duration-500 ease-out',
               variants[variant],
               animated && 'animate-slide-up'
             )}
@@ -119,7 +119,7 @@ export const CircularProgress = forwardRef(
           />
           <circle
             className={cn(
-              'transition-all duration-500 ease-out',
+              'transition-[stroke-dashoffset] duration-500 ease-out',
               variants[variant],
               'stroke-linecap-round'
             )}
@@ -140,7 +140,7 @@ export const CircularProgress = forwardRef(
                 {Math.round(percentage)}%
               </span>
             )}
-            {label && <span className="text-xs text-neutral-500 mt-0.5">{label}</span>}
+            {label && <span className="text-[13px] text-neutral-500 mt-0.5">{label}</span>}
           </div>
         )}
       </div>

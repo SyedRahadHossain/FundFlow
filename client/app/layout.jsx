@@ -8,6 +8,14 @@ export const metadata = {
   description: 'Support the projects that matter to you',
 };
 
+// viewport-fit=cover lets the layout reach the safe area on notched phones;
+// the drawer and the dashboard shell use env() insets to stay clear of it.
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>

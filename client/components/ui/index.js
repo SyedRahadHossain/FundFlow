@@ -1,4 +1,6 @@
 export { Button } from './Button';
+export { default as Icon, ICONS, ICON_NAMES } from './Icon';
+export { ErrorBanner } from './ErrorBanner';
 export { Input, Textarea, Select, FileInput } from './Input';
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, InteractiveCard } from './Card';
 export { Badge, StatusBadge, CategoryBadge, TopFundedBadge } from './Badge';

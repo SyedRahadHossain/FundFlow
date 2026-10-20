@@ -1,115 +1,77 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 
 /**
- * Live platform numbers.
+ * Platform Impact — the live count.
  *
  * PRODUCT.md forbids fabricated benchmark metrics, so every value here comes
  * from `GET /api/stats`. When the platform genuinely has no activity the
  * section renders nothing rather than a wall of zeros — the page must never
  * imply traction that does not exist.
  *
- * Three craft decisions: the band keeps its own dark field in both themes
- * (`--field-impact`, a brand surface, not product chrome); each figure counts
- * up once when the band is read, because these are the platform's real numbers
- * and watching them land is the point; and the credit figure carries the credit
- * hue while the rest stay white ink.
+ * The band keeps its own dark field in both themes (`--field-impact`, a brand
+ * surface, not product chrome), and the credit figure carries the field's own
+ * credit tint because a credit is teal everywhere, while the other three
+ * counts stay white ink.
+ *
+ * One figure owns the band. The credits raised lead the readout at display
+ * size and the other three facts sit beside it on the same baseline as quiet
+ * phrases, so the section reads as one line of live account rather than four
+ * tiles of the same size. There is no count-up: the ledger path above is the
+ * page's one authored moment, four concurrent counters would be a second one,
+ * and the markup's default state is the settled state — the same trick the
+ * ledger path uses so a page with no script still shows the whole mechanism.
  */
 
 /**
- * Returns the counting value while it counts, or null when there is nothing to
- * animate. Null means "render the real figure": reduced motion, no
- * IntersectionObserver, or before the band is reached all show the true number
- * rather than a zero that never moves.
+ * A count and its name, in the number the platform actually reports: one
+ * live campaign, two supporters.
  */
-function useCounter(rootRef) {
-  const [counted, setCounted] = useState(null);
-
-  useEffect(() => {
-    const el = rootRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    // Reduced motion shows the settled figure; there is no animation to start.
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    const target = Number(el.dataset.value) || 0;
-    let frame;
-    let observer;
-
-    const run = () => {
-      const started = performance.now();
-      const duration = 900;
-      const tick = (now) => {
-        const t = Math.min(1, (now - started) / duration);
-        // ease-out-quint, the same arrival curve as the ledger rail.
-        const eased = 1 - (1 - t) ** 5;
-        setCounted(Math.round(target * eased));
-        if (t < 1) frame = requestAnimationFrame(tick);
-      };
-      frame = requestAnimationFrame(tick);
-    };
-
-    observer = new IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return;
-      observer.disconnect();
-      run();
-    }, { threshold: 0.4 });
-
-    observer.observe(el);
-    return () => {
-      observer?.disconnect();
-      cancelAnimationFrame(frame);
-    };
-  }, [rootRef]);
-
-  return counted;
+function plural(count, one, many) {
+  return count === 1 ? one : many;
 }
 
-function Figure({ value, label, credit = false }) {
-  const ref = useRef(null);
-  const counted = useCounter(ref);
-  const shown = counted === null ? value : counted;
-
-  return (
-    <li className="border-t border-white/25 pt-4" ref={ref} data-value={value}>
-      {/* The number counts up; assistive tech gets the settled value once,
-          never the frames. */}
-      <span
-        aria-hidden="true"
-        className={`block text-3xl sm:text-4xl font-extrabold tabular-nums ${
-          credit ? 'text-field-credit' : 'text-white'
-        }`}
-      >
-        {shown.toLocaleString()}
-      </span>
-      <span className="sr-only">{value.toLocaleString()} {label}</span>
-      <span className="mt-1 block text-sm text-field-muted" aria-hidden="true">{label}</span>
-    </li>
-  );
-}
-
-export default function PlatformImpact() {
-  const [stats, setStats] = useState(null);
+export default function PlatformImpact({ initialStats }) {
+  // The counters are read on the server and handed in, so the band is in the
+  // HTML on the first paint. A failed server read falls back to the browser.
+  const [stats, setStats] = useState(initialStats || null);
 
   useEffect(() => {
-    let mounted = true;
+    if (initialStats) return;
+    let cancelled = false;
     api.get('/api/stats')
-      .then(res => { if (mounted) setStats(res.data); })
-      .catch(() => { if (mounted) setStats(null); });
-    return () => { mounted = false; };
-  }, []);
+      .then(res => { if (!cancelled) setStats(res.data); })
+      .catch(() => { if (!cancelled) setStats(null); });
+    return () => { cancelled = true; };
+  }, [initialStats]);
 
   const hasActivity = stats && (
     stats.campaigns_live + stats.campaigns_raised + stats.credits_raised + stats.supporters > 0
   );
   if (!hasActivity) return null;
 
-  const tiles = [
-    { value: stats.campaigns_live, label: 'Live Campaigns' },
-    { value: stats.credits_raised, label: 'Credits Raised', credit: true },
-    { value: stats.supporters, label: 'Supporters' },
-    { value: stats.campaigns_raised, label: 'Goals Reached' },
+  // The credit figure leads: it is the platform's own throughput, and it is
+  // the one count the field has a tint for.
+  const facts = [
+    {
+      value: stats.credits_raised,
+      label: plural(stats.credits_raised, 'credit raised', 'credits raised'),
+      lead: true,
+    },
+    {
+      value: stats.campaigns_live,
+      label: plural(stats.campaigns_live, 'live campaign', 'live campaigns'),
+    },
+    {
+      value: stats.supporters,
+      label: plural(stats.supporters, 'supporter', 'supporters'),
+    },
+    {
+      value: stats.campaigns_raised,
+      label: plural(stats.campaigns_raised, 'goal reached', 'goals reached'),
+    },
   ];
 
   return (
@@ -119,26 +81,51 @@ export default function PlatformImpact() {
       aria-labelledby="impact-heading"
     >
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16 lg:items-start">
-          <header>
-            <h2
-              id="impact-heading"
-              className="text-3xl sm:text-4xl font-bold tracking-tight text-white text-balance"
-            >
-              Platform Impact
-            </h2>
-            <p className="mt-3 text-lg text-field-muted max-w-[46ch]">
-              Counted live from the platform. Nothing here is estimated or
-              rounded up.
-            </p>
-          </header>
-
-          <ul role="list" className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
-            {tiles.map((tile) => (
-              <Figure key={tile.label} value={tile.value} label={tile.label} credit={tile.credit} />
-            ))}
-          </ul>
+        {/* The masthead: the section's name and the promise that holds it up,
+            paired on one baseline at the two ends of the sheet. */}
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-16 lg:items-end">
+          <h2
+            id="impact-heading"
+            className="text-3xl sm:text-4xl font-bold tracking-tight text-white text-balance"
+          >
+            Platform Impact
+          </h2>
+          <p className="text-lg text-field-muted">
+            Every figure below is the platform&rsquo;s live count, read from the
+            database when this page loaded.
+          </p>
         </div>
+
+        {/* The readout: one line of live facts on a shared baseline. The credit
+            figure leads at display size, the other three read as quiet
+            phrases beside it rather than tiles of their own. */}
+        <ul
+          role="list"
+          className="mt-12 sm:mt-16 flex flex-wrap items-baseline justify-between gap-x-8 sm:gap-x-12 gap-y-4"
+        >
+          {facts.map((fact) => (
+            <li key={fact.label} className="flex items-baseline gap-2 sm:gap-3">
+              <span
+                className={`font-extrabold tabular-nums tracking-tight ${
+                  fact.lead ? 'text-5xl sm:text-6xl text-field-credit' : 'text-2xl text-white'
+                }`}
+              >
+                {fact.value.toLocaleString()}
+              </span>
+              <span
+                className={`text-field-muted ${fact.lead ? 'text-xl' : 'text-base'}`}
+              >
+                {fact.label}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {/* The sheet's last band. The counts are exact, zeros included, so the
+            band closes on what the numbers are rather than on another number. */}
+        <p className="mt-12 sm:mt-14 text-base text-field-muted max-w-[60ch]">
+          Nothing is estimated or rounded up, and a zero here is a real count.
+        </p>
       </div>
     </section>
   );

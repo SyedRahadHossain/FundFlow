@@ -11,7 +11,6 @@ const variants = {
   warning: 'bg-warning-light text-warning-dark',
   error: 'bg-error-light text-error-hover',
   info: 'bg-info-light text-info-dark',
-  neutral: 'bg-neutral-200 text-neutral-600',
   outline: 'border border-neutral-300 bg-transparent text-neutral-700',
 };
 
@@ -81,7 +80,9 @@ export const StatusBadge = ({ status, children, ...props }) => {
 
 export const CategoryBadge = ({ category, ...props }) => (
   <Badge variant="outline" size="sm" className="font-semibold" {...props}>
-    {category}
+    {/* The category is a name, not a label: it is the only place the category
+        appears on the card, so it reads at 13px rather than the badge's 12px. */}
+    <span className="text-[13px]">{category}</span>
   </Badge>
 );
 

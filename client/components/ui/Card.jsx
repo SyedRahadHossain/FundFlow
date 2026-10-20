@@ -125,7 +125,7 @@ export const InteractiveCard = forwardRef(
         onClick={onClick}
         className={cn(
           'bg-surface rounded-2xl border border-neutral-200 shadow-sm',
-          'transition-all duration-200',
+          'transition-shadow duration-200',
           'hover:shadow-lg hover:border-primary-medium hover:-translate-y-0.5',
           'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2',
           isLink ? 'cursor-pointer' : '',
