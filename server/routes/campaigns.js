@@ -150,6 +150,12 @@ router.post('/', verifyToken, verifyRole('creator'), validate(campaignCreateSche
     await campaign.save();
     return res.status(201).json(campaign);
   } catch (err) {
+    // A rejected document is the caller's problem, not the server's: say what
+    // is wrong instead of a blind "Server error".
+    if (err && err.name === 'ValidationError') {
+      return res.status(400).json({ error: 'Campaign could not be saved: check the title, story, category, goal, deadline, reward note and image URL.' });
+    }
+    console.error('campaign create failed:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });
@@ -186,10 +192,21 @@ router.post('/:id/updates', verifyToken, verifyRole('creator'), validate(campaig
   }
 });
 
-// DELETE /api/campaigns/:id — creator: delete + refund approved supporters
-router.delete('/:id', verifyToken, verifyRole('creator'), async (req, res) => {
+// DELETE /api/campaigns/:id — creator deletes their own, admin deletes any
+// A creator may only delete a campaign they own. An admin may delete any
+// campaign: the admin surfaces (campaign management, the report queue) both
+// offer the action, and an admin who cannot delete is left with a control that
+// always answers "Forbidden".
+//
+// Both paths go through the same delete-and-refund helper, so deleting a
+// campaign returns the credits of every supporter who backed it — an admin
+// delete cannot confiscate supporter money either.
+router.delete('/:id', verifyToken, verifyRole('creator', 'admin'), async (req, res) => {
   try {
-    const campaign = await Campaign.findOne({ _id: req.params.id, creator_email: req.user.email });
+    const scope = req.user.role === 'admin'
+      ? { _id: req.params.id }
+      : { _id: req.params.id, creator_email: req.user.email };
+    const campaign = await Campaign.findOne(scope);
     if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
 
     const { refunded } = await deleteCampaignWithRefunds(req.params.id);

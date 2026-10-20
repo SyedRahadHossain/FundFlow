@@ -353,6 +353,29 @@ describe('PATCH /api/campaigns/:id/status', () => {
   });
 });
 
+describe('POST /api/campaigns — optional fields', () => {
+  test('a campaign with no image URL and no reward note is accepted', async () => {
+    // The API schema allows both to be empty and the card falls back to a
+    // placeholder picture, so the model must not reject the document.
+    const res = await request(app)
+      .post('/api/campaigns')
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({
+        title: 'No Image Yet',
+        story: 'A campaign that has not uploaded a picture or written a reward note yet.',
+        category: 'Technology',
+        funding_goal: 100,
+        minimum_contribution: 10,
+        deadline: '2026-12-01T00:00:00.000Z',
+        reward_info: '',
+        campaign_image_url: '',
+      });
+    expect(res.status).toBe(201);
+    expect(res.body.campaign_image_url).toBe('');
+    expect(res.body.reward_info).toBe('');
+  });
+});
+
 describe('DELETE /api/campaigns/:id', () => {
   test('deletes campaign and refunds approved supporters', async () => {
     const campId = newId();
@@ -377,6 +400,55 @@ describe('DELETE /api/campaigns/:id', () => {
     // Refunded contributions are marked, not left as approved
     expect(mockContributions[c1id].status).toBe('refunded');
     expect(mockContributions[c2id].status).toBe('refunded');
+  });
+
+  test('an admin can delete any campaign, and its supporters are refunded', async () => {
+    // The admin surfaces offer the delete control, so the route has to honour
+    // it — otherwise the admin always gets "Forbidden".
+    const campId = newId();
+    mockCampaigns[campId] = {
+      _id: campId, title: 'Admin Delete Test',
+      status: 'approved', creator_email: 'someone-else@x.com',
+    };
+    mockUsers['s9@x.com'] = { email: 's9@x.com', credits: 10 };
+    const cid = newId();
+    mockContributions[cid] = { _id: cid, campaign_id: campId, supporter_email: 's9@x.com', contribution_amount: 70, status: 'approved' };
+
+    const res = await request(app)
+      .delete(`/api/campaigns/${campId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('Campaign deleted, supporters refunded');
+    expect(res.body.refunded).toBe(70);
+    expect(mockCampaigns[campId]).toBeUndefined();
+    // The supporter's credits come back: an admin delete is not a confiscation.
+    expect(mockUsers['s9@x.com'].credits).toBe(80);
+  });
+
+  test('a creator still cannot delete a campaign they do not own', async () => {
+    const campId = newId();
+    mockCampaigns[campId] = {
+      _id: campId, title: 'Not Yours', status: 'approved', creator_email: 'someone-else@x.com',
+    };
+
+    const res = await request(app)
+      .delete(`/api/campaigns/${campId}`)
+      .set('Authorization', `Bearer ${creatorToken}`);
+    expect(res.status).toBe(404);
+    expect(mockCampaigns[campId]).toBeDefined();
+  });
+
+  test('a supporter cannot delete a campaign', async () => {
+    const campId = newId();
+    mockCampaigns[campId] = {
+      _id: campId, title: 'Supporter Delete', status: 'approved', creator_email: 'creator@x.com',
+    };
+
+    const res = await request(app)
+      .delete(`/api/campaigns/${campId}`)
+      .set('Authorization', `Bearer ${supporterToken}`);
+    expect(res.status).toBe(403);
+    expect(mockCampaigns[campId]).toBeDefined();
   });
 
   test('refunds are claimed, so a repeated delete cannot pay twice', async () => {

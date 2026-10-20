@@ -42,7 +42,7 @@ export default function ManageCampaignsPage() {
     setDeleting(id);
     try {
       await api.delete(`/api/campaigns/${id}`);
-      toast.success('Campaign deleted');
+      toast.success('Campaign deleted — supporters refunded');
       setCampaigns(cs => cs.filter(c => c._id !== id));
     } catch (err) {
       toast.error(err.response?.data?.error || 'Could not delete the campaign. Please try again.');
@@ -202,7 +202,7 @@ export default function ManageCampaignsPage() {
         onClose={() => setConfirming(null)}
         onConfirm={() => handleDelete(confirming.id)}
         title="Delete campaign?"
-        description={`"${confirming?.title}" will be permanently removed. This cannot be undone.`}
+        description={`"${confirming?.title}" will be removed, and every supporter who backed it gets their credits back. This cannot be undone.`}
         confirmText="Delete campaign"
         cancelText="Cancel"
         loading={deleting === confirming?.id}

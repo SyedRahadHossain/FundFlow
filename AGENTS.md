@@ -121,7 +121,7 @@ All prefixed with `/api/`:
 | Domain | Routes |
 |--------|--------|
 | Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/google`, `POST /auth/forgot-password`, `POST /auth/reset-password`, `GET /auth/me` |
-| Campaigns | `GET /campaigns` (`status=approved` is public; any other status or bare request needs an admin token; non-string `status` → 400), `GET /campaigns/top-funded`, `GET /campaigns/mine`, `POST /campaigns`, `PATCH /campaigns/:id`, `DELETE /campaigns/:id`, `PATCH /campaigns/:id/status` (admin) |
+| Campaigns | `GET /campaigns` (`status=approved` is public; any other status or bare request needs an admin token; non-string `status` → 400), `GET /campaigns/top-funded`, `GET /campaigns/mine`, `POST /campaigns`, `PATCH /campaigns/:id`, `DELETE /campaigns/:id` (creator: own campaigns; admin: any campaign — supporters are refunded either way), `PATCH /campaigns/:id/status` (admin) |
 | Contributions | `POST /contributions` (400 if supporter lacks credits; debits before insert, credits back if insert fails), `GET /contributions/mine`, `GET /contributions/campaign/:id`, `PATCH /contributions/:id/approve`, `PATCH /contributions/:id/reject` |
 | Withdrawals | `POST /withdrawals`, `GET /withdrawals` (admin), `GET /withdrawals/mine`, `PATCH /withdrawals/:id/approve` (admin) |
 | Payments | `GET /payments/mine`, `GET /payments/all` (admin) — credits are granted only by the Stripe webhook |
