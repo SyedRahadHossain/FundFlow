@@ -53,12 +53,14 @@ Admin credentials: `admin@fundflow.com` / `Admin@123456`
 ### Seed Demo Campaigns
 
 ```bash
-cd server && NODE_ENV=development node seed-campaigns.js
+cd server && node seed-campaigns.js
 ```
 Writes six approved campaigns with a matching credit ledger, so the landing
-page has real content. It refuses to run when `NODE_ENV=production` (this
-repo's `server/.env` sets it, so the override above is required). Add
-`--prune-junk` to also remove the placeholder campaigns left by testing.
+page has real content. It refuses to run when `NODE_ENV=production` **or** when
+`MONGODB_URI` points at the production database (`fundflow`), so a local run
+cannot publish the demo accounts, whose password the script prints. The local
+`server/.env` points at `fundflow_dev`; the deployed server uses `fundflow`.
+Add `--prune-junk` to also remove the placeholder campaigns left by testing.
 
 ---
 
@@ -68,7 +70,7 @@ repo's `server/.env` sets it, so the override above is required). Add
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `MONGODB_URI` | Yes | MongoDB Atlas connection string |
+| `MONGODB_URI` | Yes | MongoDB Atlas connection string. Local `.env` uses `fundflow_dev`; the deployed server uses `fundflow` |
 | `JWT_SECRET` | Yes | Long random string for signing tokens |
 | `STRIPE_SECRET_KEY` | No | Stripe secret key (platform degrades gracefully) |
 | `STRIPE_WEBHOOK_SECRET` | No | Stripe webhook signing secret; without it no credits can be granted |

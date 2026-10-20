@@ -10,11 +10,12 @@
  *
  * Run it:
  *
- *   NODE_ENV=development node seed-campaigns.js
+ *   node seed-campaigns.js
  *
- * The explicit override matters: this repository's `server/.env` sets
- * NODE_ENV=production (it is the deployment file), and the script refuses to
- * write demo data into a production environment.
+ * It refuses to run in two cases: NODE_ENV is "production", or MONGODB_URI
+ * points at the production database. Both refusals exist because the cost of
+ * getting this wrong is a public account whose password is printed in this
+ * file. A development database (`fundflow_dev`) is the intended target.
  *
  * Options:
  *   --prune-junk   also remove the placeholder campaigns left behind by
@@ -28,16 +29,42 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const PRUNE_JUNK = process.argv.includes('--prune-junk');
+const ALLOW_PRODUCTION_DB = process.argv.includes('--allow-production-db');
 
 // ── Guard ─────────────────────────────────────────────────────────
-// Demo data must never reach a production database. The refusal names the
-// command that runs it, so the operator is not left guessing.
+// Demo data must never reach a production database. Two refusals stand in
+// the way: a production environment, and a connection to the production
+// database itself. The second one matters because NODE_ENV and the
+// connection string are separate facts: pointing a development run at the
+// live database would publish accounts whose password is printed in this
+// file. The refusal names the command that runs it, so the operator is not
+// left guessing.
 if (process.env.NODE_ENV === 'production') {
   console.error(
     'Refusing to seed: NODE_ENV is "production".\n' +
     'This script writes demo campaigns and demo accounts. Run it with an explicit\n' +
     'non-production environment, for example:\n' +
     '  NODE_ENV=development node seed-campaigns.js'
+  );
+  process.exit(1);
+}
+
+const PRODUCTION_DB = 'fundflow';
+const dbName = (() => {
+  const uri = process.env.MONGODB_URI || '';
+  const match = /\.mongodb\.net\/([^/?]+)|@[^/]+\/([^/?]+)/.exec(uri);
+  return (match && (match[1] || match[2])) || '';
+})();
+
+if (dbName === PRODUCTION_DB && !ALLOW_PRODUCTION_DB) {
+  console.error(
+    `Refusing to seed: MONGODB_URI points at the "${PRODUCTION_DB}" database, which is the\n` +
+    'deployed server\'s database. Seeding it would publish demo accounts whose password\n' +
+    'is printed below, and the deployed site would offer them to anyone who reads this\n' +
+    'repository. Point the script at a development database instead, for example:\n' +
+    '  mongodb+srv://...@cluster0.byllt.mongodb.net/fundflow_dev\n' +
+    'If you truly mean to write to the production database, say so:\n' +
+    '  node seed-campaigns.js --allow-production-db'
   );
   process.exit(1);
 }
