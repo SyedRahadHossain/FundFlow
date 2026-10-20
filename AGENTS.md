@@ -21,7 +21,7 @@ Two independent packages. Each has its own `package.json`, `node_modules`, and e
 | `npm install` | Install dependencies |
 | `npm run dev` | Start with nodemon on `http://localhost:5000` |
 | `npm start` | Production start (`node index.js`) |
-| `npm test` | Run 131 tests (Jest + Supertest, mocked models) |
+| `npm test` | Run 171 tests (Jest + Supertest, mocked models) |
 
 ### Client (run from `client/`)
 
@@ -49,6 +49,16 @@ cd client && cp .env.local.example .env.local && npm install && npm run dev
 cd server && node seed-admin.js
 ```
 Admin credentials: `admin@fundflow.com` / `Admin@123456`
+
+### Seed Demo Campaigns
+
+```bash
+cd server && NODE_ENV=development node seed-campaigns.js
+```
+Writes six approved campaigns with a matching credit ledger, so the landing
+page has real content. It refuses to run when `NODE_ENV=production` (this
+repo's `server/.env` sets it, so the override above is required). Add
+`--prune-junk` to also remove the placeholder campaigns left by testing.
 
 ---
 
@@ -110,7 +120,7 @@ All prefixed with `/api/`:
 
 | Domain | Routes |
 |--------|--------|
-| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/google`, `GET /auth/me` |
+| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/google`, `POST /auth/forgot-password`, `POST /auth/reset-password`, `GET /auth/me` |
 | Campaigns | `GET /campaigns` (`status=approved` is public; any other status or bare request needs an admin token; non-string `status` → 400), `GET /campaigns/top-funded`, `GET /campaigns/mine`, `POST /campaigns`, `PATCH /campaigns/:id`, `DELETE /campaigns/:id`, `PATCH /campaigns/:id/status` (admin) |
 | Contributions | `POST /contributions` (400 if supporter lacks credits; debits before insert, credits back if insert fails), `GET /contributions/mine`, `GET /contributions/campaign/:id`, `PATCH /contributions/:id/approve`, `PATCH /contributions/:id/reject` |
 | Withdrawals | `POST /withdrawals`, `GET /withdrawals` (admin), `GET /withdrawals/mine`, `PATCH /withdrawals/:id/approve` (admin) |

@@ -7,6 +7,8 @@ import { Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Modal, ConfirmDialog } from '@/components/ui/Modal';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import Icon from '@/components/ui/Icon';
 
 export default function ContributionsReviewPage() {
   const [campaigns, setCampaigns]         = useState([]);
@@ -68,11 +70,16 @@ export default function ContributionsReviewPage() {
     setActing(c._id + action);
     try {
       await api.patch(`/api/contributions/${c._id}/${action}`);
-      toast.success(action === 'approve' ? 'Contribution approved ✅' : 'Contribution rejected ❌');
+      toast.success(action === 'approve' ? 'Contribution approved' : 'Contribution rejected');
       setContributions(cs => cs.filter(x => x._id !== c._id));
       setViewModal(null);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Action failed');
+      toast.error(
+        err.response?.data?.error ||
+        (action === 'approve'
+          ? 'Could not approve the contribution. Please try again.'
+          : 'Could not reject the contribution. Please try again.')
+      );
     } finally {
       setActing(null);
       setConfirming(null);
@@ -98,22 +105,22 @@ export default function ContributionsReviewPage() {
       <Button
         size="sm"
         variant="ghost"
-        leftIcon="✅"
+        leftIcon={<Icon name="approve" />}
         onClick={() => confirmApprove(c)}
         disabled={!!acting}
         aria-label={`Approve contribution from ${c.supporter_name}`}
-        className={`min-h-11 bg-success-light border border-success/20 text-success-dark hover:bg-success/20 ${fullWidth ? 'flex-1' : ''}`}
+        className={`min-h-11 bg-success-light! border border-success/20 text-success-dark hover:bg-success/20 ${fullWidth ? 'flex-1' : ''}`}
       >
         Approve
       </Button>
       <Button
         size="sm"
         variant="ghost"
-        leftIcon="❌"
+        leftIcon={<Icon name="reject" />}
         onClick={() => confirmReject(c)}
         disabled={!!acting}
         aria-label={`Reject contribution from ${c.supporter_name}`}
-        className={`min-h-11 bg-error-light border border-error/20 text-error-hover hover:bg-error/20 ${fullWidth ? 'flex-1' : ''}`}
+        className={`min-h-11 bg-error-light! border border-error/20 text-error-hover! hover:bg-error/20! ${fullWidth ? 'flex-1' : ''}`}
       >
         Reject
       </Button>
@@ -131,10 +138,7 @@ export default function ContributionsReviewPage() {
 
       {/* Load failure — same alert/retry affordance as the other dashboard homes */}
       {error && (
-        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
-          <span>We couldn’t load contributions to review.</span>
-          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
-        </div>
+        <ErrorBanner message="We couldn’t load contributions to review." onRetry={retry} />
       )}
 
       {/* Campaign filter */}
@@ -172,7 +176,7 @@ export default function ContributionsReviewPage() {
               {/* Desktop table */}
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase tracking-wide">
+                  <thead className="bg-neutral-50 text-neutral-500 text-[13px] uppercase tracking-wide">
                     <tr>
                       <th className="px-5 py-3 text-left">Supporter</th>
                       <th className="px-5 py-3 text-left">Campaign</th>
@@ -186,18 +190,18 @@ export default function ContributionsReviewPage() {
                       <tr key={c._id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-5 py-3.5 font-medium text-neutral-800">{c.supporter_name}</td>
                         <td className="px-5 py-3.5 text-neutral-500 max-w-[160px] truncate">{c.campaign_title}</td>
-                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums"><span aria-hidden="true">💎 </span>{c.contribution_amount?.toLocaleString()}</td>
+                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums"><span className="inline-flex items-center gap-1 justify-end align-middle"><Icon name="credits" className="w-4 h-4" />{c.contribution_amount?.toLocaleString()}</span></td>
                         <td className="px-5 py-3.5 text-neutral-500">{new Date(c.date).toLocaleDateString()}</td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center justify-center gap-2">
                             <Button
                               size="sm"
                               variant="ghost"
-                              leftIcon="👁"
+                              leftIcon={<Icon name="eye" />}
                               onClick={() => setViewModal(c)}
-                              className="border border-neutral-200 text-neutral-600 hover:bg-neutral-200"
+                              className="border border-neutral-200 text-neutral-600! hover:bg-neutral-200"
                             >
-                              View
+                              Details
                             </Button>
                             <ViewActions c={c} />
                           </div>
@@ -215,19 +219,19 @@ export default function ContributionsReviewPage() {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className="font-medium text-neutral-800 text-sm">{c.supporter_name}</p>
-                        <p className="text-xs text-neutral-500 mt-0.5">{c.campaign_title}</p>
+                        <p className="text-[13px] text-neutral-500 mt-0.5">{c.campaign_title}</p>
                       </div>
-                      <p className="font-bold text-accent text-sm tabular-nums"><span aria-hidden="true">💎 </span>{c.contribution_amount?.toLocaleString()}</p>
+                      <p className="font-bold text-accent text-sm tabular-nums inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{c.contribution_amount?.toLocaleString()}</p>
                     </div>
                     <div className="flex gap-2 mt-3">
                       <Button
                         size="sm"
                         variant="ghost"
-                        leftIcon="👁"
+                        leftIcon={<Icon name="eye" />}
                         onClick={() => setViewModal(c)}
-                        className="flex-1 min-h-11 border border-neutral-200 text-neutral-600 hover:bg-neutral-200"
+                        className="flex-1 min-h-11 border border-neutral-200 text-neutral-600! hover:bg-neutral-200"
                       >
-                        View
+                        Details
                       </Button>
                       <ViewActions c={c} fullWidth />
                     </div>
@@ -250,7 +254,7 @@ export default function ContributionsReviewPage() {
             <div className="flex gap-3 w-full">
               <Button
                 variant="primary"
-                leftIcon="✅"
+                leftIcon={<Icon name="approve" />}
                 onClick={() => confirmApprove(viewModal)}
                 disabled={!!acting}
                 aria-label={`Approve contribution from ${viewModal.supporter_name}`}
@@ -260,7 +264,7 @@ export default function ContributionsReviewPage() {
               </Button>
               <Button
                 variant="destructive"
-                leftIcon="❌"
+                leftIcon={<Icon name="reject" />}
                 onClick={() => confirmReject(viewModal)}
                 disabled={!!acting}
                 aria-label={`Reject contribution from ${viewModal.supporter_name}`}
@@ -275,9 +279,9 @@ export default function ContributionsReviewPage() {
         {viewModal && (
           <div className="space-y-3 text-sm">
             <div className="flex justify-between"><span className="text-neutral-500">Supporter</span><span className="font-medium">{viewModal.supporter_name}</span></div>
-            <div className="flex justify-between"><span className="text-neutral-500">Email</span><span className="font-medium text-xs">{viewModal.supporter_email}</span></div>
+            <div className="flex justify-between"><span className="text-neutral-500">Email</span><span className="font-medium text-[13px]">{viewModal.supporter_email}</span></div>
             <div className="flex justify-between"><span className="text-neutral-500">Campaign</span><span className="font-medium">{viewModal.campaign_title}</span></div>
-            <div className="flex justify-between"><span className="text-neutral-500">Amount</span><span className="font-bold text-accent tabular-nums"><span aria-hidden="true">💎 </span>{viewModal.contribution_amount?.toLocaleString()} credits</span></div>
+            <div className="flex justify-between"><span className="text-neutral-500">Amount</span><span className="font-bold text-accent tabular-nums inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{viewModal.contribution_amount?.toLocaleString()} credits</span></div>
             <div className="flex justify-between"><span className="text-neutral-500">Date</span><span>{new Date(viewModal.date).toLocaleString()}</span></div>
           </div>
         )}

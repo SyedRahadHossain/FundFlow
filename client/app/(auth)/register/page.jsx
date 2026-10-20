@@ -75,7 +75,15 @@ export default function RegisterPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent-light to-primary-light px-4">
+    <main id="main-content" className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-accent-light to-primary-light px-4 py-10">
+      {/* The auth pages carry no navbar, so the wordmark is also the way back
+          to the landing page. */}
+      <Link href="/" className="flex items-center gap-2 mb-6 min-h-11 font-bold text-xl text-primary hover:text-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm">
+        <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+        <span>FundFlow</span>
+      </Link>
       <div className="bg-surface rounded-2xl border border-neutral-200 shadow-sm p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-neutral-900 mb-1">Create account</h1>
         <p className="text-sm text-neutral-500 mb-6">Join FundFlow and start making an impact</p>
@@ -132,8 +140,8 @@ export default function RegisterPage() {
             value={form.role}
             onChange={e => setForm({ ...form, role: e.target.value })}
             options={[
-              { value: 'supporter', label: 'Support campaigns (Supporter)' },
-              { value: 'creator', label: 'Launch campaigns (Creator)' },
+              { value: 'supporter', label: 'Support campaigns' },
+              { value: 'creator', label: 'Launch campaigns' },
             ]}
           />
 

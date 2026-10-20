@@ -5,12 +5,13 @@ import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Input, Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import Icon from '@/components/ui/Icon';
 
 const PAYMENT_SYSTEMS = ['Stripe', 'Bkash', 'Rocket', 'Nagad'];
 const MIN_CREDITS = 200;
 
 export default function WithdrawalsPage() {
-  const [campaigns, setCampaigns]     = useState([]);
   const [totalRaised, setTotalRaised] = useState(0);
   const [loading, setLoading]         = useState(true);
   const [form, setForm]               = useState({ withdrawal_credit: '', payment_system: 'Stripe', account_number: '' });
@@ -26,7 +27,6 @@ export default function WithdrawalsPage() {
     api.get('/api/campaigns/mine')
       .then(res => {
         const camps = res.data || [];
-        setCampaigns(camps);
         setTotalRaised(camps.filter(c => c.status === 'approved').reduce((s, c) => s + (c.amount_raised || 0), 0));
         setError(false);
       })
@@ -68,7 +68,7 @@ export default function WithdrawalsPage() {
       toast.success('Withdrawal request submitted!');
       setForm({ withdrawal_credit: '', payment_system: 'Stripe', account_number: '' });
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Withdrawal failed');
+      toast.error(err.response?.data?.error || 'Could not request the withdrawal. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -85,31 +85,28 @@ export default function WithdrawalsPage() {
 
       {/* Load failure — same alert/retry affordance as the other dashboard homes */}
       {error && (
-        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
-          <span>We couldn’t load your withdrawal data.</span>
-          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
-        </div>
+        <ErrorBanner message="We couldn’t load your withdrawal data." onRetry={retry} />
       )}
 
       {/* Balance summary */}
       {!error && (
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-surface rounded-2xl border border-neutral-200 p-5 text-center shadow-sm">
-            <p className="text-xs text-neutral-500 mb-1">Total Raised Credits</p>
+            <p className="text-[13px] text-neutral-500 mb-1">Total Raised Credits</p>
             <p className="text-2xl font-bold text-accent tabular-nums">{loading ? '…' : totalRaised.toLocaleString()}</p>
-            <p className="text-xs text-neutral-500 mt-1"><span aria-hidden="true">💎 </span>credits</p>
+            <p className="text-[13px] text-neutral-500 mt-1 flex items-center justify-center gap-1"><Icon name="credits" className="w-4 h-4" />credits</p>
           </div>
           <div className="bg-surface rounded-2xl border border-neutral-200 p-5 text-center shadow-sm">
-            <p className="text-xs text-neutral-500 mb-1">Equivalent Value</p>
+            <p className="text-[13px] text-neutral-500 mb-1">Equivalent Value</p>
             <p className="text-2xl font-bold text-neutral-900 tabular-nums">${loading ? '…' : (totalRaised / 20).toFixed(2)}</p>
-            <p className="text-xs text-neutral-500 mt-1">at 20 credits = $1</p>
+            <p className="text-[13px] text-neutral-500 mt-1">at 20 credits = $1</p>
           </div>
         </div>
       )}
 
       {!error && (!loading && !canWithdraw ? (
         <div className="bg-warning-light border border-warning/20 rounded-2xl p-6 text-center">
-          <span className="text-4xl block mb-3" aria-hidden="true">💰</span>
+          <span className="block mb-3"><Icon name="payouts" className="w-9 h-9 mx-auto text-warning-dark" /></span>
           <p className="font-semibold text-warning-dark">Insufficient Credits</p>
           <p className="text-sm text-warning-dark mt-1">You need at least <strong>{MIN_CREDITS}</strong> raised credits to withdraw. You currently have <strong>{totalRaised}</strong>.</p>
         </div>
@@ -134,7 +131,7 @@ export default function WithdrawalsPage() {
               <div className="w-full border border-neutral-200 bg-neutral-50 rounded-xl px-4 py-2.5 text-sm text-neutral-900 font-semibold tabular-nums">
                 ${credits > 0 ? dollarAmount : '0.00'}
               </div>
-              <p className="text-xs text-neutral-500 mt-1.5">20 credits = $1</p>
+              <p className="text-[13px] text-neutral-500 mt-1.5">20 credits = $1</p>
             </div>
 
             <Select
@@ -152,7 +149,7 @@ export default function WithdrawalsPage() {
               error={errors.account_number}
             />
 
-            <Button type="submit" width="full" size="lg" loading={submitting} loadingText="Submitting…" disabled={!canWithdraw} leftIcon="💸">
+            <Button type="submit" width="full" size="lg" loading={submitting} loadingText="Submitting…" disabled={!canWithdraw} leftIcon={<Icon name="payouts" />}>
               Request Withdrawal
             </Button>
           </form>

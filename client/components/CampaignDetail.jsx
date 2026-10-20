@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { CategoryBadge } from '@/components/ui/Badge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import Icon from '@/components/ui/Icon';
 
 /**
  * Shared campaign detail body used by the public route (/campaigns/[id]) and
@@ -52,7 +54,7 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
       setAmount('');
       router.push('/dashboard/my-contributions');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Contribution failed');
+      toast.error(err.response?.data?.error || 'Could not submit the contribution. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -75,7 +77,7 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
       setReportOpen(false);
       setReportReason('');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Report failed');
+      toast.error(err.response?.data?.error || 'Could not submit the report. Please try again.');
     } finally {
       setReporting(false);
     }
@@ -99,7 +101,7 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
 
   if (!campaign) return (
     <div className="text-center py-20 text-neutral-500" role="status">
-      <span className="text-5xl block mb-3" aria-hidden="true">😕</span>
+      <span className="block mb-3"><Icon name="warning" className="w-12 h-12 mx-auto text-neutral-400" /></span>
       Campaign not found
       <div className="mt-4">
         <Button asChild variant="secondary" size="sm">
@@ -112,20 +114,20 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
   return (
     <div className="max-w-3xl mx-auto">
       {mode === 'dashboard' ? (
-        <button onClick={() => router.back()} className="text-sm text-primary hover:text-primary-hover hover:underline mb-5 flex items-center gap-1">
-          ← Back to campaigns
+        <button onClick={() => router.back()} className="text-sm text-primary hover:text-primary-hover hover:underline mb-5 inline-flex items-center gap-1 min-h-11">
+          <Icon name="chevronLeft" className="w-4 h-4" /> Back to campaigns
         </button>
       ) : (
-        <Link href="/campaigns" className="text-sm text-primary hover:text-primary-hover hover:underline mb-5 flex items-center gap-1">
-          ← All campaigns
+        <Link href="/campaigns" className="text-sm text-primary hover:text-primary-hover hover:underline mb-5 inline-flex items-center gap-1 min-h-11">
+          <Icon name="chevronLeft" className="w-4 h-4" /> All campaigns
         </Link>
       )}
 
       {/* Cover image */}
-      <div className="h-64 sm:h-80 bg-accent-light rounded-2xl overflow-hidden mb-6">
+      <div className="h-64 sm:h-80 bg-accent-light rounded-2xl overflow-hidden mb-6 relative">
         {campaign.campaign_image_url
-          ? <img src={campaign.campaign_image_url} alt={campaign.title} className="w-full h-full object-cover" />
-          : <div className="w-full h-full flex items-center justify-center text-6xl" aria-hidden="true">🎯</div>
+          ? <Image src={campaign.campaign_image_url} alt={campaign.title} fill priority sizes="(max-width: 1024px) 100vw, 768px" className="object-cover" />
+          : <div className="w-full h-full flex items-center justify-center" aria-hidden="true"><Icon name="image" className="w-15 h-15 text-neutral-400" /></div>
         }
       </div>
 
@@ -142,7 +144,7 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
           <div className="bg-surface rounded-2xl border border-neutral-200 p-5">
             <div className="flex justify-between text-sm font-semibold mb-2">
               <span className="text-accent tabular-nums">
-                <span aria-hidden="true">💎 </span>{(campaign.amount_raised || 0).toLocaleString()} credits raised
+                <span className="inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{(campaign.amount_raised || 0).toLocaleString()} credits raised</span>
               </span>
               <span className="text-neutral-700 tabular-nums">{pct}%</span>
             </div>
@@ -154,9 +156,9 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
               aria-label={`${pct}% funded`}
               className="mb-3"
             />
-            <div className="flex justify-between text-xs text-neutral-500">
-              <span className="tabular-nums">Goal: <span className="text-accent font-semibold"><span aria-hidden="true">💎 </span>{Number.isFinite(goal) ? goal.toLocaleString() : '—'}</span></span>
-              <span><span aria-hidden="true">⏰ </span>{daysLeft !== null ? `${daysLeft} days left` : 'Deadline unknown'}</span>
+            <div className="flex justify-between text-[13px] text-neutral-500">
+              <span className="tabular-nums">Goal: <span className="text-accent font-semibold inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{Number.isFinite(goal) ? goal.toLocaleString() : '—'}</span></span>
+              <span className="inline-flex items-center gap-1"><Icon name="calendar" className="w-4 h-4" />{daysLeft !== null ? `${daysLeft} days left` : 'Deadline unknown'}</span>
             </div>
           </div>
 
@@ -168,7 +170,7 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
 
           {/* Rewards */}
           <div className="bg-surface rounded-2xl border border-neutral-200 p-5">
-            <h2 className="font-semibold text-neutral-900 mb-2"><span aria-hidden="true">🎁 </span>Reward Info</h2>
+            <h2 className="font-semibold text-neutral-900 mb-2 flex items-center gap-1.5"><Icon name="gift" className="w-5 h-5 text-neutral-400" />Reward Info</h2>
             <p className="text-sm text-neutral-600">{campaign.reward_info}</p>
           </div>
 
@@ -176,8 +178,8 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
           {(campaign.updates || []).length > 0 && (
             <div className="bg-surface rounded-2xl border border-neutral-200 p-5">
               <h2 className="font-semibold text-neutral-900 mb-4">
-                <span aria-hidden="true">📣 </span>Creator Updates
-                <span className="text-xs font-normal text-neutral-500 ml-2">
+                <Icon name="announce" className="w-5 h-5 text-neutral-400" />Creator Updates
+                <span className="text-[13px] font-normal text-neutral-500 ml-2">
                   {campaign.updates.length} posted
                 </span>
               </h2>
@@ -186,7 +188,7 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
                   <li key={i} className="border-l-2 border-primary/30 pl-4">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <h3 className="font-semibold text-neutral-900 text-sm">{u.title}</h3>
-                      <time className="text-xs text-neutral-500" dateTime={new Date(u.posted).toISOString()}>
+                      <time className="text-[13px] text-neutral-500" dateTime={new Date(u.posted).toISOString()}>
                         {new Date(u.posted).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </time>
                     </div>
@@ -200,8 +202,8 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
           {/* Report */}
           {user && (
             <button onClick={() => setReportOpen(true)}
-              className="text-xs text-neutral-500 hover:text-error transition-colors flex items-center gap-1">
-              <span aria-hidden="true">🚩</span> Report this campaign
+              className="text-[13px] text-neutral-500 hover:text-error transition-colors inline-flex items-center gap-1 min-h-11">
+              <Icon name="reports" className="w-4 h-4" /> Report this campaign
             </button>
           )}
         </div>
@@ -210,7 +212,7 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
         <div className="lg:col-span-1">
           <div className="bg-surface rounded-2xl border border-neutral-200 p-5 sticky top-4">
             <h2 className="font-semibold text-neutral-900 mb-4">Contribute Credits</h2>
-            <p className="text-xs text-neutral-500 mb-4">
+            <p className="text-[13px] text-neutral-500 mb-4">
               Minimum contribution: <strong className="text-accent-hover">{campaign.minimum_contribution} credits</strong>
             </p>
             {!user ? (
@@ -218,7 +220,7 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
                 <Button asChild variant="primary" width="full">
                   <Link href={`/login?next=/campaigns/${id}`}>Sign in to contribute</Link>
                 </Button>
-                <p className="text-xs text-neutral-500 text-center">
+                <p className="text-[13px] text-neutral-500 text-center">
                   Your credits stay refundable if the creator rejects your contribution.
                 </p>
               </div>
@@ -234,15 +236,15 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
                   required
                 />
                 {daysLeft === 0 ? (
-                  <p className="text-error text-xs text-center" role="alert">This campaign has ended</p>
+                  <p className="text-error text-[13px] text-center" role="alert">This campaign has ended</p>
                 ) : (
-                  <Button type="submit" width="full" loading={submitting} loadingText="Submitting…" leftIcon="💎">
+                  <Button type="submit" width="full" loading={submitting} loadingText="Submitting…" leftIcon={<Icon name="credits" />}>
                     Contribute Now
                   </Button>
                 )}
               </form>
             )}
-            <p className="text-xs text-neutral-500 text-center mt-3">
+            <p className="text-[13px] text-neutral-500 text-center mt-3">
               Your credits will be deducted immediately and held until the creator reviews your contribution.
             </p>
           </div>
@@ -270,7 +272,7 @@ export default function CampaignDetail({ mode = 'dashboard' }) {
               loading={reporting}
               loadingText="Sending…"
               disabled={!reportReason.trim()}
-              leftIcon="🚩"
+              leftIcon={<Icon name="reports" />}
               className="flex-1"
             >
               Submit Report

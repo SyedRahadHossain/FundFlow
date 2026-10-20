@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const User = require('../models/User');
+const PasswordResetToken = require('../models/PasswordResetToken');
 const { getFirebaseAuth } = require('../lib/firebaseAdmin');
+const { resolveClientUrl } = require('../lib/clientUrl');
 
 const SALT_ROUNDS = 10;
 
@@ -25,6 +28,16 @@ const loginSchema = Joi.object({
 
 const googleSchema = Joi.object({
   idToken: Joi.string().min(20).required(),
+});
+
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+// The password rules are the register route's rules: 8 to 128 characters.
+const resetPasswordSchema = Joi.object({
+  token: Joi.string().min(20).max(200).required(),
+  password: Joi.string().min(8).max(128).required(),
 });
 
 const signToken = (user) =>
@@ -49,6 +62,62 @@ const validate = (schema) => (req, res, next) => {
   }
   req.validated = value;
   next();
+};
+
+// ── Password recovery ─────────────────────────────────────────────
+//
+// The platform has no email provider configured, so the reset link cannot be
+// mailed. It follows the same graceful degradation the Stripe and imgBB
+// integrations use: outside production the link is written to the server
+// console, and in production it is never emitted anywhere. A mail provider
+// still has to be wired before this route can deliver anything to a real
+// user — until then, the console line is the delivery channel.
+
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // one hour
+const RESET_TOKEN_BYTES = 32;              // 256 bits of entropy
+
+// One answer for every address, known or not. The response never says
+// whether an account exists.
+const GENERIC_RESET_MESSAGE =
+  'If an account exists for that address, a password reset link is on its way.';
+
+// A real bcrypt hash of a value nobody can sign in with. Comparing against
+// it spends the time a live check would, so an unknown address takes about as
+// long to answer as a known one and the timing does not leak which addresses
+// are registered.
+const DUMMY_PASSWORD_HASH = '$2b$10$vInWIzP0OoHCcFU8ZMnshulAlRfy0dXECTCBa5xjGpFNSuT70d2j.';
+
+// Only the hash of the token is stored, so a dump of the token collection
+// cannot be replayed against the reset route.
+const hashResetToken = (raw) =>
+  crypto.createHash('sha256').update(raw).digest('hex');
+
+/**
+ * Hand the reset link to the user.
+ *
+ * Outside production the link is printed to the console. In production the
+ * link is never emitted — not to the console, not to the response.
+ */
+const deliverResetLink = ({ email, rawToken }) => {
+  if (process.env.NODE_ENV === 'production') {
+    console.warn(
+      '[auth] Password reset requested, but no email provider is configured — the reset link was not delivered.'
+    );
+    return;
+  }
+
+  const base = resolveClientUrl();
+  if (!base) {
+    console.warn(
+      '[auth] Password reset requested, but CLIENT_URL is unusable — the reset link was not delivered.'
+    );
+    return;
+  }
+
+  console.log(
+    `\n[auth] Password reset link for ${email} (valid for one hour):\n` +
+      `${base}/reset-password?token=${rawToken}\n`
+  );
 };
 
 // POST /api/auth/register
@@ -128,6 +197,80 @@ router.post('/google', validate(googleSchema), async (req, res) => {
     }
 
     return res.status(200).json({ token: signToken(user), user: safeUser(user) });
+  } catch {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/auth/forgot-password
+// Always answers the same way, so the response never reveals whether an
+// account exists. The route sits inside the /api/auth rate limiter that
+// index.js mounts, so it shares the 20 requests per 15 minutes per IP budget
+// with login and register.
+router.post('/forgot-password', validate(forgotPasswordSchema), async (req, res) => {
+  const { email } = req.validated;
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // Spend the time a live account would spend before answering.
+      await bcrypt.compare('fundflow-timing-equalizer', DUMMY_PASSWORD_HASH);
+      return res.status(200).json({ message: GENERIC_RESET_MESSAGE });
+    }
+
+    // One live link per account: a fresh request supersedes the old grant.
+    await PasswordResetToken.updateMany(
+      { user_id: user._id, used: false },
+      { $set: { used: true } }
+    );
+
+    const rawToken = crypto.randomBytes(RESET_TOKEN_BYTES).toString('hex');
+    await new PasswordResetToken({
+      user_id: user._id,
+      token_hash: hashResetToken(rawToken),
+      expires_at: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+      used: false,
+    }).save();
+
+    deliverResetLink({ email, rawToken });
+
+    return res.status(200).json({ message: GENERIC_RESET_MESSAGE });
+  } catch {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/auth/reset-password
+// The grant is spent as it is used, and every other grant the account still
+// holds is spent with it, so a link that was superseded cannot be used later.
+// Note the platform's sessions are stateless JWTs, so a token that was already
+// issued stays valid until it expires — this route cannot revoke it.
+router.post('/reset-password', validate(resetPasswordSchema), async (req, res) => {
+  const { token, password } = req.validated;
+  try {
+    const record = await PasswordResetToken.findOne({ token_hash: hashResetToken(token) });
+    const expired = record && new Date(record.expires_at).getTime() <= Date.now();
+
+    if (!record || record.used || expired) {
+      return res.status(400).json({ error: 'This reset link is invalid or has expired' });
+    }
+
+    const user = await User.findOne({ _id: record.user_id });
+    if (!user) {
+      return res.status(400).json({ error: 'This reset link is invalid or has expired' });
+    }
+
+    user.password = await bcrypt.hash(password, SALT_ROUNDS);
+    await user.save();
+
+    record.used = true;
+    await record.save();
+    await PasswordResetToken.updateMany(
+      { user_id: record.user_id, used: false },
+      { $set: { used: true } }
+    );
+
+    return res.status(200).json({ message: 'Password updated. Sign in with your new password.' });
   } catch {
     return res.status(500).json({ error: 'Server error' });
   }

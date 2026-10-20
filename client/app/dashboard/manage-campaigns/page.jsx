@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
@@ -8,6 +9,8 @@ import { Input, Select } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/Modal';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import Icon from '@/components/ui/Icon';
 
 export default function ManageCampaignsPage() {
   const [campaigns, setCampaigns] = useState([]);
@@ -42,7 +45,7 @@ export default function ManageCampaignsPage() {
       toast.success('Campaign deleted');
       setCampaigns(cs => cs.filter(c => c._id !== id));
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Delete failed');
+      toast.error(err.response?.data?.error || 'Could not delete the campaign. Please try again.');
     } finally {
       setDeleting(null);
       setConfirming(null);
@@ -68,10 +71,7 @@ export default function ManageCampaignsPage() {
 
       {/* Load failure — same alert/retry affordance as the other dashboard homes */}
       {error && (
-        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
-          <span>We couldn’t load campaigns.</span>
-          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
-        </div>
+        <ErrorBanner message="We couldn’t load campaigns." onRetry={retry} />
       )}
 
       {/* Filters */}
@@ -114,7 +114,7 @@ export default function ManageCampaignsPage() {
               {/* Table — desktop */}
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase tracking-wide">
+                  <thead className="bg-neutral-50 text-neutral-500 text-[13px] uppercase tracking-wide">
                     <tr>
                       <th className="px-5 py-3 text-left">Campaign</th>
                       <th className="px-5 py-3 text-left">Creator</th>
@@ -130,27 +130,27 @@ export default function ManageCampaignsPage() {
                       <tr key={c._id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-accent-light flex-shrink-0">
+                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-accent-light flex-shrink-0 relative">
                               {c.campaign_image_url
-                                ? <img src={c.campaign_image_url} alt="" className="w-full h-full object-cover" />
-                                : <div className="w-full h-full flex items-center justify-center" aria-hidden="true">🎯</div>}
+                                ? <Image src={c.campaign_image_url} alt="" fill sizes="40px" className="object-cover" />
+                                : <div className="w-full h-full flex items-center justify-center" aria-hidden="true"><Icon name="image" className="w-5 h-5 text-neutral-400" /></div>}
                             </div>
                             <span className="font-medium text-neutral-800 truncate max-w-[16rem]" title={c.title}>{c.title}</span>
                           </div>
                         </td>
                         <td className="px-5 py-3.5 text-neutral-500">{c.creator_name}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{c.category}</td>
-                        <td className="px-5 py-3.5 text-right text-accent font-medium tabular-nums"><span aria-hidden="true">💎 </span>{(c.amount_raised || 0).toLocaleString()}</td>
+                        <td className="px-5 py-3.5 text-right text-accent font-medium tabular-nums"><span className="inline-flex items-center gap-1 justify-end align-middle"><Icon name="credits" className="w-4 h-4" />{(c.amount_raised || 0).toLocaleString()}</span></td>
                         <td className="px-5 py-3.5 text-right text-neutral-500 tabular-nums">{c.funding_goal?.toLocaleString()}</td>
                         <td className="px-5 py-3.5"><StatusBadge status={c.status} size="sm" /></td>
                         <td className="px-5 py-3.5 text-right">
                           <Button
                             size="sm"
                             variant="ghost"
-                            leftIcon="🗑️"
+                            leftIcon={<Icon name="delete" />}
                             onClick={() => setConfirming({ id: c._id, title: c.title })}
                             disabled={deleting === c._id}
-                            className="bg-error-light border border-error/20 text-error-hover hover:bg-error/20"
+                            className="bg-error-light! border border-error/20 text-error-hover! hover:bg-error/20!"
                           >
                             Delete
                           </Button>
@@ -165,27 +165,27 @@ export default function ManageCampaignsPage() {
               <div className="sm:hidden divide-y divide-neutral-200">
                 {filtered.map(c => (
                   <div key={c._id} className="p-4 flex gap-3 items-start">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-accent-light flex-shrink-0">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-accent-light flex-shrink-0 relative">
                       {c.campaign_image_url
-                        ? <img src={c.campaign_image_url} alt="" className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center" aria-hidden="true">🎯</div>}
+                        ? <Image src={c.campaign_image_url} alt="" fill sizes="48px" className="object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center" aria-hidden="true"><Icon name="image" className="w-6 h-6 text-neutral-400" /></div>}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-neutral-900 truncate">{c.title}</p>
-                      <p className="text-xs text-neutral-500 mt-0.5">by {c.creator_name} · {c.category}</p>
+                      <p className="text-[13px] text-neutral-500 mt-0.5">by {c.creator_name} · {c.category}</p>
                       <div className="flex flex-wrap items-center gap-2 mt-1.5">
                         <StatusBadge status={c.status} size="sm" className="text-xs" />
-                        <span className="text-xs text-accent tabular-nums"><span aria-hidden="true">💎 </span>{(c.amount_raised || 0).toLocaleString()} raised</span>
-                        <span className="text-xs text-neutral-500 tabular-nums"><span aria-hidden="true">🎯 </span>{c.funding_goal?.toLocaleString()} goal</span>
+                        <span className="text-[13px] text-accent tabular-nums inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{(c.amount_raised || 0).toLocaleString()} raised</span>
+                        <span className="text-[13px] text-neutral-500 tabular-nums">{c.funding_goal?.toLocaleString()} goal</span>
                       </div>
                     </div>
                     <Button
                       size="sm"
                       variant="ghost"
-                      leftIcon="🗑️"
+                      leftIcon={<Icon name="delete" />}
                       onClick={() => setConfirming({ id: c._id, title: c.title })}
                       disabled={deleting === c._id}
-                      className="flex-shrink-0 bg-error-light border border-error/20 text-error-hover hover:bg-error/20"
+                      className="flex-shrink-0 bg-error-light! border border-error/20 text-error-hover! hover:bg-error/20!"
                     >
                       Delete
                     </Button>

@@ -52,6 +52,7 @@ router.get('/top-funded', async (req, res) => {
       // Cards need deadline/goal/creator too: without them the card renders a
       // false "Ended" badge and an empty creator line.
       .select('title campaign_image_url amount_raised deadline funding_goal creator_name');
+    res.set('Cache-Control', 'public, max-age=60');
     return res.json(campaigns);
   } catch {
     return res.status(500).json({ error: 'Server error' });
@@ -98,6 +99,12 @@ router.get('/', validateStatusFilter, adminOnlyForUnapproved, async (req, res) =
     if (req.query.status) filter.status = req.query.status;
     if (req.query.active === 'true') filter.deadline = { $gt: new Date() };
     const campaigns = await Campaign.find(filter).sort({ createdAt: -1 });
+    // The approved list is the public catalog: the landing page and the
+    // campaign index read it, and it may be cached for a minute. Anything
+    // else is moderation data and stays uncached.
+    if (req.query.status === 'approved') {
+      res.set('Cache-Control', 'public, max-age=60');
+    }
     return res.json(campaigns);
   } catch {
     return res.status(500).json({ error: 'Server error' });

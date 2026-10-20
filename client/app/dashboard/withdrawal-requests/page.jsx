@@ -6,6 +6,8 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/Modal';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import Icon from '@/components/ui/Icon';
 
 export default function WithdrawalRequestsPage() {
   const [withdrawals, setWithdrawals] = useState([]);
@@ -43,10 +45,10 @@ export default function WithdrawalRequestsPage() {
     setApproving(w._id);
     try {
       await api.patch(`/api/withdrawals/${w._id}/approve`);
-      toast.success('Withdrawal approved — creator notified ✅');
+      toast.success('Withdrawal approved — creator notified');
       setWithdrawals(ws => ws.filter(x => x._id !== w._id));
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Action failed');
+      toast.error(err.response?.data?.error || 'Could not approve the payout. Please try again.');
     } finally {
       setApproving(null);
       setConfirming(null);
@@ -57,12 +59,12 @@ export default function WithdrawalRequestsPage() {
     <Button
       size="sm"
       variant="ghost"
-      leftIcon="💳"
+      leftIcon={<Icon name="payments" />}
       onClick={() => setConfirming(w)}
       disabled={approving === w._id}
-      className={`min-h-11 bg-success-light border border-success/20 text-success-dark hover:bg-success/20 ${className}`}
+      className={`min-h-11 bg-success-light! border border-success/20 text-success-dark hover:bg-success/20 ${className}`}
     >
-      Payment Success
+      Approve payout
     </Button>
   );
 
@@ -76,10 +78,7 @@ export default function WithdrawalRequestsPage() {
       </div>
 
       {error && (
-        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
-          <span>We couldn’t load withdrawal requests.</span>
-          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
-        </div>
+        <ErrorBanner message="We couldn’t load withdrawal requests." onRetry={retry} />
       )}
 
       {!error && (
@@ -93,7 +92,7 @@ export default function WithdrawalRequestsPage() {
               {/* Desktop */}
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase tracking-wide">
+                  <thead className="bg-neutral-50 text-neutral-500 text-[13px] uppercase tracking-wide">
                     <tr>
                       <th className="px-5 py-3 text-left">Creator</th>
                       <th className="px-5 py-3 text-right">Credits</th>
@@ -109,12 +108,12 @@ export default function WithdrawalRequestsPage() {
                       <tr key={w._id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-5 py-3.5">
                           <p className="font-medium text-neutral-800">{w.creator_name}</p>
-                          <p className="text-xs text-neutral-500">{w.creator_email}</p>
+                          <p className="text-[13px] text-neutral-500">{w.creator_email}</p>
                         </td>
-                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums"><span aria-hidden="true">💎 </span>{w.withdrawal_credit?.toLocaleString()}</td>
+                        <td className="px-5 py-3.5 text-right font-semibold text-accent tabular-nums"><span className="inline-flex items-center gap-1 justify-end align-middle"><Icon name="credits" className="w-4 h-4" />{w.withdrawal_credit?.toLocaleString()}</span></td>
                         <td className="px-5 py-3.5 text-right font-bold text-neutral-800 tabular-nums">${w.withdrawal_amount?.toFixed(2)}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{w.payment_system}</td>
-                        <td className="px-5 py-3.5 text-neutral-500 text-xs">{w.account_number}</td>
+                        <td className="px-5 py-3.5 text-neutral-500 text-[13px]">{w.account_number}</td>
                         <td className="px-5 py-3.5 text-neutral-500">{new Date(w.withdraw_date).toLocaleDateString()}</td>
                         <td className="px-5 py-3.5 text-center">
                           <ApproveButton w={w} />
@@ -132,11 +131,11 @@ export default function WithdrawalRequestsPage() {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className="font-medium text-neutral-800">{w.creator_name}</p>
-                        <p className="text-xs text-neutral-500">{w.payment_system} · {w.account_number}</p>
+                        <p className="text-[13px] text-neutral-500">{w.payment_system} · {w.account_number}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-neutral-800 tabular-nums">${w.withdrawal_amount?.toFixed(2)}</p>
-                        <p className="text-xs text-accent tabular-nums"><span aria-hidden="true">💎 </span>{w.withdrawal_credit?.toLocaleString()}</p>
+                        <p className="text-[13px] text-accent tabular-nums inline-flex items-center gap-1 justify-end align-middle"><Icon name="credits" className="w-4 h-4" />{w.withdrawal_credit?.toLocaleString()}</p>
                       </div>
                     </div>
                     <ApproveButton w={w} className="w-full mt-2" />

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -9,6 +10,8 @@ import { Button } from '@/components/ui/Button';
 import { Modal, ConfirmDialog } from '@/components/ui/Modal';
 import { StatusBadge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import Icon from '@/components/ui/Icon';
 
 export default function MyCampaignsPage() {
   const [campaigns, setCampaigns] = useState([]);
@@ -56,7 +59,7 @@ export default function MyCampaignsPage() {
       setEditing(null);
       load();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Update failed');
+      toast.error(err.response?.data?.error || 'Could not save the campaign changes. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -76,7 +79,7 @@ export default function MyCampaignsPage() {
       setPosting(null);
       load();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Post failed');
+      toast.error(err.response?.data?.error || 'Could not post the update. Please try again.');
     } finally {
       setPostingBusy(false);
     }
@@ -89,7 +92,7 @@ export default function MyCampaignsPage() {
       toast.success('Campaign deleted — supporters refunded');
       setCampaigns(cs => cs.filter(c => c._id !== id));
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Delete failed');
+      toast.error(err.response?.data?.error || 'Could not delete the campaign. Please try again.');
     } finally {
       setDeleting(null);
       setConfirming(null);
@@ -107,17 +110,14 @@ export default function MyCampaignsPage() {
             <p className="text-neutral-500 text-sm mt-1">{campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''}</p>
           )}
         </div>
-        <Button asChild variant="primary">
-          <Link href="/dashboard/add-campaign">+ New Campaign</Link>
+        <Button asChild variant="primary" leftIcon={<Icon name="add" />}>
+          <Link href="/dashboard/add-campaign">New Campaign</Link>
         </Button>
       </div>
 
       {/* Load failure — same alert/retry affordance as the other dashboard homes */}
       {error && (
-        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
-          <span>We couldn’t load your campaigns.</span>
-          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
-        </div>
+        <ErrorBanner message="We couldn’t load your campaigns." onRetry={retry} />
       )}
 
       {loading && (
@@ -135,7 +135,7 @@ export default function MyCampaignsPage() {
           {/* Table — desktop. Sorted by deadline descending server-side. */}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase tracking-wide">
+              <thead className="bg-neutral-50 text-neutral-500 text-[13px] uppercase tracking-wide">
                 <tr>
                   <th className="px-5 py-3 text-left">Campaign</th>
                   <th className="px-5 py-3 text-left">Category</th>
@@ -151,20 +151,20 @@ export default function MyCampaignsPage() {
                   <tr key={c._id} className="hover:bg-neutral-50 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-accent-light flex-shrink-0">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-accent-light flex-shrink-0 relative">
                           {c.campaign_image_url
-                            ? <img src={c.campaign_image_url} alt="" className="w-full h-full object-cover" />
-                            : <div className="w-full h-full flex items-center justify-center" aria-hidden="true">🎯</div>}
+                            ? <Image src={c.campaign_image_url} alt="" fill sizes="40px" className="object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center" aria-hidden="true"><Icon name="image" className="w-5 h-5 text-neutral-400" /></div>}
                         </div>
                         <span className="font-medium text-neutral-800 truncate max-w-[14rem]" title={c.title}>{c.title}</span>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-neutral-500">{c.category}</td>
-                    <td className="px-5 py-3.5 text-right text-accent font-medium tabular-nums"><span aria-hidden="true">💎 </span>{(c.amount_raised || 0).toLocaleString()}</td>
+                    <td className="px-5 py-3.5 text-right text-accent font-medium tabular-nums"><span className="inline-flex items-center gap-1 justify-end align-middle"><Icon name="credits" className="w-4 h-4" />{(c.amount_raised || 0).toLocaleString()}</span></td>
                     <td className="px-5 py-3.5 text-right text-neutral-500 tabular-nums">{c.funding_goal?.toLocaleString()}</td>
                     <td className="px-5 py-3.5 text-right text-neutral-500 whitespace-nowrap">
                       {new Date(c.deadline).toLocaleDateString()}
-                      <span className="block text-xs text-neutral-500">{daysLeft(c.deadline)}d left</span>
+                      <span className="block text-[13px] text-neutral-500">{daysLeft(c.deadline)}d left</span>
                     </td>
                     <td className="px-5 py-3.5">
                       <StatusBadge status={c.status} size="sm" />
@@ -174,9 +174,9 @@ export default function MyCampaignsPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          leftIcon="✏️"
+                          leftIcon={<Icon name="edit" />}
                           onClick={() => openEdit(c)}
-                          className="border border-accent/20 text-accent hover:bg-accent-light"
+                          className="border border-accent/20 text-accent! hover:bg-accent-light!"
                         >
                           Update
                         </Button>
@@ -184,7 +184,7 @@ export default function MyCampaignsPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            leftIcon="📣"
+                            leftIcon={<Icon name="announce" />}
                             onClick={() => openPostUpdate(c)}
                             title={`Post a progress update (${(c.updates || []).length} posted)`}
                             className="border border-primary/20 text-primary hover:bg-primary-light"
@@ -195,10 +195,10 @@ export default function MyCampaignsPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          leftIcon="🗑️"
+                          leftIcon={<Icon name="delete" />}
                           onClick={() => setConfirming(c)}
                           disabled={deleting === c._id}
-                          className="border border-error/20 text-error hover:bg-error-light"
+                          className="border border-error/20 text-error! hover:bg-error-light!"
                         >
                           Delete
                         </Button>
@@ -215,36 +215,36 @@ export default function MyCampaignsPage() {
             {campaigns.map(c => (
               <div key={c._id} className="p-4">
                 <div className="flex gap-3">
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-accent-light flex-shrink-0">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-accent-light flex-shrink-0 relative">
                     {c.campaign_image_url
-                      ? <img src={c.campaign_image_url} alt="" className="w-full h-full object-cover" />
-                      : <div className="w-full h-full flex items-center justify-center text-xl" aria-hidden="true">🎯</div>}
+                      ? <Image src={c.campaign_image_url} alt="" fill sizes="56px" className="object-cover" />
+                      : <div className="w-full h-full flex items-center justify-center" aria-hidden="true"><Icon name="image" className="w-6 h-6 text-neutral-400" /></div>}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-semibold text-neutral-900 truncate">{c.title}</h3>
                       <StatusBadge status={c.status} size="sm" className="flex-shrink-0" />
                     </div>
-                    <p className="text-xs text-neutral-500 mt-1">{c.category} · <span aria-hidden="true">⏰ </span>{daysLeft(c.deadline)}d left</p>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-neutral-500">
-                      <span className="text-accent tabular-nums"><span aria-hidden="true">💎 </span>{(c.amount_raised || 0).toLocaleString()} raised</span>
-                      <span className="tabular-nums"><span aria-hidden="true">🎯 </span>{c.funding_goal?.toLocaleString()} goal</span>
+                    <p className="text-[13px] text-neutral-500 mt-1 flex items-center gap-1">{c.category} · <Icon name="calendar" className="w-4 h-4" />{daysLeft(c.deadline)}d left</p>
+                    <div className="flex items-center gap-4 mt-2 text-[13px] text-neutral-500">
+                      <span className="text-accent tabular-nums inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{(c.amount_raised || 0).toLocaleString()} raised</span>
+                      <span className="tabular-nums">{c.funding_goal?.toLocaleString()} goal</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4 pt-4 border-t border-neutral-200">
                   <Button
                     variant="ghost"
-                    leftIcon="✏️"
+                    leftIcon={<Icon name="edit" />}
                     onClick={() => openEdit(c)}
-                    className="flex-1 border border-accent/20 text-accent hover:bg-accent-light"
+                    className="flex-1 border border-accent/20 text-accent! hover:bg-accent-light!"
                   >
                     Update
                   </Button>
                   {c.status === 'approved' && (
                     <Button
                       variant="ghost"
-                      leftIcon="📣"
+                      leftIcon={<Icon name="announce" />}
                       onClick={() => openPostUpdate(c)}
                       title={`Post a progress update (${(c.updates || []).length} posted)`}
                       className="flex-1 border border-primary/20 text-primary hover:bg-primary-light"
@@ -254,10 +254,10 @@ export default function MyCampaignsPage() {
                   )}
                   <Button
                     variant="ghost"
-                    leftIcon="🗑️"
+                    leftIcon={<Icon name="delete" />}
                     onClick={() => setConfirming(c)}
                     disabled={deleting === c._id}
-                    className="flex-1 border border-error/20 text-error hover:bg-error-light"
+                    className="flex-1 border border-error/20 text-error! hover:bg-error-light!"
                   >
                     Delete
                   </Button>
@@ -316,7 +316,7 @@ export default function MyCampaignsPage() {
         closeOnOverlayClick={false}
       >
         <form onSubmit={handlePostUpdate} className="space-y-4">
-          <p className="text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2">
+          <p className="text-[13px] text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2">
             {posting ? <>This posts to <strong>{posting.title}</strong> and is visible to everyone viewing the campaign.</> : null}
           </p>
           <Input

@@ -7,6 +7,7 @@ import api from '@/lib/api';
 import { uploadImage } from '@/lib/uploadImage';
 import { Input, Textarea, Select, FileInput } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import Icon from '@/components/ui/Icon';
 
 const CATEGORIES = ['Technology','Art & Design','Community','Health','Music','Education','Environment','Gaming','Other'];
 
@@ -65,7 +66,7 @@ export default function AddCampaignPage() {
       toast.success('Campaign submitted for review!');
       router.push('/dashboard/my-campaigns');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to create campaign');
+      toast.error(err.response?.data?.error || 'Could not create the campaign. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +107,7 @@ export default function AddCampaignPage() {
           options={CATEGORIES.map(c => ({ value: c, label: c }))}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="Funding Goal (credits)"
             required
@@ -169,7 +170,7 @@ export default function AddCampaignPage() {
           />
         </div>
 
-        <Button type="submit" width="full" size="lg" loading={submitting} loadingText="Submitting…" leftIcon="🚀">
+        <Button type="submit" width="full" size="lg" loading={submitting} loadingText="Submitting…" leftIcon={<Icon name="launch" />}>
           Submit Campaign for Review
         </Button>
       </form>

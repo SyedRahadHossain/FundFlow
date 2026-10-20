@@ -6,6 +6,8 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/Modal';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import Icon from '@/components/ui/Icon';
 
 export default function ReportsPage() {
   const [reports, setReports]   = useState([]);
@@ -38,7 +40,7 @@ export default function ReportsPage() {
       toast.success('Campaign deleted');
       setReports(rs => rs.filter(r => r._id !== reportId));
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Action failed');
+      toast.error(err.response?.data?.error || 'Could not delete the campaign. Please try again.');
     } finally {
       setActing(null);
       setConfirming(null);
@@ -52,7 +54,7 @@ export default function ReportsPage() {
       toast.success('Campaign suspended (rejected)');
       setReports(rs => rs.filter(r => r._id !== reportId));
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Action failed');
+      toast.error(err.response?.data?.error || 'Could not suspend the campaign. Please try again.');
     } finally {
       setActing(null);
     }
@@ -65,7 +67,7 @@ export default function ReportsPage() {
       toast.success('Report dismissed');
       setReports(rs => rs.filter(r => r._id !== reportId));
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Action failed');
+      toast.error(err.response?.data?.error || 'Could not dismiss the report. Please try again.');
     } finally {
       setActing(null);
     }
@@ -82,10 +84,7 @@ export default function ReportsPage() {
 
       {/* Load failure — same alert/retry affordance as the other dashboard homes */}
       {error && (
-        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
-          <span>We couldn’t load reports.</span>
-          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
-        </div>
+        <ErrorBanner message="We couldn’t load reports." onRetry={retry} />
       )}
 
       {!error && (
@@ -103,14 +102,14 @@ export default function ReportsPage() {
               {reports.map(r => (
                 <div key={r._id} className="p-5">
                   <div className="flex gap-3 items-start mb-4">
-                    <span className="text-2xl flex-shrink-0" aria-hidden="true">🚩</span>
+                    <span className="flex-shrink-0"><Icon name="reports" className="w-6 h-6 text-error" /></span>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-neutral-900">{r.campaign_title}</p>
-                      <p className="text-xs text-neutral-500 mt-0.5">
+                      <p className="text-[13px] text-neutral-500 mt-0.5">
                         Reported by <span className="font-medium text-neutral-600">{r.reporter_name || r.reporter_email}</span> on {new Date(r.date).toLocaleDateString()}
                       </p>
                       <div className="mt-2 bg-error-light border border-error-light rounded-xl px-4 py-3">
-                        <p className="text-xs text-neutral-500 font-medium mb-0.5">Reason</p>
+                        <p className="text-[13px] text-neutral-500 font-medium mb-0.5">Reason</p>
                         <p className="text-sm text-neutral-700">{r.reason}</p>
                       </div>
                     </div>
@@ -119,7 +118,7 @@ export default function ReportsPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      leftIcon="⚠️"
+                      leftIcon={<Icon name="warning" />}
                       onClick={() => suspend(r._id, r.campaign_id)}
                       disabled={!!acting}
                       className="bg-warning-light border border-warning/20 text-warning-dark hover:bg-warning/25"
@@ -129,20 +128,20 @@ export default function ReportsPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      leftIcon="🗑️"
+                      leftIcon={<Icon name="delete" />}
                       onClick={() => setConfirming({ reportId: r._id, campaignId: r.campaign_id, title: r.campaign_title })}
                       disabled={!!acting}
-                      className="bg-error-light border border-error/20 text-error-hover hover:bg-error/20"
+                      className="bg-error-light! border border-error/20 text-error-hover! hover:bg-error/20!"
                     >
                       Delete Campaign
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      leftIcon="✓"
+                      leftIcon={<Icon name="check" />}
                       onClick={() => dismiss(r._id)}
                       disabled={!!acting}
-                      className="bg-neutral-50 border border-neutral-200 text-neutral-600 hover:bg-neutral-200"
+                      className="bg-neutral-50! border border-neutral-200 text-neutral-600! hover:bg-neutral-200"
                     >
                       Dismiss Report
                     </Button>

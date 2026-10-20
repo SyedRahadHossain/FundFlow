@@ -1,11 +1,14 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import Icon from '@/components/ui/Icon';
 
 export default function CampaignApprovalsPage() {
   const [campaigns, setCampaigns] = useState([]);
@@ -43,11 +46,16 @@ export default function CampaignApprovalsPage() {
     setActing(id + status);
     try {
       await api.patch(`/api/campaigns/${id}/status`, { status });
-      toast.success(`Campaign ${status}`);
+      toast.success(status === 'approved' ? 'Campaign approved' : 'Campaign rejected');
       setCampaigns(cs => cs.filter(c => c._id !== id));
       setPreview(null);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Action failed');
+      toast.error(
+        err.response?.data?.error ||
+        (status === 'approved'
+          ? 'Could not approve the campaign. Please try again.'
+          : 'Could not reject the campaign. Please try again.')
+      );
     } finally {
       setActing(null);
     }
@@ -63,10 +71,7 @@ export default function CampaignApprovalsPage() {
       </div>
 
       {error && (
-        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
-          <span>We couldn’t load campaign approvals.</span>
-          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
-        </div>
+        <ErrorBanner message="We couldn’t load campaign approvals." onRetry={retry} />
       )}
 
       {!error && (
@@ -80,39 +85,39 @@ export default function CampaignApprovalsPage() {
               {campaigns.map(c => (
                 <div key={c._id} className="p-4 sm:p-5 flex gap-4 items-start hover:bg-neutral-50 transition-colors">
                   {/* Thumbnail */}
-                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-accent-light flex-shrink-0">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-accent-light flex-shrink-0 relative">
                     {c.campaign_image_url
-                      ? <img src={c.campaign_image_url} alt={c.title} className="w-full h-full object-cover" />
-                      : <div className="w-full h-full flex items-center justify-center text-2xl" aria-hidden="true">🎯</div>}
+                      ? <Image src={c.campaign_image_url} alt={c.title} fill sizes="64px" className="object-cover" />
+                      : <div className="w-full h-full flex items-center justify-center" aria-hidden="true"><Icon name="image" className="w-6 h-6 text-neutral-400" /></div>}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-neutral-900 truncate">{c.title}</p>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      by {c.creator_name} · {c.category} · Goal: <span className="text-accent font-semibold tabular-nums"><span aria-hidden="true">💎</span>{c.funding_goal?.toLocaleString()}</span>
+                    <p className="text-[13px] text-neutral-500 mt-0.5">
+                      by {c.creator_name} · {c.category} · Goal: <span className="text-accent font-semibold tabular-nums inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{c.funding_goal?.toLocaleString()}</span>
                     </p>
-                    <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{c.story}</p>
+                    <p className="text-[13px] text-neutral-500 mt-1 line-clamp-2">{c.story}</p>
                   </div>
                   <div className="flex flex-col gap-2 flex-shrink-0">
-                    <Button size="sm" variant="secondary" onClick={() => setPreview(c)} leftIcon="👁">
+                    <Button size="sm" variant="secondary" onClick={() => setPreview(c)} leftIcon={<Icon name="eye" />}>
                       Review
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      leftIcon="✅"
+                      leftIcon={<Icon name="approve" />}
                       onClick={() => act(c._id, 'approved')}
                       disabled={!!acting}
-                      className="bg-success-light border border-success/20 text-success-dark hover:bg-success/20"
+                      className="bg-success-light! border border-success/20 text-success-dark hover:bg-success/20"
                     >
                       Approve
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      leftIcon="❌"
+                      leftIcon={<Icon name="reject" />}
                       onClick={() => act(c._id, 'rejected')}
                       disabled={!!acting}
-                      className="bg-error-light border border-error/20 text-error-hover hover:bg-error/20"
+                      className="bg-error-light! border border-error/20 text-error-hover! hover:bg-error/20!"
                     >
                       Reject
                     </Button>
@@ -137,8 +142,8 @@ export default function CampaignApprovalsPage() {
             <>
               <Button
                 variant="ghost"
-                leftIcon="✅"
-                className="flex-1 bg-success-light border border-success/20 text-success-dark hover:bg-success/20"
+                leftIcon={<Icon name="approve" />}
+                className="flex-1 bg-success-light! border border-success/20 text-success-dark hover:bg-success/20"
                 onClick={() => act(preview._id, 'approved')}
                 disabled={!!acting}
               >
@@ -146,7 +151,7 @@ export default function CampaignApprovalsPage() {
               </Button>
               <Button
                 variant="destructive"
-                leftIcon="❌"
+                leftIcon={<Icon name="reject" />}
                 className="flex-1"
                 onClick={() => act(preview._id, 'rejected')}
                 disabled={!!acting}
@@ -160,17 +165,19 @@ export default function CampaignApprovalsPage() {
         {preview && (
           <>
             {preview.campaign_image_url && (
-              <img src={preview.campaign_image_url} alt={preview.title} className="block w-[calc(100%_+_2.5rem)] h-48 object-cover -mx-5 -mt-5" />
+              <div className="relative -mx-5 -mt-5 h-48 w-[calc(100%_+_2.5rem)]">
+                <Image src={preview.campaign_image_url} alt={preview.title} fill sizes="(max-width: 640px) 100vw, 420px" className="object-cover" />
+              </div>
             )}
             <div className="space-y-3 text-sm">
-              <div><p className="text-xs text-neutral-500 mb-0.5">Title</p><p className="font-semibold text-neutral-900">{preview.title}</p></div>
-              <div><p className="text-xs text-neutral-500 mb-0.5">Creator</p><p>{preview.creator_name} ({preview.creator_email})</p></div>
-              <div><p className="text-xs text-neutral-500 mb-0.5">Category</p><p>{preview.category}</p></div>
-              <div><p className="text-xs text-neutral-500 mb-0.5">Funding Goal</p><p className="text-accent font-semibold tabular-nums"><span aria-hidden="true">💎 </span>{preview.funding_goal?.toLocaleString()} credits</p></div>
-              <div><p className="text-xs text-neutral-500 mb-0.5">Min Contribution</p><p className="text-accent font-semibold tabular-nums"><span aria-hidden="true">💎 </span>{preview.minimum_contribution?.toLocaleString()} credits</p></div>
-              <div><p className="text-xs text-neutral-500 mb-0.5">Deadline</p><p>{new Date(preview.deadline).toLocaleDateString()}</p></div>
-              <div><p className="text-xs text-neutral-500 mb-0.5">Story</p><p className="text-neutral-600 leading-relaxed">{preview.story}</p></div>
-              <div><p className="text-xs text-neutral-500 mb-0.5">Reward Info</p><p className="text-neutral-600">{preview.reward_info}</p></div>
+              <div><p className="text-[13px] text-neutral-500 mb-0.5">Title</p><p className="font-semibold text-neutral-900">{preview.title}</p></div>
+              <div><p className="text-[13px] text-neutral-500 mb-0.5">Creator</p><p>{preview.creator_name} ({preview.creator_email})</p></div>
+              <div><p className="text-[13px] text-neutral-500 mb-0.5">Category</p><p>{preview.category}</p></div>
+              <div><p className="text-[13px] text-neutral-500 mb-0.5">Funding Goal</p><p className="text-accent font-semibold tabular-nums inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{preview.funding_goal?.toLocaleString()} credits</p></div>
+              <div><p className="text-[13px] text-neutral-500 mb-0.5">Min Contribution</p><p className="text-accent font-semibold tabular-nums inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{preview.minimum_contribution?.toLocaleString()} credits</p></div>
+              <div><p className="text-[13px] text-neutral-500 mb-0.5">Deadline</p><p>{new Date(preview.deadline).toLocaleDateString()}</p></div>
+              <div><p className="text-[13px] text-neutral-500 mb-0.5">Story</p><p className="text-neutral-600 leading-relaxed">{preview.story}</p></div>
+              <div><p className="text-[13px] text-neutral-500 mb-0.5">Reward Info</p><p className="text-neutral-600">{preview.reward_info}</p></div>
             </div>
           </>
         )}

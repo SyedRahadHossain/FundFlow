@@ -73,6 +73,21 @@ jest.mock('../models/Contribution', () => {
       (!filter.status || c.status === filter.status) &&
       (!filter.creator_email || c.creator_email === filter.creator_email)
     ).length;
+  // Mirrors the aggregation the stats route runs: $match then a $group that
+  // sums one field. Enough for the pipeline the route actually sends.
+  ContribMock.aggregate = async (pipeline = []) => {
+    const match = (pipeline.find(stage => stage.$match) || {}).$match || {};
+    const group = (pipeline.find(stage => stage.$group) || {}).$group;
+    const rows = Object.values(mockContributions).filter(c =>
+      (!match.supporter_email || c.supporter_email === match.supporter_email) &&
+      (!match.status || c.status === match.status)
+    );
+    if (!group) return rows;
+    const field = Object.keys(group).find(k => k !== '_id');
+    const source = String((group[field] || {}).$sum || '').replace('$', '');
+    const sum = rows.reduce((total, c) => total + (c[source] || 0), 0);
+    return [{ _id: null, [field]: sum }];
+  };
   return ContribMock;
 });
 
@@ -390,5 +405,65 @@ describe('GET /api/contributions/mine — status filter', () => {
 
     expect(res.body.total).toBe(1);
     expect(res.body.contributions[0].supporter_email).toBe('sup@x.com');
+  });
+});
+
+describe('GET /api/contributions/stats', () => {
+  function seedContribution(status, amount = 10, email = 'sup@x.com') {
+    const cid = newId();
+    mockContributions[cid] = {
+      _id: cid, campaign_id: seedCampaign(), contribution_amount: amount,
+      supporter_email: email, creator_email: 'cr@x.com',
+      campaign_title: 'Test', creator_name: 'Creator', status,
+    };
+    return cid;
+  }
+
+  test('answers the three dashboard numbers from the database', async () => {
+    seedContribution('approved', 40);
+    seedContribution('approved', 25);
+    seedContribution('pending', 10);
+    seedContribution('rejected', 10);
+
+    const res = await request(app)
+      .get('/api/contributions/stats')
+      .set('Authorization', `Bearer ${supporterToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ total: 4, pending: 1, approvedAmount: 65 });
+  });
+
+  test('counts only the logged-in supporter', async () => {
+    seedContribution('approved', 40);
+    seedContribution('approved', 500, 'someone_else@x.com');
+
+    const res = await request(app)
+      .get('/api/contributions/stats')
+      .set('Authorization', `Bearer ${supporterToken}`);
+
+    expect(res.body.total).toBe(1);
+    expect(res.body.approvedAmount).toBe(40);
+  });
+
+  test('an empty history is zeros, not a failure', async () => {
+    const res = await request(app)
+      .get('/api/contributions/stats')
+      .set('Authorization', `Bearer ${supporterToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ total: 0, pending: 0, approvedAmount: 0 });
+  });
+
+  test('a creator cannot read supporter stats', async () => {
+    const res = await request(app)
+      .get('/api/contributions/stats')
+      .set('Authorization', `Bearer ${creatorToken}`);
+
+    expect(res.status).toBe(403);
+  });
+
+  test('a request without a token is rejected', async () => {
+    const res = await request(app).get('/api/contributions/stats');
+    expect(res.status).toBe(401);
   });
 });

@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/Modal';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Avatar } from '@/components/ui/Avatar';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import Icon from '@/components/ui/Icon';
 
 const ROLES = ['supporter', 'creator', 'admin'];
 const ROLE_STYLE = {
@@ -59,7 +61,7 @@ export default function ManageUsersPage() {
       toast.success('User removed');
       setUsers(us => us.filter(u => u._id !== id));
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Remove failed');
+      toast.error(err.response?.data?.error || 'Could not remove the user. Please try again.');
     } finally {
       setRemoving(null);
       setConfirming(null);
@@ -70,10 +72,10 @@ export default function ManageUsersPage() {
     setUpdating(id);
     try {
       await api.patch(`/api/users/${id}/role`, { role });
-      toast.success(`Role updated to ${role}`);
+      toast.success(`Role updated to ${role.charAt(0).toUpperCase()}${role.slice(1)}`);
       setUsers(us => us.map(u => u._id === id ? { ...u, role } : u));
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Update failed');
+      toast.error(err.response?.data?.error || 'Could not update the role. Please try again.');
     } finally {
       setUpdating(null);
     }
@@ -105,10 +107,7 @@ export default function ManageUsersPage() {
       </div>
 
       {error && (
-        <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-error bg-error-light px-4 py-3 text-sm text-error">
-          <span>We couldn’t load users.</span>
-          <Button variant="ghost" size="sm" onClick={retry}>Retry</Button>
-        </div>
+        <ErrorBanner message="We couldn’t load users." onRetry={retry} />
       )}
 
       {!error && (
@@ -126,7 +125,7 @@ export default function ManageUsersPage() {
               {/* Desktop table */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase tracking-wide">
+                  <thead className="bg-neutral-50 text-neutral-500 text-[13px] uppercase tracking-wide">
                     <tr>
                       <th className="px-5 py-3 text-left">User</th>
                       <th className="px-5 py-3 text-left">Email</th>
@@ -144,9 +143,9 @@ export default function ManageUsersPage() {
                             <span className="font-medium text-neutral-800">{u.name}</span>
                           </div>
                         </td>
-                        <td className="px-5 py-3.5 text-neutral-500 text-xs">{u.email}</td>
+                        <td className="px-5 py-3.5 text-neutral-500 text-[13px]">{u.email}</td>
                         <td className="px-5 py-3.5 text-right text-accent font-semibold tabular-nums">
-                          <span aria-hidden="true">💎 </span>{(u.credits || 0).toLocaleString()}
+                          <span className="inline-flex items-center gap-1 align-middle"><Icon name="credits" className="w-4 h-4" />{(u.credits || 0).toLocaleString()}</span>
                         </td>
                         <td className="px-5 py-3.5">
                           <select
@@ -154,7 +153,7 @@ export default function ManageUsersPage() {
                             onChange={e => handleRoleChange(u._id, e.target.value)}
                             disabled={updating === u._id || u.email === me?.email}
                             aria-label={`Role for ${u.name}`}
-                            className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border-0 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 transition-colors ${ROLE_STYLE[u.role]}`}
+                            className={`text-[13px] font-semibold px-2.5 py-1.5 min-h-9 rounded-lg border-0 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 transition-colors ${ROLE_STYLE[u.role]}`}
                           >
                             {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                           </select>
@@ -163,10 +162,10 @@ export default function ManageUsersPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            leftIcon="🗑️"
+                            leftIcon={<Icon name="delete" />}
                             onClick={() => setConfirming({ id: u._id, email: u.email })}
                             disabled={removing === u._id || u.email === me?.email}
-                            className="bg-error-light border border-error/20 text-error-hover hover:bg-error/20"
+                            className="bg-error-light! border border-error/20 text-error-hover! hover:bg-error/20!"
                           >
                             {removing === u._id ? 'Removing…' : 'Remove'}
                           </Button>
@@ -183,25 +182,25 @@ export default function ManageUsersPage() {
                   <div key={u._id} className="px-4 py-4">
                     <div className="flex items-center gap-3 mb-3">
                       <Avatar src={u.photo} name={u.name} size="md" />
-                      <div>
+                      <div className="min-w-0">
                         <p className="font-medium text-neutral-800">{u.name}</p>
-                        <p className="text-xs text-neutral-500">{u.email}</p>
+                        <p className="text-[13px] text-neutral-500 break-all">{u.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-3">
                       <select value={u.role} onChange={e => handleRoleChange(u._id, e.target.value)}
                         disabled={updating === u._id || u.email === me?.email}
                         aria-label={`Role for ${u.name}`}
-                        className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border-0 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 transition-colors ${ROLE_STYLE[u.role]}">
+                        className={`text-[13px] font-semibold px-3 py-2 min-h-11 rounded-lg border-0 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 transition-colors ${ROLE_STYLE[u.role]}`}>
                         {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
                       <Button
                         size="sm"
                         variant="ghost"
-                        leftIcon="🗑️"
+                        leftIcon={<Icon name="delete" />}
                         onClick={() => setConfirming({ id: u._id, email: u.email })}
                         disabled={removing === u._id || u.email === me?.email}
-                        className="bg-error-light border border-error/20 text-error-hover hover:bg-error/20"
+                        className="bg-error-light! border border-error/20 text-error-hover! hover:bg-error/20!"
                       >
                         {removing === u._id ? 'Removing…' : 'Remove'}
                       </Button>
