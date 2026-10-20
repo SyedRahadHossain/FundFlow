@@ -2,6 +2,11 @@
 
 A full-stack crowdfunding platform where Creators raise money by collecting credits from Supporters. Supporters buy credits, back campaigns, and Creators withdraw what they raise.
 
+## Live Site
+
+- **Client:** https://fundflow-client-wine.vercel.app
+- **Server:** https://fundflow-server-seven.vercel.app
+
 ## Repository Layout
 
 Two independent packages, each with its own `package.json`, `node_modules`, and environment file.
@@ -43,7 +48,7 @@ Credit packages are fixed server-side, so a client chooses *which* package to bu
 | Creator | Create campaigns, review contributions, request withdrawals, post updates |
 | Admin | Approve campaigns, manage users, approve payouts, view reports and platform stats |
 
-Campaign lifecycle: a Creator submits a campaign, an Admin approves it, Supporters contribute, and the Creator approves or rejects each contribution. A rejected contribution refunds the Supporter's credits instantly. Deleting a campaign refunds every approved contributor.
+Campaign lifecycle: a Creator submits a campaign, an Admin approves it, Supporters contribute, and the Creator approves or rejects each contribution. A rejected contribution refunds the Supporter's credits instantly. Deleting a campaign refunds every Supporter with an approved or pending contribution.
 
 ## Quick Start
 
@@ -111,11 +116,14 @@ Use the `whsec_...` value that command prints as `STRIPE_WEBHOOK_SECRET`. A Dash
 
 Checkout sessions are created server-side with the price taken from `server/lib/creditPackages.js`.
 
+The deployed server registers the endpoint `https://fundflow-server-seven.vercel.app/api/stripe/webhook` for the `checkout.session.completed` event, and its signing secret lives in Vercel as `STRIPE_WEBHOOK_SECRET`. That endpoint is a **test-mode** endpoint: switching to a live Stripe key needs a live-mode endpoint and its own secret.
+
 ## Testing
 
 | Package | Command | Coverage |
 |---------|---------|----------|
-| server | `npm test` | 131 tests across 12 suites (Jest + Supertest, mocked models) |
+| server | `npm test` | 175 tests across 18 suites (Jest + Supertest, mocked models) |
+| client | `npm test` | 3 tests (`node --test`) |
 | client | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript) |
 
 The server suite uses in-memory model mocks and needs no database.

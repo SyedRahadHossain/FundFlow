@@ -23,12 +23,12 @@ Client and server ship from a single repository.
 
 - **3-role system** — Supporter, Creator and Admin each get a dedicated dashboard with role-gated routes and server-side JWT verification
 - **Credit economy** — Supporters buy credits (10 credits = $1); Creators withdraw earned credits (20 credits = $1); the spread is the platform margin
-- **Stripe payments** — Supporters purchase credit packages via Stripe Checkout; falls back to a demo mode when Stripe is not configured
+- **Stripe payments** — Supporters purchase credit packages via Stripe Checkout; credits are granted only by the signature-verified webhook, so there is no demo fallback and no request-body path that mints credits
 - **Campaign lifecycle** — Creators submit campaigns; Admin approves or rejects before they go live; Supporters browse and contribute
 - **Contribution review** — Creators approve or reject pending contributions; rejected contributions refund the Supporter's credits instantly
 - **Campaign updates** — Creators post progress updates to backers; they appear newest-first on the public Campaign Details page
-- **Testimonials slider** — Home page runs a Swiper carousel of static supporter and creator quotes that pauses under reduced-motion
-- **Campaign delete with refund** — Deleting a campaign automatically refunds every approved Supporter their contribution amount
+- **Two sides of the ledger** — the landing page closes with a supporter and a creator quote side by side, written by our team and labelled as such; there are no stock portraits and no invented customer names
+- **Campaign delete with refund** — Deleting a campaign automatically refunds every Supporter with an approved or pending contribution
 - **Withdrawal system** — Creators request payouts once they accumulate 200+ raised credits; Admin marks payment success; dollar amount auto-calculates at 20 credits = $1
 - **Real-time notifications** — Bell icon in every dashboard polls every 30 seconds; all 6 platform events insert notifications
 - **imgBB image upload** — Profile photo and campaign cover image support direct file upload via imgBB API with a URL fallback

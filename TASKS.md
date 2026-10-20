@@ -235,9 +235,13 @@ first day."
       connection error, so the deployed server reaches Atlas
 - [x] `FIREBASE_SERVICE_ACCOUNT` — `POST /api/auth/google` answers 401 "Invalid Google
       credential" rather than the 503 the route returns when the Admin SDK is unconfigured
-- [ ] Register the Stripe webhook URL and set `STRIPE_WEBHOOK_SECRET` — **still failing**:
-      `POST /api/stripe/webhook` answers 503 "Stripe webhook not configured", so no purchase
-      grants credits on the deployed server yet.
+- [x] Register the Stripe webhook URL and set `STRIPE_WEBHOOK_SECRET` — the endpoint
+      `https://fundflow-server-seven.vercel.app/api/stripe/webhook` is registered in Stripe test mode
+      for `checkout.session.completed` (id `we_1USfLtJuUmFLt5oZ8PQwIRUH`), and its signing secret is
+      set in Vercel under the production target. `POST /api/stripe/webhook` now answers 400
+      "Invalid Stripe signature" for an unsigned body instead of 503, and a full test checkout moved a
+      Supporter from 1430 to 1530 credits with the payment row written. A live Stripe key needs a
+      live-mode endpoint and its own secret
 
 ## 15. Full-project code review — done
 
