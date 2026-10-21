@@ -10,7 +10,7 @@ import { fromQuery, toQuery } from '@/lib/campaignFilters';
  * request, and a crawler sees them. The filters then run on the server too:
  * the browser asks the API for the rows that match.
  *
- * A link may arrive with filters in it — /campaigns?category=Music — so the
+ * A link may arrive with filters in it — /campaigns?category=Education — so the
  * filters are read here, on the server, and handed down with the results.
  * The browser never has to read the URL after the fact, which is what keeps
  * the first paint and the first request in agreement.

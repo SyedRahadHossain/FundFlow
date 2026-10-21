@@ -170,6 +170,68 @@ describe('POST /api/campaigns — the content policy', () => {
   });
 });
 
+describe('the music rule', () => {
+  test('refuses a campaign in the music category', async () => {
+    const res = await request(app)
+      .post('/api/campaigns')
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({
+        title: 'The village record session',
+        story: 'Forty musicians, one barn, and a week to record.',
+        category: 'Music',
+        funding_goal: 800,
+        minimum_contribution: 10,
+        deadline: new Date(Date.now() + 86400000).toISOString(),
+      });
+
+    expect(res.status).toBe(422);
+    expect(res.body.policy).toBe('no-music');
+    expect(res.body.error).toMatch(/music/i);
+    expect(Object.keys(mockCampaigns)).toHaveLength(0);
+  });
+
+  test('refuses a campaign about music filed under another category', async () => {
+    const res = await request(app)
+      .post('/api/campaigns')
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({
+        title: 'A quiet project',
+        story: 'The money funds live music at the village hall.',
+        category: 'Community',
+        funding_goal: 800,
+        minimum_contribution: 10,
+        deadline: new Date(Date.now() + 86400000).toISOString(),
+      });
+
+    expect(res.status).toBe(422);
+    expect(res.body.policy).toBe('no-music');
+  });
+
+  test('refuses to publish a campaign about music', async () => {
+    const id = seed({ story: 'A concert to raise the funds.' });
+
+    const res = await request(app)
+      .patch(`/api/campaigns/${id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'approved' });
+
+    expect(res.status).toBe(422);
+    expect(mockCampaigns[id].status).toBe('pending');
+  });
+
+  test('refuses a progress update about music', async () => {
+    const id = seed();
+
+    const res = await request(app)
+      .post(`/api/campaigns/${id}/updates`)
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({ title: 'Next week', body: 'We press the song on vinyl.' });
+
+    expect(res.status).toBe(422);
+    expect(mockCampaigns[id].updates).toHaveLength(0);
+  });
+});
+
 describe('PATCH /api/campaigns/:id — the content policy', () => {
   test('refuses an edit that turns the campaign into an attack', async () => {
     const id = seed();

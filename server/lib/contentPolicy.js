@@ -1,37 +1,48 @@
 /**
  * The platform's content policy.
  *
- * FundFlow does not host campaigns that attack a religion or the people who
- * follow it. This is a rule, not a preference: a campaign that breaks it is
- * refused when it is written, refused again when it is edited, and refused
- * once more when an admin tries to publish it, so it cannot reach the
- * public page by any of the three doors.
+ * Two rules, and they are rules of the platform rather than preferences:
  *
- * What the rule covers is hostility aimed at Islam and at Muslims: calls to
+ *   1. The platform does not host campaigns that attack a religion or the
+ *      people who follow it.
+ *
+ *   2. The platform does not host campaigns about music.
+ *
+ * A campaign that breaks either rule is refused when it is written, refused
+ * again when it is edited, and refused once more when an admin tries to
+ * publish it, so it cannot reach the public page by any of the three doors.
+ *
+ * The first rule covers hostility aimed at Islam and at Muslims: calls to
  * destroy, expel or kill them, and descriptions of the religion or its
- * adherents as evil, diseased, subhuman or inherently violent.
+ * adherents as evil, diseased, subhuman or inherently violent. Writing about
+ * Islam is not an attack on Islam, and the rule does not reach it.
  *
- * What it does not cover is writing about Islam. Mosques, madrasas, Ramadan
- * drives, zakat, Islamic charities, Muslim-led cooperatives, the history of
- * Islamic art, interfaith dialogue - a platform in this part of the world
- * exists to serve exactly that, and a rule that swallowed it would empty the
- * platform of the people it is for. A rule that cannot tell a campaign
- * against Islam from a campaign by Muslims is not a rule, it is a filter,
- * and it does not belong on a crowdfunding platform.
+ * The second rule covers music: the category, and the words a campaign uses
+ * to describe what it is for. It is a category of work the platform does not
+ * host, in the same way that it does not host a campaign in a category it
+ * does not offer.
  *
- * The check is deliberately simple and deterministic: patterns over the free
- * text a creator writes. The admin who approves campaigns is the second
- * layer, and they can reject anything this one misses.
+ * Both refusals say what the rule is and never repeat the text that broke
+ * it, so the rule cannot be probed for its boundaries.
  */
 
-const POLICY = {
-  id: 'no-religious-hostility',
-  message:
-    'This campaign cannot be published. The platform does not host campaigns that attack a religion or the people who follow it.',
+const POLICIES = {
+  'no-religious-hostility': {
+    id: 'no-religious-hostility',
+    message:
+      'This campaign cannot be published. The platform does not host campaigns that attack a religion or the people who follow it.',
+  },
+  'no-music': {
+    id: 'no-music',
+    message:
+      'This campaign cannot be published. The platform does not host campaigns about music.',
+  },
 };
 
+const POLICY = POLICIES['no-religious-hostility'];
+
 /**
- * The rules, each with a name for the log.
+ * The religious-hostility rules, each with a name for the log.
  *
  * The patterns look for a hostile verb or a hostile adjective close to the
  * religion or its adherents, in either order, because the same sentence
@@ -40,7 +51,7 @@ const POLICY = {
  */
 const TARGET = "islam|islamic|muslims?|muslim|mosques?|masjids?|qur'?ans?|shariah";
 
-const RULES = [
+const HOSTILITY_RULES = [
   {
     name: 'call to destroy, expel or end the religion or its people',
     pattern: new RegExp(
@@ -116,6 +127,70 @@ const RULES = [
 ];
 
 /**
+ * The music rules.
+ *
+ * The category the platform does not offer, and the words a campaign uses
+ * to say what it is for. The list holds the words that name music itself -
+ * the art, the people, the instruments, the records and the performances -
+ * and leaves the general words of a community life alone: a hall is a hall,
+ * a stage is a stage, a record is a record.
+ */
+const MUSIC_WORDS = [
+  'music',
+  'musical',
+  'musician',
+  'musicians',
+  'song',
+  'songs',
+  'album',
+  'albums',
+  'concert',
+  'concerts',
+  'orchestra',
+  'choir',
+  'guitar',
+  'guitars',
+  'piano',
+  'pianos',
+  'violin',
+  'cello',
+  'saxophone',
+  'flute',
+  'trumpet',
+  'harp',
+  'banjo',
+  'lute',
+  'tabla',
+  'harmonium',
+  'fiddle',
+  'drum',
+  'drums',
+  'lyrics',
+  'melody',
+  'melodies',
+  'symphony',
+  'karaoke',
+  'rapper',
+  'rapping',
+  'disc jockey',
+  'vinyl',
+  'nightclub',
+  'gig',
+];
+
+const MUSIC_RULES = [
+  {
+    name: 'the campaign is in the music category',
+    pattern: null,
+    category: 'music',
+  },
+  {
+    name: 'the campaign is about music',
+    pattern: new RegExp(`\\b(${MUSIC_WORDS.join('|')})\\b`, 'i'),
+  },
+];
+
+/**
  * The text a creator wrote. The title, the story and the reward note are
  * the three free-text fields; the rest of a campaign is numbers and
  * choices from a fixed list.
@@ -135,13 +210,33 @@ function campaignText(campaign = {}) {
  */
 function findPolicyViolation(campaign = {}) {
   const text = campaignText(campaign);
-  if (!text) return null;
 
-  for (const rule of RULES) {
-    if (rule.pattern.test(text)) {
-      return { id: POLICY.id, rule: rule.name, message: POLICY.message };
+  const category = typeof campaign.category === 'string' ? campaign.category.trim().toLowerCase() : '';
+
+  for (const rule of MUSIC_RULES) {
+    if (rule.category) {
+      if (category === rule.category) {
+        return { id: 'no-music', rule: rule.name, message: POLICIES['no-music'].message };
+      }
+      continue;
+    }
+    if (text && rule.pattern.test(text)) {
+      return { id: 'no-music', rule: rule.name, message: POLICIES['no-music'].message };
     }
   }
+
+  if (!text) return null;
+
+  for (const rule of HOSTILITY_RULES) {
+    if (rule.pattern.test(text)) {
+      return {
+        id: 'no-religious-hostility',
+        rule: rule.name,
+        message: POLICIES['no-religious-hostility'].message,
+      };
+    }
+  }
+
   return null;
 }
 
@@ -149,4 +244,12 @@ function isPublishable(campaign = {}) {
   return findPolicyViolation(campaign) === null;
 }
 
-module.exports = { POLICY, RULES, findPolicyViolation, isPublishable, campaignText };
+module.exports = {
+  POLICY,
+  POLICIES,
+  HOSTILITY_RULES,
+  MUSIC_RULES,
+  findPolicyViolation,
+  isPublishable,
+  campaignText,
+};

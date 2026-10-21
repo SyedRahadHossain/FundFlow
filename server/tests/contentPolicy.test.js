@@ -103,6 +103,45 @@ describe('campaigns that are not an attack on Islam', () => {
   });
 });
 
+describe('campaigns about music', () => {
+  const refused = [
+    ['the music category', { title: 'A record session', story: 'Forty musicians, one barn.', category: 'Music' }],
+    ['the category in another case', { title: 'A record session', story: 'Forty musicians.', category: 'music' }],
+    ['music in the title', { title: 'A community music school', story: 'Free lessons for the children.' }],
+    ['music in the story', { title: 'A weekend', story: 'The money funds live music at the village hall.' }],
+    ['a song', { title: 'Record our anthem', story: 'We will press the song on vinyl.' }],
+    ['an album', { title: 'The village album', story: 'Twelve songs, pressed and sold at the shows.' }],
+    ['a concert', { title: 'The winter concert', story: 'A one-night concert to raise the funds.' }],
+    ['an orchestra', { title: 'The school orchestra', story: 'Instruments for the school orchestra.' }],
+    ['an instrument', { title: 'Pianos for the hall', story: 'Two pianos so the children can practise.' }],
+  ];
+
+  test.each(refused)('refuses %s', (_label, campaign) => {
+    const violation = findPolicyViolation(campaign);
+    expect(violation).not.toBeNull();
+    expect(violation.id).toBe('no-music');
+  });
+
+  test('campaigns that are not about music are allowed', () => {
+    const allowed = [
+      { title: 'A new roof for the village mosque', story: 'The roof leaks in the rains.' },
+      { title: 'A clinic queue that works offline', story: 'Rural clinics lose days to a queue.' },
+      { title: 'A community hall', story: 'A hall for the neighbourhood meetings.' },
+      { title: 'The night market print residency', story: 'Twelve artists with a printing press.' },
+      { title: 'Exam prep for nurses', story: 'Evening classes for nurses sitting exams.' },
+    ];
+    for (const campaign of allowed) {
+      expect(findPolicyViolation(campaign)).toBeNull();
+    }
+  });
+
+  test('the refusal names the music policy', () => {
+    const violation = findPolicyViolation({ title: 'A community music school' });
+    expect(violation.id).toBe('no-music');
+    expect(violation.message).toMatch(/music/i);
+  });
+});
+
 describe('the refusal itself', () => {
   test('names the policy and does not repeat the offending text', () => {
     const violation = findPolicyViolation({ title: 'Destroy Islam from the face of the earth' });

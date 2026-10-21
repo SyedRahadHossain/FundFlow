@@ -48,12 +48,18 @@ The meaningfully different mechanism a neighboring product could not truthfully 
 
 ## Content Policy
 
-**The platform does not host campaigns that attack a religion or the people who follow it.** This is a rule of the platform, not a preference, and it is enforced in the server (`server/lib/contentPolicy.js`).
+**Two rules, and they are rules of the platform, not preferences.** Both are enforced in the server (`server/lib/contentPolicy.js`).
 
+**1. No campaigns that attack a religion or the people who follow it.**
 - **What is refused:** calls to destroy, expel, drive out or kill Islam, Muslims, mosques or the Quran; descriptions of Islam or of Muslims as evil, diseased, subhuman or inherently violent; campaigns whose purpose is to hate or end Islam.
-- **What is never refused:** ordinary writing about Islam. Mosques, madrasas, Ramadan drives, zakat, Islamic charities, Muslim-led cooperatives, the history of Islamic art, interfaith dialogue. A platform in this part of the world exists to serve that, and a rule that swallowed it would empty the platform of the people it is for.
-- **Where it is enforced:** at submission (`POST /api/campaigns`), at a creator's edit (`PATCH /api/campaigns/:id`), at a progress update (`POST /api/campaigns/:id/updates`) and at publication (`PATCH /api/campaigns/:id/status`). A refusal is a `422` with a fixed message that never repeats the offending text. An admin can always reject such a campaign; an admin can never publish one.
-- **Who else checks:** the admin who approves campaigns is the second layer and can reject anything the rule misses.
+- **What is never refused:** ordinary writing about Islam. Mosques, madrasas, Ramadan drives, zakat, Islamic charities, Muslim-led cooperatives, the history of Islamic art, interfaith dialogue.
+
+**2. No campaigns about music.**
+- **What is refused:** the Music category, and any campaign whose title, story or reward note is about music — songs, albums, concerts, orchestras, instruments, records, performers.
+- **The platform does not offer the category:** it is absent from the campaign form, from the filter lists and from the seeded content.
+
+**Where both are enforced:** at submission (`POST /api/campaigns`), at a creator's edit (`PATCH /api/campaigns/:id`), at a progress update (`POST /api/campaigns/:id/updates`) and at publication (`PATCH /api/campaigns/:id/status`). A refusal is a `422` carrying the rule that was broken, and never repeats the offending text. An admin can always reject such a campaign; an admin can never publish one.
+- **Who else checks:** the admin who approves campaigns is the second layer and can reject anything the rules miss.
 
 ## Brand Commitments
 

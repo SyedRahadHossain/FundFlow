@@ -9,7 +9,7 @@ import { Input, Textarea, Select, FileInput } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
 
-const CATEGORIES = ['Technology','Art & Design','Community','Health','Music','Education','Environment','Gaming','Other'];
+const CATEGORIES = ['Technology','Art & Design','Community','Health','Education','Environment','Gaming','Other'];
 
 export default function AddCampaignPage() {
   const router = useRouter();

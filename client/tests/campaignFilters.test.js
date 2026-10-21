@@ -29,8 +29,8 @@ test('the query string leaves out the defaults', () => {
 });
 
 test('the query string carries only what was changed', () => {
-  const query = toQuery({ ...DEFAULT_FILTERS, q: 'clinic', category: 'Music' });
-  assert.deepEqual(query.split('&').sort(), ['category=Music', 'q=clinic']);
+  const query = toQuery({ ...DEFAULT_FILTERS, q: 'clinic', category: 'Education' });
+  assert.deepEqual(query.split('&').sort(), ['category=Education', 'q=clinic']);
 });
 
 test('the page number is carried when it is past the first one', () => {
@@ -47,7 +47,7 @@ test('the goal bounds are carried as numbers', () => {
 });
 
 test('a query string comes back as the filter set that produced it', () => {
-  const filters = { ...DEFAULT_FILTERS, q: 'clinic', category: 'Music', deadline: 'ending', sort: 'funded', minGoal: '100', maxGoal: '2000', page: 2 };
+  const filters = { ...DEFAULT_FILTERS, q: 'clinic', category: 'Education', deadline: 'ending', sort: 'funded', minGoal: '100', maxGoal: '2000', page: 2 };
   const parsed = fromQuery(new URLSearchParams(toQuery(filters)));
   assert.deepEqual(parsed, filters);
 });
@@ -67,8 +67,12 @@ test('a junk goal bound is dropped rather than sent', () => {
 
 test('the category list is the one the platform knows', () => {
   assert.ok(CATEGORIES.includes('All'));
-  assert.ok(CATEGORIES.includes('Music'));
+  assert.ok(CATEGORIES.includes('Education'));
   assert.ok(CATEGORIES.includes('Environment'));
+});
+
+test('the platform does not offer the music category', () => {
+  assert.equal(CATEGORIES.includes('Music'), false);
 });
 
 // ── The browser-side fallback ─────────────────────────────────────
@@ -83,7 +87,7 @@ function campaign(overrides = {}) {
     _id: overrides._id || 'id',
     title: 'A campaign',
     story: 'A story.',
-    category: 'Music',
+    category: 'Education',
     creator_name: 'A Creator',
     funding_goal: 1000,
     amount_raised: 100,
@@ -143,7 +147,7 @@ test('the fallback sorts', () => {
 });
 
 test('the fallback counts every category, not only the chosen one', () => {
-  const out = applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, category: 'Music' }, { now: NOW });
+  const out = applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, category: 'Education' }, { now: NOW });
   const counts = Object.fromEntries(out.facets.categories.map((c) => [c.value, c.count]));
   assert.equal(counts.Environment, 1);
   assert.equal(counts.Health, 1);

@@ -161,6 +161,9 @@ const CAMPAIGNS = [
     ],
   },
   {
+    // The account to try the creator dashboard with: 576 raised credits is
+    // above the 200-credit withdrawal minimum.
+    demoCreator: true,
     title: 'The Night School: Exam Prep for Nurses',
     story:
       'Nurses working nights are the students nobody schedules for. The night school runs two evenings a week for two hours: anatomy, drug calculations, and a room where someone who has been studying alone for a year can ask a question out loud. We need exam-fee bursaries for forty students, a second tutor, and the printing costs for a set of past papers that people currently borrow and lose.',
@@ -175,25 +178,6 @@ const CAMPAIGNS = [
       { supporter: 'ayesha.karim@fundflow.com', amount: 300 },
       { supporter: 'ibrahim.sayeed@fundflow.com', amount: 276 },
     ],
-  },
-  {
-    title: 'Brass & Cedar: A Folk Record Session',
-    story:
-      'Forty musicians, one barn, and a week to record an album of the songs their grandparents sang. We need the recording engineer, the tape, the van that moves the microphones, and the extra day of studio time these sessions always need. The finished record is pressed, sold at the shows, and every player on it is credited on the sleeve — this is a record made by the people on it.',
-    category: 'Music',
-    creator: { name: 'Tomás Rivera', email: 'tomas.rivera@fundflow.com' },
-    funding_goal: 800,
-    minimum_contribution: 10,
-    days: 11,
-    reward_info: 'Your name in the sleeve credits, and a digital copy of the record.',
-    image: unsplash('photo-1511379938547-c1f69419868d'),
-    contributions: [
-      { supporter: 'ayesha.karim@fundflow.com', amount: 200 },
-      { supporter: 'ibrahim.sayeed@fundflow.com', amount: 120 },
-    ],
-    // The account to try the creator dashboard with: 320 raised credits is
-    // above the 200-credit withdrawal minimum.
-    demoCreator: true,
   },
 ];
 
@@ -371,7 +355,7 @@ async function seed() {
   }
   console.log('  Sign in at /login with any of the addresses above.');
 
-  const categories = ['Technology', 'Art & Design', 'Community', 'Health', 'Music', 'Education', 'Environment', 'Gaming'];
+  const categories = ['Technology', 'Art & Design', 'Community', 'Health', 'Education', 'Environment', 'Gaming'];
   const seeded = new Set(CAMPAIGNS.map((c) => c.category));
   const empty = categories.filter((c) => !seeded.has(c));
   if (empty.length) {

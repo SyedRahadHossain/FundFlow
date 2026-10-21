@@ -16,7 +16,6 @@ export const CATEGORIES = [
   'Art & Design',
   'Community',
   'Health',
-  'Music',
   'Education',
   'Environment',
   'Gaming',

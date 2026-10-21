@@ -333,7 +333,7 @@ All three are explicitly not required for submission.
       whole filtered set and the category counts in one round trip. The public index and the
       supporter's explore screen share one filter bar: search, category (with counts),
       deadline, sort and a funding-goal range. A link may carry the filters
-      (`/campaigns?category=Music`), the server reads them and renders the filtered page
+      (`/campaigns?category=Education`), the server reads them and renders the filtered page
       directly, and the address bar follows the filters as they change. If the query
       endpoint cannot be reached at all, the filters fall back to the approved list and
       filter it in the browser, and the page says so, rather than showing an error.

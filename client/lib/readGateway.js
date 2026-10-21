@@ -26,8 +26,8 @@ const CAMPAIGN_ID = /^[a-f0-9]{24}$/i;
 /**
  * The gateway URL for a read, or null when the request is not one of them.
  *
- *   '/api/campaigns/listing?category=Music'
- *     -> '/api/read?route=campaigns%2Flisting&category=Music'
+ *   '/api/campaigns/listing?category=Education'
+ *     -> '/api/read?route=campaigns%2Flisting&category=Education'
  */
 export function readGatewayUrl(url) {
   if (typeof url !== 'string' || !url.startsWith('/api/')) return null;

@@ -26,8 +26,8 @@ test('a campaign read travels by the gateway', () => {
 
 test('the listing read travels by the gateway', () => {
   assert.equal(
-    readGatewayUrl('/api/campaigns/listing?category=Music'),
-    '/api/read?route=campaigns%2Flisting&category=Music'
+    readGatewayUrl('/api/campaigns/listing?category=Education'),
+    '/api/read?route=campaigns%2Flisting&category=Education'
   );
 });
 

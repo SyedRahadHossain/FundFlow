@@ -53,16 +53,6 @@ const cats = [
     ),
   },
   {
-    label: 'Music',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.5V5.5l10-2v12" />
-        <circle cx="6.5" cy="17.5" r="2.5" />
-        <circle cx="16.5" cy="15.5" r="2.5" />
-      </svg>
-    ),
-  },
-  {
     label: 'Education',
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" aria-hidden="true">

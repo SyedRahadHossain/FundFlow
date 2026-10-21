@@ -6,7 +6,7 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { deleteCampaignWithRefunds } = require('../lib/campaignLifecycle');
 const { parseCampaignSearchQuery, buildCampaignSearchPipeline } = require('../lib/campaignSearch');
-const { POLICY, findPolicyViolation } = require('../lib/contentPolicy');
+const { findPolicyViolation } = require('../lib/contentPolicy');
 
 /**
  * The content policy.
@@ -18,8 +18,8 @@ const { POLICY, findPolicyViolation } = require('../lib/contentPolicy');
  * broke it.
  */
 const refuseByPolicy = (res, violation) => {
-  console.warn('campaign refused by the content policy:', violation.rule);
-  return res.status(422).json({ error: POLICY.message, policy: POLICY.id });
+  console.warn('campaign refused by the content policy:', violation.id, '-', violation.rule);
+  return res.status(422).json({ error: violation.message, policy: violation.id });
 };
 const verifyToken = require('../middleware/verifyToken');
 const verifyRole = require('../middleware/verifyRole');

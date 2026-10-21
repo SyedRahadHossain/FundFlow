@@ -27,7 +27,7 @@ Client and server ship from a single repository.
 - **Notifications** — six platform events write a notification row for the recipient, read newest-first
 - **Password recovery** — hashed single-use tokens, one-hour expiry, one live link per account, and the same answer for an unknown address
 - **Campaign search on the server** — one aggregation answers a search, a filter set, a sort and a page, and returns the rows, the size of the whole filtered set and the category counts together
-- **A content policy the server enforces** — campaigns that attack a religion or its followers are refused at submission, at edit, at progress update and at publication; an admin can reject one but never publish it
+- **A content policy the server enforces** — campaigns that attack a religion or its followers, and campaigns about music, are refused at submission, at edit, at progress update and at publication; an admin can reject one but never publish it
 - **Tested** — 242 Jest + Supertest tests over 21 suites, in-memory model mocks, no database required
 
 ## Setup
