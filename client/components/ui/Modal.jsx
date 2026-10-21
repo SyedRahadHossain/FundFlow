@@ -183,26 +183,3 @@ export function ConfirmDialog({
     />
   );
 }
-
-export function AlertDialog({
-  open,
-  onClose,
-  title,
-  description,
-  confirmText = 'OK',
-}) {
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={title}
-      description={description}
-      size="sm"
-      footer={
-        <Button variant="primary" onClick={onClose} width="full">
-          {confirmText}
-        </Button>
-      }
-    />
-  );
-}

@@ -416,7 +416,6 @@ Five roles, one job each. A hue that marks nothing is decoration; a hue that mar
 
 ### Progress Indicators
 - **Linear ProgressBar:** `bg-neutral-200 rounded-full overflow-hidden`, height via size (`sm` h-1, `md` h-1.5, `lg` h-2.5, `xl` h-3), fill `rounded-full transition-all duration-500 ease-out`, variant colors (primary/secondary/success/warning/error/accent), `animate-slide-up` on mount, `role="progressbar"` with ARIA values.
-- **CircularProgress:** SVG stroke-dasharray, size prop (default 48px), strokeWidth (default 4), variant colors, centered percentage/label.
 
 ### Navigation
 - **Navbar:** `sticky top-0 z-50 bg-surface border-b border-neutral-200`, height 64px (`h-16`), container max-w-7xl. Logo: indigo diamond SVG + "FundFlow" bold xl. Desktop links: `text-sm text-neutral-600 hover:text-primary font-medium`. Credit chip: `bg-accent-light text-accent-hover px-3 py-1.5 rounded-full font-semibold` — the credit hue, with the rate beside it in ink. User menu: Avatar + dropdown (animate-fade-in).
@@ -428,12 +427,10 @@ Five roles, one job each. A hue that marks nothing is decoration; a hue that mar
 - **Shapes:** `circle` (rounded-full), `square` (rounded-xl), `rounded` (rounded-lg).
 - **Fallback:** Hash-based color assignment from a 10-colour palette built only from design tokens — deterministic per name.
 - **Status Indicator:** 4 sizes, 4 positions, 4 states (online=success, offline=neutral-400, busy=error, away=warning), 2px white border.
-- **AvatarGroup:** Overlap `-space-x-2` with `ring-2 ring-white`, max visible + counter badge.
 
 ### Modals / Dialogs
 - **Modal:** Portal-rendered, `fixed inset-0 z-50 flex items-center justify-center p-4`, scrim `bg-black/50`, content `bg-white rounded-2xl shadow-xl animate-scale-in`, sizes `sm`→`max-w-sm` through `full`→`max-w-4xl`. Focus trap, `aria-modal="true"`, ESC to close, click scrim to close, restores focus on close.
 - **ConfirmDialog:** Modal `sm` with footer: secondary Cancel + variant Confirm (default destructive), loading state.
-- **AlertDialog:** Modal `sm` with single primary OK button.
 
 ### Empty States
 - **Structure:** Centered flex column, `py-16 px-4`, `role="status" aria-live="polite"`, the registry icon at 60px (`w-15 h-15`, aria-hidden), title lg font-semibold, subtitle sm text-neutral-500 max-w-sm, optional action button.

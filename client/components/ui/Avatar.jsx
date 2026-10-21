@@ -35,8 +35,8 @@ const bgColors = [
   'bg-primary text-white',
 ];
 
-// Avatar dimensions and shapes are shared with AvatarGroup, so they live at
-// module scope instead of being rebuilt per render.
+// The dimensions and shapes live at module scope rather than being rebuilt
+// on every render.
 const sizes = {
   xs: 'w-6 h-6 text-xs',
   sm: 'w-8 h-8 text-sm',
@@ -148,36 +148,3 @@ export const Avatar = forwardRef(
 );
 
 Avatar.displayName = 'Avatar';
-
-export const AvatarGroup = forwardRef(
-  ({ children, max = 5, overlap = true, size = 'md', shape = 'circle', className, ...props }, ref) => {
-    const kids = Array.isArray(children) ? children : [children];
-    const visible = kids.slice(0, max);
-    const remaining = kids.length - max;
-
-    return (
-      <div
-        ref={ref}
-        className={cn('flex items-center', overlap ? '-space-x-2' : 'space-x-2', className)}
-        {...props}
-      >
-        {visible.map((child, index) => (
-          <span key={index} className={cn('relative z-10', overlap && index > 0 && 'ring-2 ring-white')}>
-            {child}
-          </span>
-        ))}
-        {remaining > 0 && (
-          <span className={cn(
-            sizes[size],
-            shapes[shape],
-            'flex items-center justify-center font-semibold text-xs select-none bg-neutral-100 text-neutral-600 border-2 border-white -ml-2'
-          )}>
-            +{remaining}
-          </span>
-        )}
-      </div>
-    );
-  }
-);
-
-AvatarGroup.displayName = 'AvatarGroup';

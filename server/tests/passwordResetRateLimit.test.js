@@ -6,6 +6,7 @@
  * real limiter that the server mounts, instead of a limiter built for the test.
  */
 const request = require('supertest');
+const crypto = require('crypto');
 
 process.env.JWT_SECRET = 'test_secret';
 process.env.NODE_ENV = 'test';
@@ -29,10 +30,14 @@ describe('POST /api/auth/forgot-password rate limit', () => {
   test('the auth limiter answers 429 once the budget is spent', async () => {
     process.env.NODE_ENV = 'development'; // the limiter only skips in test env
 
+    // A documentation address of this run's own, so the budget starts empty.
+    const address = `198.51.100.${crypto.randomInt(1, 250)}`;
+
     const statuses = [];
     for (let i = 0; i < 25; i++) {
       const res = await request(app)
         .post('/api/auth/forgot-password')
+        .set('X-Forwarded-For', address)
         .send({ email: `nobody${i}@x.com` });
       statuses.push(res.status);
     }

@@ -225,31 +225,3 @@ export function SkeletonList({ items = 3, className }) {
     </div>
   );
 }
-
-export function LoadingOverlay({ message = 'Loading...', className }) {
-  return (
-    <div className={cn('fixed inset-0 z-50 flex items-center justify-center bg-surface/80 backdrop-blur-sm', className)}>
-      <div className="flex flex-col items-center gap-4 p-6 bg-surface rounded-2xl shadow-sm border border-neutral-200">
-        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm font-medium text-neutral-700">{message}</p>
-      </div>
-    </div>
-  );
-}
-
-export function InlineLoading({ size = 'md', className }) {
-  const sizes = {
-    sm: 'w-4 h-4 border-2',
-    md: 'w-5 h-5 border-2',
-    lg: 'w-6 h-6 border-3',
-  };
-  return (
-    <div
-      className={cn('relative inline-block', sizes[size], className)}
-      aria-busy="true"
-      aria-label="Loading"
-    >
-      <div className="absolute inset-0 border-current border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-}
