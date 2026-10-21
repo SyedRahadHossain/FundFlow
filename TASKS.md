@@ -334,7 +334,9 @@ All three are explicitly not required for submission.
       supporter's explore screen share one filter bar: search, category (with counts),
       deadline, sort and a funding-goal range. A link may carry the filters
       (`/campaigns?category=Music`), the server reads them and renders the filtered page
-      directly, and the address bar follows the filters as they change.
+      directly, and the address bar follows the filters as they change. If the query
+      endpoint cannot be reached at all, the filters fall back to the approved list and
+      filter it in the browser, and the page says so, rather than showing an error.
 - [ ] **Report system** — **already fully implemented**. Supporter flags from the campaign
       details page; admin queue has Suspend, Delete (with supporter refunds), and Dismiss.
       No work needed.

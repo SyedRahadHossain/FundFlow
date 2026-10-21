@@ -118,3 +118,82 @@ export function countActiveFilters(filters) {
 export function hasActiveFilters(filters) {
   return countActiveFilters(filters) > 0;
 }
+
+/**
+ * The same filters, applied in the browser.
+ *
+ * The server does the filtering; this is the fallback for when the server
+ * cannot be asked - a request that never reaches the API must not leave the
+ * reader with an empty page. It reads the approved list and filters it here,
+ * with the same rules, so the two paths answer alike.
+ *
+ * The category counts are computed over everything except the category
+ * itself, which is what the server does too: the reader can switch
+ * categories and still see what each one holds.
+ */
+export function applyFilters(campaigns, filters, { now = new Date(), limit = 12 } = {}) {
+  const list = Array.isArray(campaigns) ? campaigns : [];
+  const q = (filters.q || '').trim().toLowerCase();
+
+  const matchesQuery = (c) => {
+    if (!q) return true;
+    const haystack = `${c.title || ''} ${c.story || ''} ${c.creator_name || ''}`.toLowerCase();
+    return haystack.includes(q);
+  };
+
+  const matchesGoal = (c) => {
+    const goal = Number(c.funding_goal);
+    if (filters.minGoal && goal < Number(filters.minGoal)) return false;
+    if (filters.maxGoal && goal > Number(filters.maxGoal)) return false;
+    return true;
+  };
+
+  const matchesDeadline = (c) => {
+    const mode = filters.deadline;
+    if (!mode || mode === 'any') return true;
+    const deadline = new Date(c.deadline).getTime();
+    if (Number.isNaN(deadline)) return false;
+    if (mode === 'active') return deadline > now.getTime();
+    if (mode === 'ended') return deadline <= now.getTime();
+    if (mode === 'ending') {
+      const soon = now.getTime() + 30 * 24 * 60 * 60 * 1000;
+      return deadline > now.getTime() && deadline <= soon;
+    }
+    return true;
+  };
+
+  // The counts ignore the category filter, so switching category still
+  // shows what the other categories hold.
+  const counted = list.filter((c) => matchesQuery(c) && matchesGoal(c) && matchesDeadline(c));
+  const categories = {};
+  for (const c of counted) categories[c.category] = (categories[c.category] || 0) + 1;
+
+  const filtered = counted.filter(
+    (c) => !filters.category || filters.category === 'All' || c.category === filters.category
+  );
+
+  const sorters = {
+    newest: (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+    ending: (a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0),
+    funded: (a, b) => (b.amount_raised || 0) - (a.amount_raised || 0),
+    goal: (a, b) => (b.funding_goal || 0) - (a.funding_goal || 0),
+  };
+  const sorted = [...filtered].sort(sorters[filters.sort] || sorters.newest);
+
+  const total = sorted.length;
+  const pages = Math.max(1, Math.ceil(total / limit));
+  const page = filters.page && filters.page > 0 ? filters.page : 1;
+
+  return {
+    campaigns: sorted.slice((page - 1) * limit, page * limit),
+    total,
+    page,
+    limit,
+    pages,
+    facets: {
+      categories: Object.entries(categories)
+        .map(([value, count]) => ({ value, count }))
+        .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value)),
+    },
+  };
+}

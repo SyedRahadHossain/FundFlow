@@ -62,6 +62,7 @@ export default function CampaignsBrowser({ initialResults, initialFilters = DEFA
             page={results.page ?? 1}
             pages={results.pages ?? 1}
             filtered={hasActiveFilters(filters)}
+            local={results.local}
             onPageChange={(page) => applyFilters({ ...filters, page })}
           />
 

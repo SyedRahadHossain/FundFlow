@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import api from '@/lib/api';
-import { toQuery } from '@/lib/campaignFilters';
+import { toQuery, applyFilters } from '@/lib/campaignFilters';
 import { searchOutcome, SEARCH_RETRY_DELAY_MS } from '@/lib/searchRetry';
 
 /**
@@ -13,6 +13,11 @@ import { searchOutcome, SEARCH_RETRY_DELAY_MS } from '@/lib/searchRetry';
  * waiting for a pause in typing, and one automatic retry when the request
  * fails - a serverless function that is waking up answers with an error
  * that a second try does not.
+ *
+ * If the query endpoint cannot be reached at all, the filters still answer:
+ * the approved list is fetched and filtered here, with the same rules, and
+ * the page says so. A request that never reaches the API must not leave the
+ * reader with an empty page.
  */
 export function useCampaignSearch(filters, { limit = 12, initial = null } = {}) {
   const [results, setResults] = useState(
@@ -24,8 +29,9 @@ export function useCampaignSearch(filters, { limit = 12, initial = null } = {}) 
           limit: initial.limit ?? limit,
           pages: initial.pages ?? 1,
           facets: initial.facets ?? { categories: [] },
+          local: false,
         }
-      : { campaigns: [], total: 0, page: 1, limit, pages: 1, facets: { categories: [] } }
+      : { campaigns: [], total: 0, page: 1, limit, pages: 1, facets: { categories: [] }, local: false }
   );
   const [loading, setLoading] = useState(!(initial && !initial.failed));
   const [error, setError] = useState(initial?.failed ?? false);
@@ -59,6 +65,7 @@ export function useCampaignSearch(filters, { limit = 12, initial = null } = {}) 
           limit: res.data.limit ?? limit,
           pages: res.data.pages ?? 1,
           facets: res.data.facets ?? { categories: [] },
+          local: false,
         });
         setError(false);
         failures.current = 0;
@@ -70,7 +77,18 @@ export function useCampaignSearch(filters, { limit = 12, initial = null } = {}) 
             if (!cancelled) setReloadToken((token) => token + 1);
           }, SEARCH_RETRY_DELAY_MS);
         } else {
-          setError(true);
+          // The query endpoint is not answering. Fall back to the plain
+          // approved list and filter it here, so the reader still gets an
+          // answer instead of an error page.
+          try {
+            const res = await api.get('/api/campaigns?status=approved');
+            if (cancelled) return;
+            const local = applyFilters(res.data || [], filters, { limit });
+            setResults({ ...local, local: true });
+            setError(false);
+          } catch {
+            if (!cancelled) setError(true);
+          }
         }
       } finally {
         if (!cancelled) setLoading(false);

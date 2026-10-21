@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
  * size of the page in front of the reader. "18 campaigns" on page three
  * means eighteen, not six.
  */
-export default function CampaignResultBar({ total = 0, page = 1, pages = 1, onPageChange, filtered = false }) {
+export default function CampaignResultBar({ total = 0, page = 1, pages = 1, onPageChange, filtered = false, local = false }) {
   const atStart = page <= 1;
   const atEnd = page >= pages;
 
@@ -20,6 +20,9 @@ export default function CampaignResultBar({ total = 0, page = 1, pages = 1, onPa
         <span className="font-semibold text-neutral-900 tabular-nums">{total.toLocaleString()}</span>{' '}
         {total === 1 ? 'campaign' : 'campaigns'}
         {filtered && <span className="text-neutral-500"> match your filters</span>}
+        {local && (
+          <span className="text-neutral-500"> — filtered in the browser, the search service is unreachable</span>
+        )}
       </p>
 
       {pages > 1 && (

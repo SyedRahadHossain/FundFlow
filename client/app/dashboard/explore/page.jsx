@@ -68,6 +68,7 @@ export default function ExploreCampaignsPage() {
         page={results.page ?? 1}
         pages={results.pages ?? 1}
         filtered={hasActiveFilters(filters)}
+        local={results.local}
         onPageChange={(page) => setFilters({ ...filters, page })}
       />
 

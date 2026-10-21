@@ -8,6 +8,7 @@ import {
   fromQuery,
   hasActiveFilters,
   countActiveFilters,
+  applyFilters,
 } from '../lib/campaignFilters.js';
 
 /**
@@ -68,4 +69,95 @@ test('the category list is the one the platform knows', () => {
   assert.ok(CATEGORIES.includes('All'));
   assert.ok(CATEGORIES.includes('Music'));
   assert.ok(CATEGORIES.includes('Environment'));
+});
+
+// ── The browser-side fallback ─────────────────────────────────────
+// When the server cannot be asked, the filters still have to answer. These
+// are the same rules the server runs, so the two paths agree.
+
+const NOW = new Date('2026-10-21T00:00:00Z');
+const DAY = 24 * 60 * 60 * 1000;
+
+function campaign(overrides = {}) {
+  return {
+    _id: overrides._id || 'id',
+    title: 'A campaign',
+    story: 'A story.',
+    category: 'Music',
+    creator_name: 'A Creator',
+    funding_goal: 1000,
+    amount_raised: 100,
+    deadline: new Date(NOW.getTime() + 10 * DAY).toISOString(),
+    createdAt: new Date(NOW.getTime() - 5 * DAY).toISOString(),
+    ...overrides,
+  };
+}
+
+const CATALOGUE = [
+  campaign({ _id: 'a', title: 'A Clinic Queue That Works Offline', category: 'Technology', funding_goal: 500 }),
+  campaign({ _id: 'b', title: 'The Night Market Print Residency', category: 'Art & Design', creator_name: 'Amara Osei' }),
+  campaign({ _id: 'c', title: 'Solar Panels for Riverside Hall', category: 'Environment', deadline: new Date(NOW.getTime() - 3 * DAY).toISOString() }),
+  campaign({ _id: 'd', title: 'Little Ears', category: 'Health', funding_goal: 4000 }),
+];
+
+test('the fallback filters by category', () => {
+  const out = applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, category: 'Environment' }, { now: NOW });
+  assert.deepEqual(out.campaigns.map((c) => c._id), ['c']);
+  assert.equal(out.total, 1);
+});
+
+test('the fallback searches the title and the creator', () => {
+  assert.deepEqual(
+    applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, q: 'clinic' }, { now: NOW }).campaigns.map((c) => c._id),
+    ['a']
+  );
+  assert.deepEqual(
+    applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, q: 'osei' }, { now: NOW }).campaigns.map((c) => c._id),
+    ['b']
+  );
+});
+
+test('the fallback separates running campaigns from ended ones', () => {
+  assert.deepEqual(
+    applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, deadline: 'active' }, { now: NOW }).campaigns.map((c) => c._id),
+    ['a', 'b', 'd']
+  );
+  assert.deepEqual(
+    applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, deadline: 'ended' }, { now: NOW }).campaigns.map((c) => c._id),
+    ['c']
+  );
+});
+
+test('the fallback filters by funding goal', () => {
+  // 'a' has a goal of 500 and 'd' has 4000, so only 'b' and 'c' are inside
+  // the 800-2000 band.
+  const out = applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, minGoal: '800', maxGoal: '2000' }, { now: NOW });
+  assert.deepEqual(out.campaigns.map((c) => c._id), ['b', 'c']);
+});
+
+test('the fallback sorts', () => {
+  const byFunded = applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, sort: 'funded' }, { now: NOW });
+  assert.deepEqual(byFunded.campaigns.map((c) => c._id), ['a', 'b', 'c', 'd']);
+  const byGoal = applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, sort: 'goal' }, { now: NOW });
+  assert.deepEqual(byGoal.campaigns.map((c) => c._id), ['d', 'b', 'c', 'a']);
+});
+
+test('the fallback counts every category, not only the chosen one', () => {
+  const out = applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, category: 'Music' }, { now: NOW });
+  const counts = Object.fromEntries(out.facets.categories.map((c) => [c.value, c.count]));
+  assert.equal(counts.Environment, 1);
+  assert.equal(counts.Health, 1);
+});
+
+test('the fallback pages', () => {
+  const out = applyFilters(CATALOGUE, { ...DEFAULT_FILTERS, page: 2 }, { now: NOW, limit: 2 });
+  assert.equal(out.total, 4);
+  assert.equal(out.pages, 2);
+  assert.equal(out.campaigns.length, 2);
+});
+
+test('the fallback survives an empty or broken list', () => {
+  const out = applyFilters(undefined, DEFAULT_FILTERS, { now: NOW });
+  assert.deepEqual(out.campaigns, []);
+  assert.equal(out.total, 0);
 });
