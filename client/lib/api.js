@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { sessionResponseShouldEndSession } from './session';
+import { readGatewayUrl } from './readGateway';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -23,16 +24,33 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// A rejected token, or an account that no longer exists, ends the session:
-// the token is dropped and the visitor goes back to the login screen. A
-// failed sign-in attempt is excluded, so a wrong password still surfaces
-// the server's message instead of a redirect loop.
+// A read that never reaches the API - the network dropped it, so there is
+// no status and no response - is asked for again through the gateway, which
+// carries the same route, the same parameters and the same token in its
+// query string. Only once that has failed too does the reader hear about it.
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error?.response?.status;
     const url = error?.config?.url || '';
+    const method = (error?.config?.method || 'get').toLowerCase();
 
+    if (!error?.response && method === 'get' && !error?.config?.gatewayTried) {
+      const gateway = readGatewayUrl(url);
+      if (gateway) {
+        try {
+          return await api.get(gateway, { gatewayTried: true });
+        } catch {
+          // The gateway did not answer either. Fall through: the reader
+          // hears about it below, as they would have.
+        }
+      }
+    }
+
+    // A rejected token, or an account that no longer exists, ends the
+    // session: the token is dropped and the visitor goes back to the login
+    // screen. A failed sign-in attempt is excluded, so a wrong password
+    // still surfaces the server's message instead of a redirect loop.
     if (
       sessionResponseShouldEndSession({ status, url }) &&
       typeof window !== 'undefined'
