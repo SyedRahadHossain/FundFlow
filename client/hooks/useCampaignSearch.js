@@ -41,6 +41,9 @@ export function useCampaignSearch(filters, { limit = 12, initial = null } = {}) 
   // effect has nothing to ask for: those results are the ones for the
   // filters in hand.
   const primed = useRef(Boolean(initial && !initial.failed));
+  // The rows the server rendered into the page, kept for the fallback. A ref
+  // rather than a dependency: they do not change while the page is open.
+  const initialRows = useRef(initial && !initial.failed ? initial.campaigns || [] : null);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,13 +80,19 @@ export function useCampaignSearch(filters, { limit = 12, initial = null } = {}) 
             if (!cancelled) setReloadToken((token) => token + 1);
           }, SEARCH_RETRY_DELAY_MS);
         } else {
-          // The query endpoint is not answering. Fall back to the plain
-          // approved list and filter it here, so the reader still gets an
-          // answer instead of an error page.
+          // The query endpoint is not answering. Fall back to the rows the
+          // page already holds - the server rendered them into the page -
+          // and filter them here, so the reader still gets an answer instead
+          // of an error page. Only a page with no rows at all has to ask
+          // the API for the list.
           try {
-            const res = await api.get('/api/campaigns?status=approved');
+            let source = initialRows.current;
+            if (!source || source.length === 0) {
+              const res = await api.get('/api/campaigns?status=approved');
+              source = res.data || [];
+            }
             if (cancelled) return;
-            const local = applyFilters(res.data || [], filters, { limit });
+            const local = applyFilters(source, filters, { limit });
             setResults({ ...local, local: true });
             setError(false);
           } catch {
