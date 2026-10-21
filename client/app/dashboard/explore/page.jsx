@@ -24,8 +24,15 @@ export default function ExploreCampaignsPage() {
   );
 
   const campaigns = results.campaigns || [];
+  // A failed request must not take the rows the page already has away.
+  const hasRows = campaigns.length > 0;
+  const notice = results.local
+    ? 'filtered in the browser, the search service is unreachable'
+    : error && hasRows
+      ? 'showing the last results, the search service is unreachable'
+      : null;
 
-  if (loading && campaigns.length === 0) {
+  if (loading && !hasRows) {
     return (
       <div>
         <div className="mb-6">
@@ -50,7 +57,7 @@ export default function ExploreCampaignsPage() {
         categoryCounts={categoryCounts}
       />
 
-      {error && (
+      {error && !hasRows && (
         <p role="alert" className="text-sm text-error mb-4">
           We couldn’t load campaigns.
           <button
@@ -68,11 +75,11 @@ export default function ExploreCampaignsPage() {
         page={results.page ?? 1}
         pages={results.pages ?? 1}
         filtered={hasActiveFilters(filters)}
-        local={results.local}
+        note={notice}
         onPageChange={(page) => setFilters({ ...filters, page })}
       />
 
-      {!error && campaigns.length === 0 && (
+      {!hasRows && (
         <EmptyState
           variant="search"
           subtitle={hasActiveFilters(filters)
@@ -81,7 +88,7 @@ export default function ExploreCampaignsPage() {
         />
       )}
 
-      {!error && campaigns.length > 0 && (
+      {hasRows && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {campaigns.map((c) => (
             <CampaignCard key={c._id} campaign={c} href={`/dashboard/explore/${c._id}`} />

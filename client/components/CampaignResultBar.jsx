@@ -9,8 +9,12 @@ import { Button } from '@/components/ui/Button';
  * The count is the honest one — the size of the whole filtered set, not the
  * size of the page in front of the reader. "18 campaigns" on page three
  * means eighteen, not six.
+ *
+ * The note carries the reason when the answer came from somewhere else: the
+ * search service was unreachable and the rows were filtered in the browser,
+ * or they are the last rows that were fetched.
  */
-export default function CampaignResultBar({ total = 0, page = 1, pages = 1, onPageChange, filtered = false, local = false }) {
+export default function CampaignResultBar({ total = 0, page = 1, pages = 1, onPageChange, filtered = false, note = null }) {
   const atStart = page <= 1;
   const atEnd = page >= pages;
 
@@ -20,9 +24,7 @@ export default function CampaignResultBar({ total = 0, page = 1, pages = 1, onPa
         <span className="font-semibold text-neutral-900 tabular-nums">{total.toLocaleString()}</span>{' '}
         {total === 1 ? 'campaign' : 'campaigns'}
         {filtered && <span className="text-neutral-500"> match your filters</span>}
-        {local && (
-          <span className="text-neutral-500"> — filtered in the browser, the search service is unreachable</span>
-        )}
+        {note && <span className="text-neutral-500"> — {note}</span>}
       </p>
 
       {pages > 1 && (

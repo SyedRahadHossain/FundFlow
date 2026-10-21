@@ -37,6 +37,15 @@ export default function CampaignsBrowser({ initialResults, initialFilters = DEFA
   );
 
   const campaigns = results.campaigns || [];
+  // A request that failed must not take the rows the page already has away
+  // from the reader. The banner is for a page with nothing to show; a page
+  // with rows says what happened instead.
+  const hasRows = campaigns.length > 0;
+  const notice = results.local
+    ? 'filtered in the browser, the search service is unreachable'
+    : error && hasRows
+      ? 'showing the last results, the search service is unreachable'
+      : null;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -47,7 +56,7 @@ export default function CampaignsBrowser({ initialResults, initialFilters = DEFA
           <p className="text-neutral-500 mb-6">Discover projects that need your support</p>
 
           {/* Load failure — same alert/retry affordance as the other dashboards */}
-          {error && (
+          {error && !hasRows && (
             <ErrorBanner message="We couldn’t load campaigns." onRetry={retry} />
           )}
 
@@ -62,11 +71,11 @@ export default function CampaignsBrowser({ initialResults, initialFilters = DEFA
             page={results.page ?? 1}
             pages={results.pages ?? 1}
             filtered={hasActiveFilters(filters)}
-            local={results.local}
+            note={notice}
             onPageChange={(page) => applyFilters({ ...filters, page })}
           />
 
-          {loading && campaigns.length === 0 && (
+          {loading && !hasRows && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="bg-surface rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
@@ -76,7 +85,7 @@ export default function CampaignsBrowser({ initialResults, initialFilters = DEFA
             </div>
           )}
 
-          {!loading && !error && campaigns.length === 0 && (
+          {!loading && !hasRows && (
             <EmptyState
               variant="search"
               subtitle={hasActiveFilters(filters)
@@ -85,7 +94,7 @@ export default function CampaignsBrowser({ initialResults, initialFilters = DEFA
             />
           )}
 
-          {!error && campaigns.length > 0 && (
+          {hasRows && (
             <>
               <h2 className="sr-only">Campaign results</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
