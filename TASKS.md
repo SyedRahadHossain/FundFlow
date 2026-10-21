@@ -328,7 +328,7 @@ All three are explicitly not required for submission.
 - [ ] **Automated email notifications** (SendGrid or AWS SES) on campaign
       approval/rejection, contribution confirmation, withdrawal processing
 - [x] **Advanced search and filter** by category, deadline, funding goal, status, using
-      MongoDB aggregation on the server — `GET /api/campaigns/query` runs one
+      MongoDB aggregation on the server — `GET /api/campaigns/listing` runs one
       aggregation (`$match` → `$facet`) that returns the rows for the page, the size of the
       whole filtered set and the category counts in one round trip. The public index and the
       supporter's explore screen share one filter bar: search, category (with counts),

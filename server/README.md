@@ -73,7 +73,7 @@ provider still has to be wired before this route can deliver to a real user.
 | POST | `/api/auth/reset-password` | — | Set a new password with a reset token |
 | GET | `/api/auth/me` | Any | Current user profile |
 | GET | `/api/campaigns` | Approved public; other statuses Admin | List campaigns (`status` filter) |
-| GET | `/api/campaigns/query` | Approved public; other statuses Admin | Search, filter, sort and page campaigns (`q`, `category`, `deadline`, `minGoal`, `maxGoal`, `status`, `sort`, `page`, `limit`) |
+| GET | `/api/campaigns/listing` | Approved public; other statuses Admin | Search, filter, sort and page campaigns (`q`, `category`, `deadline`, `minGoal`, `maxGoal`, `status`, `sort`, `page`, `limit`) |
 | GET | `/api/campaigns/top-funded` | — | Top 6 by amount raised |
 | GET | `/api/campaigns/mine` | Creator | Creator's own campaigns |
 | POST | `/api/campaigns` | Creator | Create campaign |

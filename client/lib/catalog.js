@@ -52,7 +52,7 @@ export async function getPlatformStats() {
  */
 export async function getCampaignSearch(query = '') {
   const search = query ? `?${query}` : '';
-  const data = await getJson(`/api/campaigns/query${search}`);
+  const data = await getJson(`/api/campaigns/listing${search}`);
   if (!data || !Array.isArray(data.campaigns)) {
     return { campaigns: [], total: 0, page: 1, limit: 12, pages: 1, facets: { categories: [] }, failed: true };
   }

@@ -59,18 +59,21 @@ const validate = (schema) => (req, res, next) => {
   next();
 };
 
-// GET /api/campaigns/query — server-side search, filter, sort and paging
+// GET /api/campaigns/listing — server-side search, filter, sort and paging
 //
-// The path is "query", not "search": some networks (a filtering proxy, a
-// browser extension) drop browser requests whose path contains "search", and
-// the symptom is a page that cannot load its own data. Nothing else depends
-// on the name.
+// The last path segment is "listing", and that is not decoration: a network
+// layer between the browser and the internet drops requests whose path
+// segment begins with "query" or "search". The symptom is a page that
+// cannot load its own data - no response, no status, the fetch simply
+// fails - while every neighbouring path works. The name avoids the two
+// words, and the client also has a fallback for the day another one is
+// taken.
 //
 // The public index used to filter in the browser, so the answer was capped
 // by what had already been sent down. One aggregation does the matching,
 // the counting and the paging, and returns the rows, the size of the whole
 // filtered set and the category counts together.
-router.get('/query', (req, res, next) => {
+router.get('/listing', (req, res, next) => {
   const { filters, errors } = parseCampaignSearchQuery(req.query);
   if (errors.length > 0) {
     return res.status(400).json({ error: errors[0], details: errors });
