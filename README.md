@@ -122,6 +122,15 @@ Checkout sessions are created server-side with the price taken from `server/lib/
 
 The deployed server registers the endpoint `https://fundflow-server-seven.vercel.app/api/stripe/webhook` for the `checkout.session.completed` event, and its signing secret lives in Vercel as `STRIPE_WEBHOOK_SECRET`. That endpoint is a **test-mode** endpoint: switching to a live Stripe key needs a live-mode endpoint and its own secret.
 
+## Reading the API
+
+Some networks drop requests whose path contains certain words, which leaves a
+page unable to load its own data even though the API is healthy. Every read
+therefore has a second way in: the client asks again through `/api/read`,
+which carries the route in the query string. The gateway is an allowlist, not
+a proxy — only the campaign reads are reachable through it, and the caller's
+token travels unchanged.
+
 ## Testing
 
 | Package | Command | Coverage |

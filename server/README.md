@@ -74,6 +74,7 @@ provider still has to be wired before this route can deliver to a real user.
 | GET | `/api/auth/me` | Any | Current user profile |
 | GET | `/api/campaigns` | Approved public; other statuses Admin | List campaigns (`status` filter) |
 | GET | `/api/campaigns/listing` | Approved public; other statuses Admin | Search, filter, sort and page campaigns (`q`, `category`, `deadline`, `minGoal`, `maxGoal`, `status`, `sort`, `page`, `limit`) |
+| GET | `/api/read` | Same as the route it carries | A second way to read: `?route=campaigns\|campaigns/listing\|campaigns/mine\|campaigns/top-funded\|<campaign id>` |
 | GET | `/api/campaigns/top-funded` | — | Top 6 by amount raised |
 | GET | `/api/campaigns/mine` | Creator | Creator's own campaigns |
 | POST | `/api/campaigns` | Creator | Create campaign |
@@ -118,6 +119,19 @@ For local development, forward events with the Stripe CLI instead:
 ```bash
 stripe listen --forward-to localhost:5000/api/stripe/webhook
 ```
+
+## A second way to read
+
+Some networks drop requests whose path contains certain words, and the
+symptom is a page that cannot load its own data while the API is healthy: no
+response, no status, the fetch simply fails. A read that never arrives is
+therefore asked for again through `GET /api/read`, which carries the route in
+the query string instead of in the path.
+
+It is a gateway over an allowlist, not a proxy. Only the reads named in
+`READ_ROUTES` (and a campaign by its own id) are reachable through it;
+anything else is a 400. The caller's token travels unchanged, and the route
+it forwards to decides what the caller may see.
 
 ## Deploy to Vercel
 
