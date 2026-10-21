@@ -140,14 +140,10 @@ const MUSIC_WORDS = [
   'musical',
   'musician',
   'musicians',
-  'song',
-  'songs',
   'album',
   'albums',
-  'concert',
-  'concerts',
   'orchestra',
-  'choir',
+  'symphony',
   'guitar',
   'guitars',
   'piano',
@@ -160,15 +156,11 @@ const MUSIC_WORDS = [
   'harp',
   'banjo',
   'lute',
-  'tabla',
-  'harmonium',
   'fiddle',
   'drum',
   'drums',
-  'lyrics',
   'melody',
   'melodies',
-  'symphony',
   'karaoke',
   'rapper',
   'rapping',
@@ -177,6 +169,26 @@ const MUSIC_WORDS = [
   'nightclub',
   'gig',
 ];
+
+/**
+ * The words a devotional campaign may use: they name a song, a set of
+ * lyrics, a choir or a gathering, and in a devotional campaign they are not
+ * music.
+ */
+const DEVOTIONAL_WORDS = [
+  'song',
+  'songs',
+  'lyric',
+  'lyrics',
+  'choir',
+  'concert',
+  'concerts',
+  'harmonium',
+  'tabla',
+];
+
+/** What tells a devotional campaign apart from a musical one. */
+const DEVOTIONAL_MARKER = 'nasheed|nasheeds|recitation|recitations|recite|recites|reciting|recited';
 
 const MUSIC_RULES = [
   {
@@ -187,6 +199,11 @@ const MUSIC_RULES = [
   {
     name: 'the campaign is about music',
     pattern: new RegExp(`\\b(${MUSIC_WORDS.join('|')})\\b`, 'i'),
+  },
+  {
+    name: 'the campaign is about music',
+    pattern: new RegExp(`\\b(${DEVOTIONAL_WORDS.join('|')})\\b`, 'i'),
+    devotionalOnly: true,
   },
 ];
 
@@ -213,6 +230,10 @@ function findPolicyViolation(campaign = {}) {
 
   const category = typeof campaign.category === 'string' ? campaign.category.trim().toLowerCase() : '';
 
+  // A campaign about devotional singing is not a music campaign, so the
+  // words that name that practice are excused in it.
+  const devotional = text ? new RegExp(`\\b(${DEVOTIONAL_MARKER})\\b`, 'i').test(text) : false;
+
   for (const rule of MUSIC_RULES) {
     if (rule.category) {
       if (category === rule.category) {
@@ -220,9 +241,9 @@ function findPolicyViolation(campaign = {}) {
       }
       continue;
     }
-    if (text && rule.pattern.test(text)) {
-      return { id: 'no-music', rule: rule.name, message: POLICIES['no-music'].message };
-    }
+    if (!text || !rule.pattern.test(text)) continue;
+    if (rule.devotionalOnly && devotional) continue;
+    return { id: 'no-music', rule: rule.name, message: POLICIES['no-music'].message };
   }
 
   if (!text) return null;
@@ -249,6 +270,8 @@ module.exports = {
   POLICIES,
   HOSTILITY_RULES,
   MUSIC_RULES,
+  DEVOTIONAL_WORDS,
+  DEVOTIONAL_MARKER,
   findPolicyViolation,
   isPublishable,
   campaignText,

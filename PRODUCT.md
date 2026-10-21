@@ -55,7 +55,8 @@ The meaningfully different mechanism a neighboring product could not truthfully 
 - **What is never refused:** ordinary writing about Islam. Mosques, madrasas, Ramadan drives, zakat, Islamic charities, Muslim-led cooperatives, the history of Islamic art, interfaith dialogue.
 
 **2. No campaigns about music.**
-- **What is refused:** the Music category, and any campaign whose title, story or reward note is about music — songs, albums, concerts, orchestras, instruments, records, performers.
+- **What is refused:** the Music category, and any campaign whose title, story or reward note is about music — albums, orchestras, instruments, records, performers.
+- **What is allowed:** devotional singing. A nasheed, a recitation of the Quran, a choir singing them — and the words that name that practice (song, lyrics, choir, concert) inside such a campaign. A devotional marker is not a way in for music as music: a campaign that also carries an album, a guitar or an orchestra is still refused.
 - **The platform does not offer the category:** it is absent from the campaign form, from the filter lists and from the seeded content.
 
 **Where both are enforced:** at submission (`POST /api/campaigns`), at a creator's edit (`PATCH /api/campaigns/:id`), at a progress update (`POST /api/campaigns/:id/updates`) and at publication (`PATCH /api/campaigns/:id/status`). A refusal is a `422` carrying the rule that was broken, and never repeats the offending text. An admin can always reject such a campaign; an admin can never publish one.

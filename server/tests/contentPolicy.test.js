@@ -135,6 +135,43 @@ describe('campaigns about music', () => {
     }
   });
 
+  test('devotional singing is allowed', () => {
+    const allowed = [
+      { title: 'A nasheed for the village', story: 'We will record nasheeds for the village hall.' },
+      { title: 'Quran recitation classes', story: 'Evening classes for the recitation of the Quran.' },
+      { title: 'A choir of nasheeds', story: 'The choir will sing nasheeds at the gathering.' },
+      { title: 'A nasheed concert', story: 'A concert of nasheeds with harmonium and tabla.' },
+      { title: 'Songs for the feast', story: 'The songs we sing are nasheeds.' },
+      { title: 'The lyrics of the poem', story: 'The lyrics are the nasheeds of the season.' },
+    ];
+    for (const campaign of allowed) {
+      const violation = findPolicyViolation(campaign);
+      expect(violation).toBeNull();
+    }
+  });
+
+  test('devotion does not open a door to music', () => {
+    const refused = [
+      { title: 'A nasheed and a rock album', story: 'We will press the album on vinyl.' },
+      { title: 'A recital with a guitar', story: 'A recital and a guitar solo.' },
+      { title: 'Nasheeds and an orchestra', story: 'The orchestra plays with the nasheeds.' },
+    ];
+    for (const campaign of refused) {
+      expect(findPolicyViolation(campaign)).not.toBeNull();
+    }
+  });
+
+  test('the music category is refused even for devotional singing', () => {
+    const violation = findPolicyViolation({
+      title: 'A nasheed for the village',
+      story: 'We will record nasheeds.',
+      category: 'Music',
+    });
+
+    expect(violation).not.toBeNull();
+    expect(violation.id).toBe('no-music');
+  });
+
   test('the refusal names the music policy', () => {
     const violation = findPolicyViolation({ title: 'A community music school' });
     expect(violation.id).toBe('no-music');
