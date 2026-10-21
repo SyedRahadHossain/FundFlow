@@ -79,11 +79,20 @@ app.use('/api/stripe',        require('./routes/stripe'));
 const READ_ROUTES = {
   campaigns: '/',
   'campaigns/listing': '/listing',
+  'campaigns/mine': '/mine',
+  'campaigns/top-funded': '/top-funded',
 };
+
+// A campaign by its own id is a read too, as long as the id looks like one.
+const CAMPAIGN_ID = /^[a-f0-9]{24}$/i;
 
 app.get('/api/read', (req, res, next) => {
   const route = typeof req.query.route === 'string' ? req.query.route : '';
-  const target = READ_ROUTES[route];
+  const target =
+    READ_ROUTES[route] ||
+    (route.startsWith('campaigns/') && CAMPAIGN_ID.test(route.slice('campaigns/'.length))
+      ? `/${route.slice('campaigns/'.length)}`
+      : null);
   if (!target) {
     return res.status(400).json({ error: 'Unknown read route' });
   }

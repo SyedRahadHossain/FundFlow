@@ -13,7 +13,15 @@
  */
 
 // The reads that have a second way in. Anything else is left alone.
-const GATEWAY_ROUTES = ['campaigns', 'campaigns/listing'];
+const GATEWAY_ROUTES = [
+  'campaigns',
+  'campaigns/listing',
+  'campaigns/mine',
+  'campaigns/top-funded',
+];
+
+// A campaign by its own id is a read too, as long as the id looks like one.
+const CAMPAIGN_ID = /^[a-f0-9]{24}$/i;
 
 /**
  * The gateway URL for a read, or null when the request is not one of them.
@@ -26,7 +34,9 @@ export function readGatewayUrl(url) {
 
   const [path, search = ''] = url.split('?');
   const route = path.slice('/api/'.length);
-  if (!GATEWAY_ROUTES.includes(route)) return null;
+  const isDetail =
+    route.startsWith('campaigns/') && CAMPAIGN_ID.test(route.slice('campaigns/'.length));
+  if (!GATEWAY_ROUTES.includes(route) && !isDetail) return null;
 
   const params = new URLSearchParams(search);
   params.delete('route');
