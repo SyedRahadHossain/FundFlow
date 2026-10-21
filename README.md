@@ -67,6 +67,10 @@ npm install
 npm run dev                 # http://localhost:3000
 ```
 
+## Content Policy
+
+The platform does not host campaigns that attack a religion or the people who follow it. The rule is enforced in the server at submission, at edit, at progress update and at publication — a campaign that breaks it is refused with a `422` and never reaches the public page. Ordinary writing about Islam, including mosque, madrasa, Ramadan, zakat and Islamic charity campaigns, is never refused. The full wording is in [PRODUCT.md](./PRODUCT.md#content-policy).
+
 ## Admin Credentials
 
 - **Email:** `admin@fundflow.com`
@@ -122,7 +126,7 @@ The deployed server registers the endpoint `https://fundflow-server-seven.vercel
 
 | Package | Command | Coverage |
 |---------|---------|----------|
-| server | `npm test` | 200 tests across 19 suites (Jest + Supertest, mocked models) |
+| server | `npm test` | 242 tests across 21 suites (Jest + Supertest, mocked models) |
 | client | `npm test` | 20 tests (`node --test`) |
 | client | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript) |
 

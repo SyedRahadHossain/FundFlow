@@ -97,6 +97,7 @@ export default function AddCampaignPage() {
           onChange={e => set('story', e.target.value)}
           placeholder="Tell supporters why this campaign matters and how funds will be used…"
           error={errors.story}
+          help="Campaigns that attack a religion, or the people who follow one, cannot be published. A campaign that breaks this rule is refused when it is submitted and again when an admin tries to publish it."
         />
 
         <Select

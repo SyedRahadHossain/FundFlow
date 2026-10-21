@@ -42,9 +42,18 @@ The meaningfully different mechanism a neighboring product could not truthfully 
 - **Dark mode:** Implemented via a `prefers-color-scheme` media query plus a manual toggle in the navbar and the dashboard top bar. The choice is persisted in `localStorage['fundflow-theme']` and applied before first paint, so there is no flash of the wrong theme.
 - **Theme switching:** Implemented. The whole neutral ramp, the semantic tints and the native surfaces (scrollbars, selects, autofill, caret) invert with the theme.
 - **Stripe:** Optional — checkout answers 503 when `STRIPE_SECRET_KEY` or `CLIENT_URL` is missing, and credits are granted only by the signature-verified webhook. The client checks for the publishable key.
-- **Testing:** Server has 200 Jest + Supertest tests across 19 suites (the models are mocked, so no database is needed). The client has a `node --test` suite (`client/tests/`) covering the file-drop path, the filter state and the session rule.
+- **Testing:** Server has 242 Jest + Supertest tests across 21 suites (the models are mocked, so no database is needed). The client has a `node --test` suite (`client/tests/`) covering the file-drop path, the filter state and the session rule.
 - **Linting:** Client has ESLint (flat config, extends next/core-web-vitals + TypeScript). Server has no lint configured.
 - **Accessibility baseline:** Focus rings (3px primary), 44px touch targets, `prefers-reduced-motion` respected, ARIA labels/roles/states on interactive elements, alt text on images, decorative emoji `aria-hidden="true"`.
+
+## Content Policy
+
+**The platform does not host campaigns that attack a religion or the people who follow it.** This is a rule of the platform, not a preference, and it is enforced in the server (`server/lib/contentPolicy.js`).
+
+- **What is refused:** calls to destroy, expel, drive out or kill Islam, Muslims, mosques or the Quran; descriptions of Islam or of Muslims as evil, diseased, subhuman or inherently violent; campaigns whose purpose is to hate or end Islam.
+- **What is never refused:** ordinary writing about Islam. Mosques, madrasas, Ramadan drives, zakat, Islamic charities, Muslim-led cooperatives, the history of Islamic art, interfaith dialogue. A platform in this part of the world exists to serve that, and a rule that swallowed it would empty the platform of the people it is for.
+- **Where it is enforced:** at submission (`POST /api/campaigns`), at a creator's edit (`PATCH /api/campaigns/:id`), at a progress update (`POST /api/campaigns/:id/updates`) and at publication (`PATCH /api/campaigns/:id/status`). A refusal is a `422` with a fixed message that never repeats the offending text. An admin can always reject such a campaign; an admin can never publish one.
+- **Who else checks:** the admin who approves campaigns is the second layer and can reject anything the rule misses.
 
 ## Brand Commitments
 
@@ -57,7 +66,7 @@ The meaningfully different mechanism a neighboring product could not truthfully 
 
 - **Live site:** https://fundflow-client-wine.vercel.app
 - **Admin seed credentials:** `admin@fundflow.com` / `Admin@123456`
-- **Server test suite:** 200 passing tests covering auth, password recovery, campaigns, campaign search, contributions, withdrawals, payments, notifications, reports, users, Stripe, middleware, models.
+- **Server test suite:** 242 passing tests covering auth, password recovery, campaigns, campaign search, the content policy, contributions, withdrawals, payments, notifications, reports, users, Stripe, middleware, models.
 - **Design tokens:** Documented in `client/DESIGN.md` and implemented as CSS variables in `client/app/globals.css`.
 - **Component library:** `client/components/ui/` (Button, Input, Modal, Card, Avatar, ProgressBar, Badge, EmptyState, Icon, ErrorBanner) + dashboard/layout components (Navbar, DashboardSidebar, NotificationBell, HeroSlider, CreditConverter, HowItWorks, PlatformImpact, StatCard, CampaignCard, CampaignDetail, CampaignsBrowser, TopFundedCampaigns, Testimonials, Footer, ConfirmDialog, ErrorBoundary).
 - **Route map:** Public (`/`, `/campaigns`, `/campaigns/[id]`, `/login`, `/register`) + Protected dashboards under `/dashboard/` (role-specific home, campaign management, contributions review, withdrawals, payment histories, credit purchase, users, reports, admin approvals, explore).

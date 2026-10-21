@@ -6,6 +6,21 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { deleteCampaignWithRefunds } = require('../lib/campaignLifecycle');
 const { parseCampaignSearchQuery, buildCampaignSearchPipeline } = require('../lib/campaignSearch');
+const { POLICY, findPolicyViolation } = require('../lib/contentPolicy');
+
+/**
+ * The content policy.
+ *
+ * The platform does not host campaigns that attack a religion or the people
+ * who follow it. A campaign that breaks the rule is refused at every door:
+ * when it is written, when it is edited, and when an admin tries to publish
+ * it. The refusal says what the rule is and never repeats the text that
+ * broke it.
+ */
+const refuseByPolicy = (res, violation) => {
+  console.warn('campaign refused by the content policy:', violation.rule);
+  return res.status(422).json({ error: POLICY.message, policy: POLICY.id });
+};
 const verifyToken = require('../middleware/verifyToken');
 const verifyRole = require('../middleware/verifyRole');
 
@@ -185,6 +200,12 @@ router.post('/', verifyToken, verifyRole('creator'), validate(campaignCreateSche
     } = req.validated;
 
     const user = await User.findOne({ email: req.user.email });
+
+    // The content policy is checked before the campaign is written, so a
+    // campaign that attacks a religion never exists in the database.
+    const violation = findPolicyViolation({ title, story, reward_info });
+    if (violation) return refuseByPolicy(res, violation);
+
     const campaign = new Campaign({
       title, story, category, funding_goal, minimum_contribution,
       deadline, reward_info, campaign_image_url,
@@ -209,6 +230,19 @@ router.post('/', verifyToken, verifyRole('creator'), validate(campaignCreateSche
 router.patch('/:id', verifyToken, verifyRole('creator'), validate(campaignUpdateSchema), async (req, res) => {
   try {
     const { title, story, reward_info } = req.validated;
+    const existing = await Campaign.findOne({ _id: req.params.id, creator_email: req.user.email });
+    if (!existing) return res.status(404).json({ error: 'Campaign not found' });
+
+    // The merged campaign is what would be published, so that is what the
+    // policy reads: an edit that leaves a hostile story in place is refused
+    // too.
+    const violation = findPolicyViolation({
+      title: title ?? existing.title,
+      story: story ?? existing.story,
+      reward_info: reward_info ?? existing.reward_info,
+    });
+    if (violation) return refuseByPolicy(res, violation);
+
     const campaign = await Campaign.findOneAndUpdate(
       { _id: req.params.id, creator_email: req.user.email },
       { $set: { title, story, reward_info } },
@@ -225,6 +259,12 @@ router.patch('/:id', verifyToken, verifyRole('creator'), validate(campaignUpdate
 router.post('/:id/updates', verifyToken, verifyRole('creator'), validate(campaignUpdatePostSchema), async (req, res) => {
   try {
     const { title, body } = req.validated;
+
+    // A progress update is read by every backer of the campaign, so it is
+    // held to the same rule as the campaign itself.
+    const violation = findPolicyViolation({ title, body });
+    if (violation) return refuseByPolicy(res, violation);
+
     const campaign = await Campaign.findOneAndUpdate(
       { _id: req.params.id, creator_email: req.user.email },
       { $push: { updates: { title, body } } },
@@ -265,6 +305,17 @@ router.delete('/:id', verifyToken, verifyRole('creator', 'admin'), async (req, r
 router.patch('/:id/status', verifyToken, verifyRole('admin'), validate(campaignStatusSchema), async (req, res) => {
   try {
     const { status } = req.validated;
+    const existing = await Campaign.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Campaign not found' });
+
+    // The content policy has the last word on publication. A campaign that
+    // attacks a religion cannot be approved, whatever else is true of it.
+    // Rejecting one is always allowed: that is how it leaves.
+    if (status === 'approved') {
+      const violation = findPolicyViolation(existing);
+      if (violation) return refuseByPolicy(res, violation);
+    }
+
     const campaign = await Campaign.findByIdAndUpdate(
       req.params.id,
       { $set: { status } },
